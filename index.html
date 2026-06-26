@@ -374,7 +374,7 @@ react/cjs/react-jsx-runtime.production.js:
     authBtn.innerHTML = '<span style="animation:spin 1s linear infinite;display:inline-block">⟳</span> Redirection...';
     const { error } = await sb.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: location.href }
+      options: { redirectTo: 'https://abarnabe-ops.github.io/customer-journey-mapper/' }
     });
     if (error) {
       document.getElementById('auth-msg').className = 'auth-msg err';
