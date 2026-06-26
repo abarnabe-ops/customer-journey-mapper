@@ -5,7 +5,7 @@
 <title>Customer Journey Mapper v65</title>
 
 <!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   #auth-overlay {
     position: fixed; inset: 0; background: #0F172A;
@@ -443,6 +443,7 @@ react/cjs/react-jsx-runtime.production.js:
       // Dropdown menu
       const menu = document.createElement('div');
       menu.id = 'logout-menu';
+      menu.addEventListener('click', e => e.stopPropagation());
       menu.innerHTML = `
         <div class="logout-menu-email">${user.email}</div>
         <button class="logout-menu-btn" id="logout-btn">🚪 Déconnexion</button>
@@ -462,7 +463,7 @@ react/cjs/react-jsx-runtime.production.js:
       document.addEventListener('click', () => menu.classList.remove('open'));
 
       // Logout
-      document.getElementById('logout-btn').addEventListener('click', async () => {
+      document.getElementById('logout-btn').addEventListener('mousedown', async () => {
         await sb.auth.signOut();
         appRoot.style.display = 'none';
         overlay.style.display = 'flex';
