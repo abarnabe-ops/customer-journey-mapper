@@ -436,33 +436,51 @@ react/cjs/react-jsx-runtime.production.js:
       const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '?';
       const displayName = user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || '';
 
-      // Avatar with photo or initials
+      // Build avatar pill
       const avatarHtml = pic
-        ? `<img src="${pic}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" alt="avatar"/>`
+        ? `<img src="${pic}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;" alt="avatar"/>`
         : `<div style="width:28px;height:28px;border-radius:50%;background:#0a4547;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;">${initials}</div>`;
 
-      avatarBtn.innerHTML = `${avatarHtml}<span style="color:#F1F5F9;font-size:12px;">${displayName}</span>`;
+      avatarBtn.innerHTML = `${avatarHtml}<span style="color:#F1F5F9;font-size:12px;font-weight:500;">${displayName}</span><svg width="10" height="10" viewBox="0 0 10 10" style="flex-shrink:0;margin-left:2px;"><path d="M2 3.5L5 6.5L8 3.5" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
+      avatarBtn.style.cssText = 'display:flex;align-items:center;gap:6px;background:#334155;border:1px solid #475569;border-radius:20px;padding:3px 10px 3px 3px;cursor:pointer;font-family:inherit;margin-left:8px;';
 
-      // Separate logout button — no dropdown, no propagation issues
-      const logoutBtn = document.createElement('button');
-      logoutBtn.innerHTML = '🚪';
-      logoutBtn.title = 'Déconnexion';
-      logoutBtn.style.cssText = 'background:#334155;border:none;color:#F87171;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;margin-left:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
-      logoutBtn.onclick = async () => {
+      // Dropdown
+      const dropdown = document.createElement('div');
+      dropdown.style.cssText = 'position:absolute;top:calc(100% + 6px);right:0;background:#1E293B;border:1px solid #334155;border-radius:8px;overflow:hidden;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:9999;display:none;';
+      dropdown.innerHTML = `
+        <div style="padding:10px 14px;border-bottom:1px solid #334155;">
+          <div style="color:#94A3B8;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${user.email}</div>
+        </div>
+        <div style="padding:4px;">
+          <button id="logout-btn" style="width:100%;padding:8px 10px;background:none;border:none;border-radius:6px;color:#F87171;font-size:12px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;font-family:inherit;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            Déconnexion
+          </button>
+        </div>`;
+
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'position:relative;display:flex;align-items:center;';
+      wrapper.appendChild(avatarBtn);
+      wrapper.appendChild(dropdown);
+      topbar.appendChild(wrapper);
+
+      // Toggle dropdown on pill click
+      avatarBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+      });
+
+      // Close on outside click
+      document.addEventListener('click', () => { dropdown.style.display = 'none'; });
+
+      // Logout — mousedown fires before the outside-click closes dropdown
+      document.getElementById('logout-btn').addEventListener('mousedown', async (e) => {
+        e.stopPropagation();
         await sb.auth.signOut();
         appRoot.style.display = 'none';
         overlay.style.display = 'flex';
         wrapper.remove();
-      };
-
-      const wrapper = document.createElement('div');
-      wrapper.style.cssText = 'display:flex;align-items:center;gap:6px;margin-left:8px;';
-      wrapper.appendChild(avatarBtn);
-      wrapper.appendChild(logoutBtn);
-      topbar.appendChild(wrapper);
-
-      // Avatar button does nothing (just display)
-      avatarBtn.style.cursor = 'default';
+      });
     }, 500);
   }
 
