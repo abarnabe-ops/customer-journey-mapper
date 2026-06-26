@@ -1457,25 +1457,8 @@ Génère le customer journey mapping complet en JSON.`}]
           <span>📋</span><span>Brief</span>
         </button>
 
-        <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
-
-        {/* ── Zoom ── */}
-        <button onClick={()=>setZoom(z=>Math.min(2,z*1.1))} title="Zoom +" style={{...btnS,width:28,padding:0,textAlign:"center",fontSize:15}}>+</button>
-        {zoomInput===null
-          ?<span onClick={()=>setZoomInput(String(Math.round(zoom*100)))}
-              title="Cliquer pour saisir un %"
-              style={{color:"#CBD5E1",fontSize:11,minWidth:44,textAlign:"center",cursor:"text",background:"#0F172A",border:"1px solid #334155",borderRadius:5,padding:"3px 6px",userSelect:"none",flexShrink:0}}>{Math.round(zoom*100)}%</span>
-          :<input autoFocus value={zoomInput}
-              onChange={e=>setZoomInput(e.target.value.replace(/[^0-9]/g,""))}
-              onBlur={()=>{const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}}
-              onKeyDown={e=>{if(e.key==="Enter"){const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}if(e.key==="Escape")setZoomInput(null);}}
-              style={{width:52,background:"#0F172A",border:"1px solid #3B82F6",color:"#F1F5F9",borderRadius:5,padding:"3px 6px",fontSize:11,textAlign:"center",outline:"none",fontFamily:"inherit",flexShrink:0}}/>
-        }
-        <button onClick={()=>setZoom(z=>Math.max(0.25,z*.9))} title="Zoom −" style={{...btnS,width:28,padding:0,textAlign:"center",fontSize:15}}>−</button>
-
-        <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
-
         {/* ── Avatar — always last ── */}
+        <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
         <AvatarPill user={user} onSignOut={signOut} />
       </div>
 
@@ -1683,6 +1666,47 @@ Génère le customer journey mapping complet en JSON.`}]
           {selC&&!selN.length&&<div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",background:"#1E293B",color:"#94A3B8",padding:"6px 14px",borderRadius:8,fontSize:11,pointerEvents:"none",zIndex:50,border:"1px solid #334155"}}>Connexion selectionnee — Suppr pour effacer</div>}
           {clipboard.length>0&&<div style={{position:"absolute",bottom:14,left:14,background:"#1E3A5F",color:"#60A5FA",padding:"4px 10px",borderRadius:6,fontSize:10,border:"1px solid #2563EB",pointerEvents:"none"}}>{clipboard.length} element{clipboard.length>1?"s":""} — Ctrl+V pour coller</div>}
           {activeVid&&(()=>{const v=versions.find(x=>x.id===activeVid);return v?(<div style={{position:"absolute",bottom:14,right:14,background:"#14532D",color:"#4ADE80",padding:"4px 10px",borderRadius:6,fontSize:10,border:"1px solid #166534",pointerEvents:"none",display:"flex",alignItems:"center",gap:5}}><span>📦</span><span>{v.name}</span></div>):null;})()}
+
+          {/* ── Floating zoom controls — bottom-left, like Figma/Miro ── */}
+          <div style={{position:"absolute",bottom:14,left:"50%",transform:"translateX(-50%)",display:"flex",alignItems:"center",gap:2,background:"#1E293B",border:"1px solid #334155",borderRadius:8,padding:"3px 4px",boxShadow:"0 2px 12px rgba(0,0,0,.4)",zIndex:40,userSelect:"none"}}>
+            <button
+              onClick={()=>setZoom(z=>Math.max(0.25,z*.9))}
+              title="Zoom − (Ctrl −)"
+              style={{width:28,height:28,background:"none",border:"none",color:"#CBD5E1",cursor:"pointer",borderRadius:5,fontSize:18,fontWeight:300,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}
+              onMouseEnter={e=>e.currentTarget.style.background="#334155"}
+              onMouseLeave={e=>e.currentTarget.style.background="none"}
+            >−</button>
+            {zoomInput===null
+              ? <span
+                  onClick={()=>setZoomInput(String(Math.round(zoom*100)))}
+                  title="Cliquer pour saisir un %"
+                  style={{color:"#F1F5F9",fontSize:12,fontWeight:600,minWidth:46,textAlign:"center",cursor:"text",padding:"0 4px"}}
+                >{Math.round(zoom*100)}%</span>
+              : <input
+                  autoFocus
+                  value={zoomInput}
+                  onChange={e=>setZoomInput(e.target.value.replace(/[^0-9]/g,""))}
+                  onBlur={()=>{const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}}
+                  onKeyDown={e=>{if(e.key==="Enter"){const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}if(e.key==="Escape")setZoomInput(null);}}
+                  style={{width:46,background:"transparent",border:"1px solid #3B82F6",color:"#F1F5F9",borderRadius:4,padding:"1px 4px",fontSize:12,fontWeight:600,textAlign:"center",outline:"none",fontFamily:"inherit"}}
+                />
+            }
+            <button
+              onClick={()=>setZoom(z=>Math.min(2,z*1.1))}
+              title="Zoom + (Ctrl +)"
+              style={{width:28,height:28,background:"none",border:"none",color:"#CBD5E1",cursor:"pointer",borderRadius:5,fontSize:18,fontWeight:300,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}
+              onMouseEnter={e=>e.currentTarget.style.background="#334155"}
+              onMouseLeave={e=>e.currentTarget.style.background="none"}
+            >+</button>
+            <div style={{width:1,height:18,background:"#334155",margin:"0 2px"}}/>
+            <button
+              onClick={()=>{setPan({x:80,y:50});setZoom(1);}}
+              title="Réinitialiser (Ctrl+0)"
+              style={{height:28,background:"none",border:"none",color:"#94A3B8",cursor:"pointer",borderRadius:5,fontSize:11,fontWeight:600,padding:"0 6px",display:"flex",alignItems:"center"}}
+              onMouseEnter={e=>e.currentTarget.style.background="#334155"}
+              onMouseLeave={e=>e.currentTarget.style.background="none"}
+            >100%</button>
+          </div>
         </div>
 
         {/* ── RIGHT PANEL ──────────────────────────────────────────────────── */}
