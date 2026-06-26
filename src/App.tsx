@@ -1378,9 +1378,9 @@ Génère le customer journey mapping complet en JSON.`}]
 
       {/* TOPBAR */}
       <div style={{height:46,background:"#1E293B",borderBottom:"1px solid #2D3F55",display:"flex",alignItems:"center",padding:"0 12px",gap:8,flexShrink:0}}>
-        <span style={{fontSize:18}}>🗺️</span>
+        <span style={{fontSize:18,flexShrink:0}}>🗺️</span>
         {/* Campaign selector */}
-        <div style={{position:"relative",flex:1,minWidth:0}}>
+        <div style={{position:"relative",flexShrink:0}}>
           <button onClick={()=>setShowCampMenu(s=>!s)}
             style={{background:"transparent",border:"none",color:"#F1F5F9",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:6,maxWidth:"100%",padding:"0 4px"}}>
             <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:220}}>{campName}</span>
@@ -1425,7 +1425,9 @@ Génère le customer journey mapping complet en JSON.`}]
             </div>
           )}
         </div>
-        <div style={{display:"flex",gap:5,alignItems:"center",marginLeft:"auto"}}>
+        {/* Spacer pushes buttons to the right */}
+        <div style={{flex:1}}/>
+        <div style={{display:"flex",gap:5,alignItems:"center"}}>
           <button onClick={()=>undoRef.current?.()} title="Ctrl+Z" style={{...btnS,width:32,padding:0,textAlign:"center",opacity:canUndo?1:.35,cursor:canUndo?"pointer":"not-allowed",fontSize:15}}>↩</button>
           <button onClick={()=>redoRef.current?.()} title="Ctrl+Y" style={{...btnS,width:32,padding:0,textAlign:"center",opacity:canRedo?1:.35,cursor:canRedo?"pointer":"not-allowed",fontSize:15}}>↪</button>
           <div style={{width:1,height:22,background:"#334155"}}/>
@@ -1453,9 +1455,9 @@ Génère le customer journey mapping complet en JSON.`}]
           <button onClick={()=>setZoom(z=>Math.max(0.25,z*.9))} title="Zoom out (Ctrl+-)" style={{...btnS,width:28,padding:0,textAlign:"center",fontSize:15}}>−</button>
           <button onClick={()=>{setPan({x:80,y:50});setZoom(1);}} title="Zoom 100% (Ctrl+0)" style={{...btnS,width:28,padding:0,textAlign:"center",fontSize:10,fontWeight:700}}>100</button>
           <button onClick={()=>{setPan({x:80,y:50});setZoom(.8);}} title="Réinitialiser la vue" style={{...btnS,width:28,padding:0,textAlign:"center"}}>⌂</button>
-          <div style={{width:1,height:22,background:"#334155"}}/>
-          <AvatarPill user={user} onSignOut={signOut} />
         </div>
+        <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
+        <AvatarPill user={user} onSignOut={signOut} />
       </div>
 
       {vMsg&&<div style={{position:"fixed",top:56,left:"50%",transform:"translateX(-50%)",background:vMsg.type==="ok"?"#14532D":"#7F1D1D",color:vMsg.type==="ok"?"#4ADE80":"#FCA5A5",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,zIndex:200,pointerEvents:"none"}}>{vMsg.text}</div>}
