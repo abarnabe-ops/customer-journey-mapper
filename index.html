@@ -334,9 +334,13 @@ react/cjs/react-jsx-runtime.production.js:
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) { showApp(session.user); return; }
 
-  // Handle Google OAuth redirect callback
+  // Handle Google OAuth redirect + sign out events
   sb.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session?.user) showApp(session.user);
+    if (event === 'SIGNED_OUT') {
+      Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
+      location.href = location.origin + location.pathname;
+    }
   });
 
   function showMsg(type, text) {
@@ -391,7 +395,11 @@ react/cjs/react-jsx-runtime.production.js:
     document.getElementById('av-logout').onclick = async (e) => {
       e.stopPropagation();
       await sb.auth.signOut();
-      location.reload();
+      // Manually clear all Supabase session keys from localStorage
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('sb-'))
+        .forEach(k => localStorage.removeItem(k));
+      location.href = location.origin + location.pathname;
     };
   }
 
