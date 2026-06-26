@@ -36,6 +36,30 @@
   .auth-msg.err { background: #7F1D1D; color: #FCA5A5; display: block; }
   .auth-footer { margin-top: 20px; text-align: center; color: #475569; font-size: 11px; }
   #app-root { display: none; height: 100vh; }
+  #user-avatar-btn {
+    display: none; align-items: center; gap: 8px;
+    background: #1E293B; border: 1px solid #334155;
+    border-radius: 20px; padding: 3px 10px 3px 3px;
+    cursor: pointer; color: #F1F5F9; font-size: 12px;
+    font-family: inherit; margin-left: 8px;
+  }
+  #user-avatar-btn:hover { background: #334155; }
+  #user-avatar-img {
+    width: 28px; height: 28px; border-radius: 50%;
+    object-fit: cover; background: #0a4547;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff;
+  }
+  #logout-menu {
+    display: none; position: absolute; top: 40px; right: 0;
+    background: #1E293B; border: 1px solid #334155; border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.5); zIndex: 500; min-width: 180px; overflow: hidden;
+  }
+  #logout-menu.open { display: block; }
+  .logout-menu-email { padding: 10px 14px; color: #64748B; font-size: 11px; border-bottom: 1px solid #334155; }
+  .logout-menu-btn { width: 100%; padding: 10px 14px; background: none; border: none;
+    color: #F87171; font-size: 13px; cursor: pointer; text-align: left; font-family: inherit; }
+  .logout-menu-btn:hover { background: #450A0A; }
 </style>
 <style>*{margin:0;padding:0;box-sizing:border-box;}html,body,#root{width:100%;height:100%;overflow:hidden;}@keyframes spin{to{transform:rotate(360deg);}}</style>
 </head>
@@ -50,10 +74,10 @@
     <div class="auth-sub">Connectez-vous pour accéder à vos mappings</div>
     <button class="auth-btn" id="auth-btn" style="display:flex;align-items:center;justify-content:center;gap:12px;background:#fff;color:#1E293B;border:1.5px solid #E2E8F0;">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
-      Continuer avec Google
+      Se connecter / Créer un compte avec Google
     </button>
     <div class="auth-msg" id="auth-msg"></div>
-    <div class="auth-footer">Connexion sécurisée via Google ✨</div>
+    <div class="auth-footer">Nouveau ou déjà inscrit — Google gère les deux ✨</div>
   </div>
 </div>
 <div id="app-root">
@@ -380,9 +404,71 @@ react/cjs/react-jsx-runtime.production.js:
       document.getElementById('auth-msg').className = 'auth-msg err';
       document.getElementById('auth-msg').textContent = 'Erreur: ' + error.message;
       authBtn.disabled = false;
-      authBtn.innerHTML = '<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/></svg> Continuer avec Google';
+      authBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/></svg> Se connecter / Créer un compte avec Google`;
     }
   });
+
+  function showApp(user) {
+    overlay.style.display = 'none';
+    appRoot.style.display = 'block';
+
+    // Wait for React topbar to render, then inject avatar
+    const injectAvatar = setInterval(() => {
+      const topbar = document.querySelector('[style*="height:46px"]');
+      if (!topbar) return;
+      clearInterval(injectAvatar);
+
+      // Create avatar button
+      const avatarBtn = document.createElement('button');
+      avatarBtn.id = 'user-avatar-btn';
+      avatarBtn.style.display = 'flex';
+
+      // Avatar image or initials
+      const pic = user.user_metadata?.avatar_url;
+      const name = user.user_metadata?.full_name || user.email || '';
+      const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || '?';
+      const displayName = user.user_metadata?.full_name?.split(' ')[0] || user.email?.split('@')[0] || '';
+
+      avatarBtn.innerHTML = pic
+        ? `<img id="user-avatar-img" src="${pic}" alt="avatar"/><span>${displayName}</span>`
+        : `<div id="user-avatar-img" style="width:28px;height:28px;border-radius:50%;background:#0a4547;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">${initials}</div><span>${displayName}</span>`;
+
+      // Dropdown menu
+      const menu = document.createElement('div');
+      menu.id = 'logout-menu';
+      menu.innerHTML = `
+        <div class="logout-menu-email">${user.email}</div>
+        <button class="logout-menu-btn" id="logout-btn">🚪 Déconnexion</button>
+      `;
+
+      const wrapper = document.createElement('div');
+      wrapper.style.cssText = 'position:relative;display:flex;align-items:center;';
+      wrapper.appendChild(avatarBtn);
+      wrapper.appendChild(menu);
+      topbar.appendChild(wrapper);
+
+      // Toggle menu
+      avatarBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.toggle('open');
+      });
+      document.addEventListener('click', () => menu.classList.remove('open'));
+
+      // Logout
+      document.getElementById('logout-btn').addEventListener('click', async () => {
+        await sb.auth.signOut();
+        appRoot.style.display = 'none';
+        overlay.style.display = 'flex';
+        avatarBtn.remove();
+        menu.remove();
+      });
+    }, 500);
+  }
+
+  window._sbSignOut = async () => {
+    await sb.auth.signOut();
+    location.reload();
+  };
 })();
 </script>
 </div></body>
