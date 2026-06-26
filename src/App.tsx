@@ -1377,7 +1377,7 @@ Génère le customer journey mapping complet en JSON.`}]
       )}
 
       {/* TOPBAR */}
-      <div style={{height:46,background:"#1E293B",borderBottom:"1px solid #2D3F55",display:"flex",alignItems:"center",padding:"0 12px",gap:8,flexShrink:0}}>
+      <div style={{height:46,background:"#1E293B",borderBottom:"1px solid #2D3F55",display:"flex",alignItems:"center",padding:"0 12px",gap:5,flexShrink:0}}>
         <span style={{fontSize:18,flexShrink:0}}>🗺️</span>
         {/* Campaign selector */}
         <div style={{position:"relative",flexShrink:0}}>
@@ -1425,38 +1425,57 @@ Génère le customer journey mapping complet en JSON.`}]
             </div>
           )}
         </div>
-        {/* Spacer pushes buttons to the right */}
+        {/* Spacer pushes everything right */}
         <div style={{flex:1}}/>
-        <div style={{display:"flex",gap:5,alignItems:"center"}}>
-          <button onClick={()=>undoRef.current?.()} title="Ctrl+Z" style={{...btnS,width:32,padding:0,textAlign:"center",opacity:canUndo?1:.35,cursor:canUndo?"pointer":"not-allowed",fontSize:15}}>↩</button>
-          <button onClick={()=>redoRef.current?.()} title="Ctrl+Y" style={{...btnS,width:32,padding:0,textAlign:"center",opacity:canRedo?1:.35,cursor:canRedo?"pointer":"not-allowed",fontSize:15}}>↪</button>
-          <div style={{width:1,height:22,background:"#334155"}}/>
-          <button onClick={autoLayout} disabled={!hasNodes} title="Auto-layout (Dagre)" style={{...btnS,background:"#334155",color:hasNodes?"#94A3B8":"#475569",opacity:hasNodes?1:0.4,cursor:hasNodes?"pointer":"not-allowed",display:"flex",alignItems:"center",gap:4}}>
-            <span style={{fontSize:13}}>⬡</span><span style={{fontSize:11}}>Layout</span>
-          </button>
-          <div style={{width:1,height:22,background:"#334155"}}/>
-          <button onClick={()=>{setShowVersions(s=>!s);setShowBrief(false);}} style={{...btnS,background:showVersions?"#22C55E":"#334155",color:showVersions?"#fff":"#94A3B8",display:"flex",alignItems:"center",gap:5}}>
-            <span>📦</span><span>Versions</span>
-            {versions.length>0&&<span style={{background:showVersions?"rgba(255,255,255,.25)":"#1E3A2F",color:"#4ADE80",borderRadius:10,padding:"0 5px",fontSize:10,fontWeight:700}}>{versions.length}</span>}
-          </button>
-          <button onClick={()=>{setShowBrief(s=>!s);setShowVersions(false);}} style={{...btnS,background:showBrief?"#F97316":"#334155",color:showBrief?"#fff":"#94A3B8"}}>📋 Brief</button>
-          <div style={{width:1,height:22,background:"#334155"}}/>
-          <button onClick={()=>setZoom(z=>Math.min(2,z*1.1))} title="Zoom in (Ctrl++)" style={{...btnS,width:28,padding:0,textAlign:"center",fontSize:15}}>+</button>
-          {zoomInput===null
-            ?<span onClick={()=>setZoomInput(String(Math.round(zoom*100)))}
-                title="Cliquer pour entrer un % de zoom"
-                style={{color:"#CBD5E1",fontSize:11,minWidth:44,textAlign:"center",cursor:"text",background:"#0F172A",border:"1px solid #334155",borderRadius:5,padding:"3px 6px",userSelect:"none"}}>{Math.round(zoom*100)}%</span>
-            :<input autoFocus value={zoomInput}
-                onChange={e=>setZoomInput(e.target.value.replace(/[^0-9]/g,""))}
-                onBlur={()=>{const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}}
-                onKeyDown={e=>{if(e.key==="Enter"){const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}if(e.key==="Escape")setZoomInput(null);}}
-                style={{width:52,background:"#0F172A",border:"1px solid #3B82F6",color:"#F1F5F9",borderRadius:5,padding:"3px 6px",fontSize:11,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
-          }
-          <button onClick={()=>setZoom(z=>Math.max(0.25,z*.9))} title="Zoom out (Ctrl+-)" style={{...btnS,width:28,padding:0,textAlign:"center",fontSize:15}}>−</button>
-          <button onClick={()=>{setPan({x:80,y:50});setZoom(1);}} title="Zoom 100% (Ctrl+0)" style={{...btnS,width:28,padding:0,textAlign:"center",fontSize:10,fontWeight:700}}>100</button>
-          <button onClick={()=>{setPan({x:80,y:50});setZoom(.8);}} title="Réinitialiser la vue" style={{...btnS,width:28,padding:0,textAlign:"center"}}>⌂</button>
-        </div>
+
+        {/* ── Undo / Redo ── */}
+        <button onClick={()=>undoRef.current?.()} title="Ctrl+Z" style={{...btnS,width:32,padding:0,textAlign:"center",opacity:canUndo?1:.35,cursor:canUndo?"pointer":"not-allowed",fontSize:15}}>↩</button>
+        <button onClick={()=>redoRef.current?.()} title="Ctrl+Y" style={{...btnS,width:32,padding:0,textAlign:"center",opacity:canRedo?1:.35,cursor:canRedo?"pointer":"not-allowed",fontSize:15}}>↪</button>
+
         <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
+
+        {/* ── Layout ── */}
+        <button onClick={autoLayout} disabled={!hasNodes} title="Auto-layout" style={{...btnS,color:hasNodes?"#94A3B8":"#475569",opacity:hasNodes?1:0.4,cursor:hasNodes?"pointer":"not-allowed",display:"flex",alignItems:"center",gap:4}}>
+          <span style={{fontSize:13}}>⬡</span><span style={{fontSize:11}}>Layout</span>
+        </button>
+
+        <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
+
+        {/* ── PDF ── */}
+        <button onClick={()=>window.print()} title="Exporter en PDF paysage" style={{...btnS,background:"#4C1D95",color:"#C4B5FD",display:"flex",alignItems:"center",gap:4}}>
+          <span style={{fontSize:13}}>📄</span><span style={{fontSize:11}}>PDF</span>
+        </button>
+
+        {/* ── Versions ── */}
+        <button onClick={()=>{setShowVersions(s=>!s);setShowBrief(false);}} style={{...btnS,background:showVersions?"#22C55E":"#334155",color:showVersions?"#fff":"#94A3B8",display:"flex",alignItems:"center",gap:4}}>
+          <span>📦</span><span>Versions</span>
+          {versions.length>0&&<span style={{background:showVersions?"rgba(255,255,255,.25)":"#1E3A2F",color:"#4ADE80",borderRadius:10,padding:"0 5px",fontSize:10,fontWeight:700}}>{versions.length}</span>}
+        </button>
+
+        {/* ── Brief ── */}
+        <button onClick={()=>{setShowBrief(s=>!s);setShowVersions(false);}} style={{...btnS,background:showBrief?"#F97316":"#334155",color:showBrief?"#fff":"#94A3B8",display:"flex",alignItems:"center",gap:4}}>
+          <span>📋</span><span>Brief</span>
+        </button>
+
+        <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
+
+        {/* ── Zoom ── */}
+        <button onClick={()=>setZoom(z=>Math.min(2,z*1.1))} title="Zoom +" style={{...btnS,width:28,padding:0,textAlign:"center",fontSize:15}}>+</button>
+        {zoomInput===null
+          ?<span onClick={()=>setZoomInput(String(Math.round(zoom*100)))}
+              title="Cliquer pour saisir un %"
+              style={{color:"#CBD5E1",fontSize:11,minWidth:44,textAlign:"center",cursor:"text",background:"#0F172A",border:"1px solid #334155",borderRadius:5,padding:"3px 6px",userSelect:"none",flexShrink:0}}>{Math.round(zoom*100)}%</span>
+          :<input autoFocus value={zoomInput}
+              onChange={e=>setZoomInput(e.target.value.replace(/[^0-9]/g,""))}
+              onBlur={()=>{const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}}
+              onKeyDown={e=>{if(e.key==="Enter"){const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}if(e.key==="Escape")setZoomInput(null);}}
+              style={{width:52,background:"#0F172A",border:"1px solid #3B82F6",color:"#F1F5F9",borderRadius:5,padding:"3px 6px",fontSize:11,textAlign:"center",outline:"none",fontFamily:"inherit",flexShrink:0}}/>
+        }
+        <button onClick={()=>setZoom(z=>Math.max(0.25,z*.9))} title="Zoom −" style={{...btnS,width:28,padding:0,textAlign:"center",fontSize:15}}>−</button>
+
+        <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
+
+        {/* ── Avatar — always last ── */}
         <AvatarPill user={user} onSignOut={signOut} />
       </div>
 
