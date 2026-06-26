@@ -391,9 +391,7 @@ react/cjs/react-jsx-runtime.production.js:
     document.getElementById('av-logout').onclick = async (e) => {
       e.stopPropagation();
       await sb.auth.signOut();
-      ui.remove();
-      appRoot.style.display = 'none';
-      overlay.style.display = 'flex';
+      location.reload();
     };
   }
 
