@@ -598,8 +598,33 @@ const SH=({children})=><div style={{fontSize:9.5,fontWeight:700,color:"#94A3B8",
 const ActBtn=({onClick,icon,label,disabled})=>(<button onClick={onClick} disabled={disabled} style={{flex:1,background:disabled?"#0F172A":"#1E3A5F",border:`1px solid ${disabled?"#1E2D40":"#2563EB"}`,color:disabled?"#475569":"#fff",borderRadius:6,padding:"7px 4px",cursor:disabled?"not-allowed":"pointer",fontSize:11,fontWeight:600,display:"flex",flexDirection:"column",alignItems:"center",gap:3,opacity:disabled?0.5:1}}><span style={{fontSize:16}}>{icon}</span><span style={{fontSize:9,lineHeight:1.2,textAlign:"center"}}>{label}</span></button>);
 const LayerBtn=({onClick,icon,label,kbd})=>(<button onClick={onClick} title={`${label} (${kbd})`} style={{flex:1,background:"#0F172A",border:"1px solid #1E2D40",color:"#CBD5E1",borderRadius:5,padding:"5px 2px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:1}} onMouseEnter={e=>e.currentTarget.style.background="#1E2D40"} onMouseLeave={e=>e.currentTarget.style.background="#0F172A"}><span style={{fontSize:13}}>{icon}</span><span style={{fontSize:8,lineHeight:1.2,textAlign:"center",color:"#94A3B8"}}>{label}</span><span style={{fontSize:7,color:"#475569"}}>{kbd}</span></button>);
 
+// ─── i18n ──────────────────────────────────────────────────────────────────
+const T={
+  fr:{
+    loading:'Chargement...',
+    tagline:"Visualisez et automatisez vos parcours clients avec l'IA",
+    signInGoogle:'Se connecter avec Google',
+    signOut:'Déconnexion',
+    language:'Langue',
+    switchLang:'English',
+  },
+  en:{
+    loading:'Loading...',
+    tagline:'Visualize and automate your customer journeys with AI',
+    signInGoogle:'Sign in with Google',
+    signOut:'Sign out',
+    language:'Language',
+    switchLang:'Français',
+  },
+} as const;
+type Lang='fr'|'en';
+
 export default function App(){
   const { user, loading, signInWithGoogle, signOut } = useAuth();
+  const [lang,setLangState]=useState<Lang>(()=>(localStorage.getItem('cjm_lang') as Lang)||'fr');
+  const t=T[lang];
+  const setLang=(l:Lang)=>{localStorage.setItem('cjm_lang',l);setLangState(l);};
+
   const [nodes,setNodes]=useState([]);
   const [conns,setConns]=useState([]);
   const [past,setPast]=useState([]);
@@ -1321,20 +1346,30 @@ Génère le customer journey mapping complet en JSON.`}]
   if (loading) return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#0F172A',color:'#94A3B8',flexDirection:'column',gap:16}}>
       <span style={{fontSize:32}}>🗺️</span>
-      <span style={{fontSize:14}}>Chargement...</span>
+      <span style={{fontSize:14}}>{t.loading}</span>
     </div>
   );
 
   // ─── Login screen ──────────────────────────────────────────────────────────
   if (!user) return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#0F172A',fontFamily:"'Inter',system-ui,sans-serif"}}>
+      {/* Language toggle — top right */}
+      <button
+        onClick={()=>setLang(lang==='fr'?'en':'fr')}
+        style={{position:'fixed',top:16,right:16,background:'#1E293B',border:'1px solid #334155',borderRadius:8,padding:'6px 14px',cursor:'pointer',color:'#94A3B8',fontSize:12,fontWeight:600,display:'flex',alignItems:'center',gap:6}}
+        onMouseEnter={e=>(e.currentTarget.style.background='#334155')}
+        onMouseLeave={e=>(e.currentTarget.style.background='#1E293B')}
+      >
+        <span style={{fontSize:15}}>{lang==='fr'?'🇬🇧':'🇫🇷'}</span>
+        {t.switchLang}
+      </button>
       <div style={{background:'#1E293B',border:'1px solid #334155',borderRadius:16,padding:'40px 48px',textAlign:'center',maxWidth:400,boxShadow:'0 24px 64px rgba(0,0,0,.5)'}}>
         <div style={{fontSize:48,marginBottom:16}}>🗺️</div>
         <div style={{color:'#F1F5F9',fontWeight:800,fontSize:22,marginBottom:8}}>Customer Journey Mapper</div>
-        <div style={{color:'#64748B',fontSize:14,marginBottom:32,lineHeight:1.6}}>Visualisez et automatisez vos parcours clients avec l'IA</div>
+        <div style={{color:'#64748B',fontSize:14,marginBottom:32,lineHeight:1.6}}>{t.tagline}</div>
         <button onClick={signInWithGoogle} style={{width:'100%',background:'#fff',border:'1.5px solid #E2E8F0',color:'#1E293B',borderRadius:10,padding:'12px 20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:12,fontSize:14,fontWeight:600,boxShadow:'0 2px 8px rgba(0,0,0,.1)'}}>
           <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
-          Se connecter avec Google
+          {t.signInGoogle}
         </button>
       </div>
     </div>
@@ -1459,7 +1494,7 @@ Génère le customer journey mapping complet en JSON.`}]
 
         {/* ── Avatar — always last ── */}
         <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
-        <AvatarPill user={user} onSignOut={signOut} />
+        <AvatarPill user={user} onSignOut={signOut} lang={lang} onSetLang={setLang} />
       </div>
 
       {vMsg&&<div style={{position:"fixed",top:56,left:"50%",transform:"translateX(-50%)",background:vMsg.type==="ok"?"#14532D":"#7F1D1D",color:vMsg.type==="ok"?"#4ADE80":"#FCA5A5",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,zIndex:200,pointerEvents:"none"}}>{vMsg.text}</div>}

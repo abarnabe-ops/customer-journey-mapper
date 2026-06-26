@@ -1,12 +1,22 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import type { User } from '@supabase/supabase-js'
 
+type Lang = 'fr' | 'en'
+
 interface AvatarPillProps {
   user: User
   onSignOut: () => void
+  lang: Lang
+  onSetLang: (l: Lang) => void
 }
 
-export function AvatarPill({ user, onSignOut }: AvatarPillProps) {
+const L = {
+  fr: { signOut: 'Déconnexion', language: 'Langue', switchLabel: 'English', switchFlag: '🇬🇧' },
+  en: { signOut: 'Sign out',    language: 'Language', switchLabel: 'Français', switchFlag: '🇫🇷' },
+} as const
+
+export function AvatarPill({ user, onSignOut, lang, onSetLang }: AvatarPillProps) {
+  const t = L[lang]
   const photoUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture
   const displayName =
     user.user_metadata?.full_name ||
@@ -96,12 +106,44 @@ export function AvatarPill({ user, onSignOut }: AvatarPillProps) {
             </div>
           </div>
 
+          {/* Language toggle */}
+          <DropdownMenu.Item
+            onSelect={() => onSetLang(lang === 'fr' ? 'en' : 'fr')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '8px 12px', margin: '4px 4px 0', borderRadius: 6,
+              color: '#CBD5E1', fontSize: 12, cursor: 'pointer',
+              outline: 'none',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#273344')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
+            {/* Globe icon */}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+            <span style={{ flex: 1 }}>{t.language}</span>
+            {/* Current lang pill */}
+            <span style={{
+              background: '#334155', borderRadius: 4, padding: '2px 6px',
+              fontSize: 10, fontWeight: 700, color: '#94A3B8', display: 'flex', alignItems: 'center', gap: 4,
+            }}>
+              <span>{t.switchFlag}</span>
+              <span>{t.switchLabel}</span>
+            </span>
+          </DropdownMenu.Item>
+
+          {/* Divider */}
+          <div style={{ height: 1, background: '#334155', margin: '4px 8px' }} />
+
           {/* Sign out */}
           <DropdownMenu.Item
             onSelect={onSignOut}
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
-              padding: '8px 12px', margin: 4, borderRadius: 6,
+              padding: '8px 12px', margin: '0 4px 4px', borderRadius: 6,
               color: '#F87171', fontSize: 12, cursor: 'pointer',
               outline: 'none',
             }}
@@ -113,7 +155,7 @@ export function AvatarPill({ user, onSignOut }: AvatarPillProps) {
               <polyline points="16 17 21 12 16 7" />
               <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
-            Déconnexion
+            {t.signOut}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
