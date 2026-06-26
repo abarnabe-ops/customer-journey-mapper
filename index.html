@@ -413,9 +413,16 @@ react/cjs/react-jsx-runtime.production.js:
     appRoot.style.display = 'block';
 
     // Wait for React topbar to render, then inject avatar
+    let attempts = 0;
     const injectAvatar = setInterval(() => {
-      const topbar = document.querySelector('[style*="height:46px"]');
-      if (!topbar) return;
+      attempts++;
+      if (attempts > 40) { clearInterval(injectAvatar); return; } // give up after 20s
+      // Try multiple selectors to find the topbar
+      const topbar = document.querySelector('[style*="height:46px"]') ||
+                     document.querySelector('[style*="height: 46px"]') ||
+                     document.querySelector('#app-root > div > div:first-child');
+      if (!topbar || topbar.dataset.avatarInjected) return;
+      topbar.dataset.avatarInjected = '1';
       clearInterval(injectAvatar);
 
       // Create avatar button
