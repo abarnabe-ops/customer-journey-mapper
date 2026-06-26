@@ -1377,7 +1377,7 @@ Génère le customer journey mapping complet en JSON.`}]
       )}
 
       {/* TOPBAR */}
-      <div style={{height:46,background:"#1E293B",borderBottom:"1px solid #2D3F55",display:"flex",alignItems:"center",padding:"0 12px",gap:5,flexShrink:0}}>
+      <div style={{height:46,background:"#1E293B",borderBottom:"1px solid #2D3F55",display:"flex",alignItems:"center",padding:"0 12px",gap:5,flexShrink:0,flexWrap:"nowrap",overflow:"hidden"}}>
         <span style={{fontSize:18,flexShrink:0}}>🗺️</span>
         {/* Campaign selector */}
         <div style={{position:"relative",flexShrink:0}}>
