@@ -670,6 +670,11 @@ export default function App(){
   const zoomR=useRef(zoom);  useEffect(()=>{zoomR.current=zoom;},[zoom]);
   const panR=useRef(pan);    useEffect(()=>{panR.current=pan;},[pan]);
   const nodesR=useRef(nodes);useEffect(()=>{nodesR.current=nodes;},[nodes]);
+  const connsR=useRef(conns);useEffect(()=>{connsR.current=conns;},[conns]);
+  // Sidebar touch-drag state and fresh-closure action refs
+  const sideDrag_=useRef<any>(null);
+  const dropOnCvRef=useRef<any>(null);  // updated each render — no stale closure
+  const addCenteredRef=useRef<any>(null);
 
   undoRef.current=()=>{if(!past.length)return;const prev=past[past.length-1];setFuture(f=>[{nodes,conns},...f.slice(0,49)]);setNodes(prev.nodes);setConns(prev.conns);setPast(p=>p.slice(0,-1));setSelN([]);setSelC(null);};
   redoRef.current=()=>{if(!future.length)return;const next=future[0];setPast(p=>[...p.slice(-49),{nodes,conns}]);setNodes(next.nodes);setConns(next.conns);setFuture(f=>f.slice(1));setSelN([]);setSelC(null);};
@@ -1076,7 +1081,7 @@ Génère le customer journey mapping complet en JSON.`}]
             mx:t0.clientX,my:t0.clientY,
             startX:t0.clientX,startY:t0.clientY,
             startTime:Date.now(),moved:false,
-            pNodes:[...nodesR.current],pConns:[]
+            pNodes:[...nodesR.current],pConns:[...connsR.current]
           };
         } else {
           // Touch on canvas background — pan
@@ -1356,12 +1361,97 @@ Génère le customer journey mapping complet en JSON.`}]
     const nd=type==="textbox"
       ?{id:uid(),type:"textbox",x,y,width:200,height:80,text:"",font:"'Inter',system-ui,sans-serif",size:14,color:"#1E293B",bold:false,italic:false,underline:false,align:"left",link:"",bgColor:""}
       :(type==="page"||isPageStyle)
-      ?{id:uid(),type:"page",x,y,label:isPageStyle?pageStyleDef.label:"Nouvelle Page",notes:"",pageStyle:pageStyleId}
+      ?{id:uid(),type:"page",x,y,label:isPageStyle?t[pageStyleDef.labelKey]:t.nodeAddPage,notes:"",pageStyle:pageStyleId}
       :{id:uid(),type,x,y,label:getDL(type,customLabels),notes:""};
     setNodes(p=>[...p,nd]);
     setSelN([nd.id]);
     setShowMapIt(false);
   };
+
+  // Keep fresh-closure refs current so touch listeners always call latest logic
+  addCenteredRef.current=addNodeCentered;
+  dropOnCvRef.current=(type:string,clientX:number,clientY:number)=>{
+    const cvEl=cvRef.current;if(!cvEl)return;
+    const rect=cvEl.getBoundingClientRect();
+    const d=gd(type);const{w,h}=gs(d,null);
+    const x=(clientX-rect.left-panR.current.x)/zoomR.current-w/2;
+    const y=(clientY-rect.top-panR.current.y)/zoomR.current-h/2;
+    saveH(nodesR.current,connsR.current);
+    const nn=type==="textbox"
+      ?{id:uid(),type:"textbox",x,y,width:200,height:80,text:"",font:"'Inter',system-ui,sans-serif",size:14,color:"#1E293B",bold:false,italic:false,underline:false,align:"left",link:"",bgColor:""}
+      :type==="page"
+      ?{id:uid(),type:"page",x,y,label:t.nodeAddPage,notes:"",pageStyle:"abonnement"}
+      :{id:uid(),type,x,y,label:(customLabels as any)[type]||gd(type)?.label||type,notes:""};
+    setNodes((p:any[])=>[...p,nn]);
+  };
+
+  // ── Sidebar touch drag ── document-level listeners (set up once) ──────────
+  useEffect(()=>{
+    const mkGhost=(label:string,cx:number,cy:number)=>{
+      const el=document.createElement('div');
+      el.textContent='+ '+label;
+      el.style.cssText='position:fixed;pointer-events:none;z-index:99999;background:#1E293B;border:2px solid #3B82F6;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;color:#F1F5F9;font-family:Inter,system-ui,sans-serif;opacity:.95;white-space:nowrap;transform:translate(-50%,-140%);box-shadow:0 8px 32px rgba(0,0,0,.8);transition:border-color .1s';
+      el.style.left=cx+'px';el.style.top=cy+'px';
+      document.body.appendChild(el);return el;
+    };
+
+    const tm=(e:TouchEvent)=>{
+      const sd=sideDrag_.current;if(!sd)return;
+      const t0=e.touches[0];
+      const dx=t0.clientX-sd.startX,dy=t0.clientY-sd.startY;
+
+      if(!sd.started){
+        // Cancel if predominantly vertical scroll intent
+        if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){sideDrag_.current=null;return;}
+        if(Math.hypot(dx,dy)>8){
+          sd.started=true;
+          sd.ghost=mkGhost(sd.label,t0.clientX,t0.clientY);
+          touch_.current=null; // cancel any canvas pan/pinch
+        }
+        return;
+      }
+      e.preventDefault();
+      sd.clientX=t0.clientX;sd.clientY=t0.clientY;
+      sd.ghost.style.left=t0.clientX+'px';
+      sd.ghost.style.top=t0.clientY+'px';
+      // Green border when over canvas
+      const cvEl=cvRef.current;
+      if(cvEl){
+        const r=cvEl.getBoundingClientRect();
+        const over=t0.clientX>=r.left&&t0.clientX<=r.right&&t0.clientY>=r.top&&t0.clientY<=r.bottom;
+        sd.ghost.style.borderColor=over?'#22C55E':'#3B82F6';
+      }
+    };
+
+    const te=()=>{
+      const sd=sideDrag_.current;if(!sd)return;
+      if(sd.started){
+        sd.ghost?.remove();
+        const cvEl=cvRef.current;
+        if(cvEl){
+          const r=cvEl.getBoundingClientRect();
+          const{clientX=sd.startX,clientY=sd.startY}=sd;
+          if(clientX>=r.left&&clientX<=r.right&&clientY>=r.top&&clientY<=r.bottom){
+            dropOnCvRef.current?.(sd.type,clientX,clientY);
+          }
+        }
+      } else {
+        // Tap — add to canvas center
+        addCenteredRef.current?.(sd.type);
+      }
+      sideDrag_.current=null;
+    };
+
+    document.addEventListener('touchmove',tm,{passive:false});
+    document.addEventListener('touchend',te);
+    document.addEventListener('touchcancel',te);
+    return()=>{
+      document.removeEventListener('touchmove',tm);
+      document.removeEventListener('touchend',te);
+      document.removeEventListener('touchcancel',te);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
 
   const MapItTabs=({addNodeCentered,customLabels})=>{
     const [activeTab,setActiveTab]=useState("sources");
@@ -1668,7 +1758,11 @@ Génère le customer journey mapping complet en JSON.`}]
                           const dl=getDL(d.type,customLabels);
                           return(
                             <div key={d.type} draggable={editingType!==d.type} onDragStart={editingType!==d.type?(e=>onSBDS(e,d.type)):undefined}
-                              onMouseEnter={()=>setHoveredType(d.type)} onMouseLeave={()=>setHoveredType(null)}
+                              onPointerEnter={()=>setHoveredType(d.type)} onPointerLeave={()=>setHoveredType(null)}
+                              onTouchStart={editingType!==d.type?e=>{
+                                const t0=e.touches[0];
+                                sideDrag_.current={type:d.type,label:getDL(d.type,customLabels),startX:t0.clientX,startY:t0.clientY,clientX:t0.clientX,clientY:t0.clientY,started:false,ghost:null};
+                              }:undefined}
                               style={{display:"flex",alignItems:"center",gap:7,padding:"4px 8px",cursor:editingType===d.type?"default":"grab",borderRadius:6,margin:"0 4px 1px",background:hoveredType===d.type&&editingType!==d.type?"#2D3F55":"transparent",transition:"background .1s"}}>
                               {/* Icon */}
                               <div style={{width:26,height:26,flexShrink:0,position:"relative"}}>
