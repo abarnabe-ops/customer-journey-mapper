@@ -658,6 +658,7 @@ export default function App(){
   const cvRef=useRef(null);
   const pan_=useRef(null);
   const drag_=useRef(null);
+  const touch_=useRef<any>(null);  // touch gesture state
   const dtRef=useRef(null);
   const didDrag=useRef(false);
   const editSnap=useRef(null);
@@ -665,6 +666,10 @@ export default function App(){
   const redoRef=useRef(null);
   const sidebarDrag=useRef(false);
   const tbResize=useRef<any>(null);
+  // Refs that mirror state so event listeners never go stale
+  const zoomR=useRef(zoom);  useEffect(()=>{zoomR.current=zoom;},[zoom]);
+  const panR=useRef(pan);    useEffect(()=>{panR.current=pan;},[pan]);
+  const nodesR=useRef(nodes);useEffect(()=>{nodesR.current=nodes;},[nodes]);
 
   undoRef.current=()=>{if(!past.length)return;const prev=past[past.length-1];setFuture(f=>[{nodes,conns},...f.slice(0,49)]);setNodes(prev.nodes);setConns(prev.conns);setPast(p=>p.slice(0,-1));setSelN([]);setSelC(null);};
   redoRef.current=()=>{if(!future.length)return;const next=future[0];setPast(p=>[...p.slice(-49),{nodes,conns}]);setNodes(next.nodes);setConns(next.conns);setFuture(f=>f.slice(1));setSelN([]);setSelC(null);};
@@ -1034,7 +1039,140 @@ Génère le customer journey mapping complet en JSON.`}]
     return()=>{window.removeEventListener("mousemove",mm);window.removeEventListener("mouseup",mu);};
   },[zoom,dragMidConn]);
 
-  useEffect(()=>{const el=cvRef.current;if(!el)return;const wh=e=>{e.preventDefault();setZoom(z=>Math.max(0.25,Math.min(2,z*(e.deltaY>0?.92:1.08))));};el.addEventListener("wheel",wh,{passive:false});return()=>el.removeEventListener("wheel",wh);},[]);
+  // ── Touch + Wheel handlers (need passive:false so we can preventDefault) ──
+  useEffect(()=>{
+    const el=cvRef.current;if(!el)return;
+
+    // ── Wheel: zoom toward cursor ─────────────────────────────────────────
+    const wh=(e:WheelEvent)=>{
+      e.preventDefault();
+      const rect=el.getBoundingClientRect();
+      const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+      const factor=e.deltaY>0?0.92:1.08;
+      setZoom(z=>{
+        const nz=Math.max(0.15,Math.min(4,z*factor));
+        setPan(p=>({x:mx-(mx-p.x)*(nz/z),y:my-(my-p.y)*(nz/z)}));
+        return nz;
+      });
+    };
+
+    // ── Touch: pan (1 finger) + pinch-zoom (2 fingers) + tap ─────────────
+    const ts=(e:TouchEvent)=>{
+      e.preventDefault();
+      const t0=e.touches[0];
+
+      if(e.touches.length===1){
+        // Find if touch is on a node
+        const hit=document.elementFromPoint(t0.clientX,t0.clientY);
+        const nodeEl=(hit as Element)?.closest('[data-nodeid]') as HTMLElement|null;
+        const nodeId=nodeEl?.dataset?.nodeid;
+        const n=nodeId?nodesR.current.find((x:any)=>x.id===nodeId):null;
+
+        if(n){
+          // Touch on a node — potential drag
+          touch_.current={
+            type:'node',id:nodeId,
+            ox:n.x,oy:n.y,
+            mx:t0.clientX,my:t0.clientY,
+            startX:t0.clientX,startY:t0.clientY,
+            startTime:Date.now(),moved:false,
+            pNodes:[...nodesR.current],pConns:[]
+          };
+        } else {
+          // Touch on canvas background — pan
+          touch_.current={
+            type:'pan',
+            sx:t0.clientX-panR.current.x,
+            sy:t0.clientY-panR.current.y,
+            startX:t0.clientX,startY:t0.clientY,
+            startTime:Date.now()
+          };
+          setSelN([]);setSelC(null);
+        }
+      } else if(e.touches.length===2){
+        const t1=e.touches[1];
+        const dist=Math.hypot(t1.clientX-t0.clientX,t1.clientY-t0.clientY);
+        touch_.current={
+          type:'pinch',
+          startDist:dist,startZoom:zoomR.current,
+          startPx:panR.current.x,startPy:panR.current.y,
+          cx:(t0.clientX+t1.clientX)/2,
+          cy:(t0.clientY+t1.clientY)/2,
+        };
+      }
+    };
+
+    const tm=(e:TouchEvent)=>{
+      e.preventDefault();
+      const tc=touch_.current;if(!tc)return;
+      const t0=e.touches[0];
+
+      if(tc.type==='pan'&&e.touches.length===1){
+        setPan({x:t0.clientX-tc.sx,y:t0.clientY-tc.sy});
+
+      } else if(tc.type==='pinch'&&e.touches.length===2){
+        const t1=e.touches[1];
+        const dist=Math.hypot(t1.clientX-t0.clientX,t1.clientY-t0.clientY);
+        const scale=dist/tc.startDist;
+        const nz=Math.max(0.15,Math.min(4,tc.startZoom*scale));
+        const ratio=nz/tc.startZoom;
+        setZoom(nz);
+        setPan({x:tc.cx-(tc.cx-tc.startPx)*ratio,y:tc.cy-(tc.cy-tc.startPy)*ratio});
+
+      } else if(tc.type==='node'&&e.touches.length===1){
+        const dx=(t0.clientX-tc.mx)/zoomR.current;
+        const dy=(t0.clientY-tc.my)/zoomR.current;
+        if(Math.abs(t0.clientX-tc.startX)>6||Math.abs(t0.clientY-tc.startY)>6){
+          tc.moved=true;
+          setNodes((p:any[])=>p.map(n=>n.id===tc.id?{...n,x:tc.ox+dx,y:tc.oy+dy}:n));
+        }
+      }
+    };
+
+    const te=(e:TouchEvent)=>{
+      const tc=touch_.current;if(!tc)return;
+
+      if(tc.type==='pan'&&e.changedTouches.length){
+        // Tap on background — already deselected on touchstart
+      } else if(tc.type==='node'){
+        if(!tc.moved){
+          // Tap on node → select it
+          setSelN([tc.id]);setSelC(null);
+        } else {
+          // Drag finished → save to undo history
+          setPast((p:any[])=>[...p.slice(-49),{nodes:tc.pNodes,conns:tc.pConns}]);
+          setFuture([]);
+        }
+      } else if(tc.type==='pinch'&&e.touches.length===1){
+        // One finger lifted → switch back to pan
+        const t0=e.touches[0];
+        touch_.current={
+          type:'pan',
+          sx:t0.clientX-panR.current.x,
+          sy:t0.clientY-panR.current.y,
+          startX:t0.clientX,startY:t0.clientY,
+          startTime:Date.now()
+        };
+        return;
+      }
+
+      if(e.touches.length===0)touch_.current=null;
+    };
+
+    el.addEventListener('wheel',wh,{passive:false});
+    el.addEventListener('touchstart',ts,{passive:false});
+    el.addEventListener('touchmove',tm,{passive:false});
+    el.addEventListener('touchend',te,{passive:false});
+    el.addEventListener('touchcancel',te,{passive:false});
+    return()=>{
+      el.removeEventListener('wheel',wh);
+      el.removeEventListener('touchstart',ts);
+      el.removeEventListener('touchmove',tm);
+      el.removeEventListener('touchend',te);
+      el.removeEventListener('touchcancel',te);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
 
   useEffect(()=>{
     const kd=e=>{
@@ -1575,6 +1713,7 @@ Génère le customer journey mapping complet en JSON.`}]
         {/* ── CANVAS ───────────────────────────────────────────────────────── */}
         <div ref={cvRef} className="cvbg" onMouseDown={onCvMD} onDragOver={e=>e.preventDefault()} onDrop={onCvDrop}
           style={{flex:1,position:"relative",overflow:"hidden",background:"#F0F2F7",cursor:connMode||connectAllMode?"crosshair":"grab",
+            touchAction:"none",
             backgroundImage:`linear-gradient(to right,#D8DCE8 1px,transparent 1px),linear-gradient(to bottom,#D8DCE8 1px,transparent 1px)`,
             backgroundSize:`${120*zoom}px ${120*zoom}px`,backgroundPosition:`${pan.x}px ${pan.y}px`}}>
           <div style={{position:"absolute",transform:`translate(${pan.x}px,${pan.y}px) scale(${zoom})`,transformOrigin:"0 0"}}>
@@ -1586,7 +1725,7 @@ Génère le customer journey mapping complet en JSON.`}]
                 const w=node.width||200,h=node.height||80;const isEd=editingTextId===node.id;
                 const ts={fontFamily:node.font||"'Inter',system-ui,sans-serif",fontSize:node.size||14,color:node.color||"#1E293B",fontWeight:node.bold?700:400,fontStyle:node.italic?"italic":"normal",textDecoration:node.underline?"underline":"none",textAlign:node.align||"left",lineHeight:1.5};
                 return(
-                  <div key={node.id} style={{position:"absolute",left:node.x,top:node.y,zIndex:zIdx}}
+                  <div key={node.id} data-nodeid={node.id} style={{position:"absolute",left:node.x,top:node.y,zIndex:zIdx}}
                     onMouseDown={e=>onNMD(e,node.id)} onClick={e=>onNClick(e,node.id)} onDoubleClick={e=>onNDbl(e,node.id)}>
                     <div style={{width:w,height:h,border:isSel?"2px solid #3B82F6":"1.5px dashed #94A3B8",borderRadius:6,background:node.bgColor||"transparent",boxShadow:isSel?"0 0 0 3px rgba(59,130,246,.2)":"none",cursor:connMode||connectAllMode?"crosshair":isEd?"text":"move",position:"relative",overflow:"hidden"}}>
                       {isEd?(
@@ -1633,7 +1772,7 @@ Génère le customer journey mapping complet en JSON.`}]
               const fw=w+PAD*2, fh=h+PAD*2; // frame dimensions
               const LABEL_H=36; // reserved space above for label always
               return(
-                <div key={node.id} style={{position:"absolute",left:node.x-PAD,top:node.y-PAD-LABEL_H,width:fw,height:fh+LABEL_H,zIndex:zIdx}}
+                <div key={node.id} data-nodeid={node.id} style={{position:"absolute",left:node.x-PAD,top:node.y-PAD-LABEL_H,width:fw,height:fh+LABEL_H,zIndex:zIdx}}
                   onMouseDown={e=>onNMD(e,node.id)} onClick={e=>onNClick(e,node.id)}>
                   {/* Label — always above the frame, same position selected or not */}
                   <div style={{position:"absolute",
