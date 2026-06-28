@@ -831,7 +831,7 @@ Génère le customer journey mapping complet en JSON.`}]
       if(!resp.ok)throw new Error(data.error?.message||"Erreur API");
       // Extract text from response (skip thinking blocks)
       const textBlock=data.content.find(b=>b.type==="text");
-      if(!textBlock)throw new Error("Pas de réponse texte");
+      if(!textBlock)throw new Error(t.briefNoResponse);
       const jsonStr=textBlock.text.replace(/```json|```/g,"").trim();
       const mapping=JSON.parse(jsonStr);
       if(!mapping.nodes||!mapping.connections)throw new Error("Format JSON invalide");
@@ -937,9 +937,9 @@ Génère le customer journey mapping complet en JSON.`}]
 
   useEffect(()=>{(async()=>{try{const r=await storageGet("jm_versions");if(r)setVersions(JSON.parse(r.value));}catch(e){}})();},[]);
   const flash=(t,text)=>{setVMsg({type:t,text});setTimeout(()=>setVMsg(null),3000);};
-  const saveVer=async()=>{setVLoading(true);try{const id=`v${Date.now()}`;const name=vName.trim()||`Version ${versions.length+1}`;const ts=new Date().toISOString();const nl=[...versions,{id,name,ts}];await storageSet(`jm_v_${id}`,JSON.stringify({nodes,conns,campName}));await storageSet("jm_versions",JSON.stringify(nl));setVersions(nl);setActiveVid(id);setVName("");flash("ok","Sauvegardee");}catch(e){flash("err","Erreur");}setVLoading(false);};
-  const restoreVer=async(v: {id:string,name:string,ts:string})=>{setVLoading(true);try{const r=await storageGet(`jm_v_${v.id}`);if(!r)throw new Error();const data=JSON.parse(r.value);saveH(nodes,conns);setNodes(data.nodes);setConns(data.conns);if(data.campName)setCampName(data.campName);setActiveVid(v.id);setShowVersions(false);flash("ok","Restauree");}catch(e){flash("err","Erreur");}setVLoading(false);};
-  const deleteVer=async(id: string)=>{setVLoading(true);try{const nl=versions.filter(v=>v.id!==id);await storageSet("jm_versions",JSON.stringify(nl));try{await storageDelete(`jm_v_${id}`);}catch(e){}setVersions(nl);if(activeVid===id)setActiveVid(null);setConfirmDel(null);}catch(e){flash("err","Erreur");}setVLoading(false);};
+  const saveVer=async()=>{setVLoading(true);try{const id=`v${Date.now()}`;const name=vName.trim()||`Version ${versions.length+1}`;const ts=new Date().toISOString();const nl=[...versions,{id,name,ts}];await storageSet(`jm_v_${id}`,JSON.stringify({nodes,conns,campName}));await storageSet("jm_versions",JSON.stringify(nl));setVersions(nl);setActiveVid(id);setVName("");flash("ok",t.flashSaved);}catch(e){flash("err",t.flashError);}setVLoading(false);};
+  const restoreVer=async(v: {id:string,name:string,ts:string})=>{setVLoading(true);try{const r=await storageGet(`jm_v_${v.id}`);if(!r)throw new Error();const data=JSON.parse(r.value);saveH(nodes,conns);setNodes(data.nodes);setConns(data.conns);if(data.campName)setCampName(data.campName);setActiveVid(v.id);setShowVersions(false);flash("ok","Restauree");}catch(e){flash("err",t.flashError);}setVLoading(false);};
+  const deleteVer=async(id: string)=>{setVLoading(true);try{const nl=versions.filter(v=>v.id!==id);await storageSet("jm_versions",JSON.stringify(nl));try{await storageDelete(`jm_v_${id}`);}catch(e){}setVersions(nl);if(activeVid===id)setActiveVid(null);setConfirmDel(null);}catch(e){flash("err",t.flashError);}setVLoading(false);};
 
   const onCvMD=e=>{
     if(e.button!==0)return;
@@ -1153,7 +1153,7 @@ Génère le customer journey mapping complet en JSON.`}]
       <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid #2D3F55"}}>
         <SH>Connexions entrantes</SH>
         {inConns.length===0
-          ?<div style={{color:"#475569",fontSize:11,fontStyle:"italic",marginBottom:8}}>Aucune connexion</div>
+          ?<div style={{color:"#475569",fontSize:11,fontStyle:"italic",marginBottom:8}}>{t.noConnections}</div>
           :inConns.map(c=>{const fn=gn(c.from);return fn?(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",fontSize:11,color:"#CBD5E1",borderBottom:"1px solid #1E2D40"}}>
             <span style={{display:"flex",alignItems:"center",gap:4}}>
               <span style={{width:8,height:8,borderRadius:"50%",background:c.color||"#94A3B8",flexShrink:0,display:"inline-block"}}/>
@@ -1163,7 +1163,7 @@ Génère le customer journey mapping complet en JSON.`}]
           </div>):null;})}
         <SH>Connexions sortantes</SH>
         {outConns.length===0
-          ?<div style={{color:"#475569",fontSize:11,fontStyle:"italic"}}>Aucune connexion</div>
+          ?<div style={{color:"#475569",fontSize:11,fontStyle:"italic"}}>{t.noConnections}</div>
           :outConns.map(c=>{const tn=gn(c.to);return tn?(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",fontSize:11,color:"#CBD5E1",borderBottom:"1px solid #1E2D40"}}>
             <span style={{display:"flex",alignItems:"center",gap:4}}>
               <span style={{width:8,height:8,borderRadius:"50%",background:c.color||"#94A3B8",flexShrink:0,display:"inline-block"}}/>
@@ -1227,7 +1227,7 @@ Génère le customer journey mapping complet en JSON.`}]
 
   const MapItTabs=({addNodeCentered,customLabels})=>{
     const [activeTab,setActiveTab]=useState("sources");
-    const tabs=[{k:"sources",l:"🌐 Sources"},{k:"pages",l:"📄 Pages"},{k:"actions",l:"⚡ Actions"}];
+    const tabs=[{k:"sources",l:t.secSources},{k:"pages",l:t.secPages},{k:"actions",l:t.secActions}];
     const sectionMap={
       sources:[
         {title:"Payantes",            items:ND.filter(d=>d.cat==="src_payant")},
@@ -1721,7 +1721,7 @@ Génère le customer journey mapping complet en JSON.`}]
             <div style={{width:1,height:18,background:"#334155",margin:"0 2px"}}/>
             <button
               onClick={()=>{setPan({x:80,y:50});setZoom(1);}}
-              title="Réinitialiser (Ctrl+0)"
+              title={t.zoomReset}
               style={{height:28,background:"none",border:"none",color:"#94A3B8",cursor:"pointer",borderRadius:5,fontSize:11,fontWeight:600,padding:"0 6px",display:"flex",alignItems:"center"}}
               onMouseEnter={e=>e.currentTarget.style.background="#334155"}
               onMouseLeave={e=>e.currentTarget.style.background="none"}
@@ -1839,7 +1839,7 @@ Génère le customer journey mapping complet en JSON.`}]
             {sn&&!isTB&&!isPage&&(
               <div style={{padding:14}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>{(t as any)[snD?.labelKey]||snD?.label||"Node"}</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>Noeud selectionne</div></div>
+                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>{(t as any)[snD?.labelKey]||snD?.label||"Node"}</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>{t.nodeSelected}</div></div>
                   <button onClick={()=>setSelN([])} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
                 <div style={{marginTop:0}}>
@@ -1884,7 +1884,7 @@ Génère le customer journey mapping complet en JSON.`}]
                   <button onClick={()=>{saveH(nodes,conns);upC(selC,{dashed:false});}} style={{flex:1,height:30,background:!selConn.dashed?"#1E3A5F":"#0F172A",border:`1px solid ${!selConn.dashed?"#2563EB":"#1E2D40"}`,color:!selConn.dashed?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14,fontWeight:700}}>—</button>
                   <button onClick={()=>{saveH(nodes,conns);upC(selC,{dashed:true});}} style={{flex:1,height:30,background:selConn.dashed?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.dashed?"#2563EB":"#1E2D40"}`,color:selConn.dashed?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:12,letterSpacing:2}}>╌</button>
                 </div>
-                {selConn.midX!=null&&<button onClick={()=>{saveH(nodes,conns);upC(selC,{midX:null,midY:null});}} style={{width:"100%",background:"#0F172A",border:"1px solid #334155",color:"#94A3B8",padding:"5px",borderRadius:5,cursor:"pointer",fontSize:11,marginBottom:10}}>↺ Réinitialiser courbure</button>}
+                {selConn.midX!=null&&<button onClick={()=>{saveH(nodes,conns);upC(selC,{midX:null,midY:null});}} style={{width:"100%",background:"#0F172A",border:"1px solid #334155",color:"#94A3B8",padding:"5px",borderRadius:5,cursor:"pointer",fontSize:11,marginBottom:10}}>{t.resetCurve}</button>}
                 <label style={lbS}>Couleur</label>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
                   <ColorPicker value={selConn.color||"#94A3B8"} onChange={e=>{saveH(nodes,conns);upC(selC,{color:e.target.value});}}/>
@@ -1910,12 +1910,12 @@ Génère le customer journey mapping complet en JSON.`}]
                 <button onClick={()=>setShowVersions(false)} style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:15}}>✕</button>
               </div>
               <div style={{display:"flex",gap:6}}>
-                <input value={vName} onChange={e=>setVName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&saveVer()} placeholder={`Version ${versions.length+1}`} style={{...inS,flex:1,height:32,padding:"0 8px"}}/>
+                <input value={vName} onChange={e=>setVName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&saveVer()} placeholder={`${t.versionPlaceholder} ${versions.length+1}`} style={{...inS,flex:1,height:32,padding:"0 8px"}}/>
                 <button onClick={saveVer} disabled={vLoading} style={{background:"#16A34A",border:"none",color:"#fff",padding:"0 14px",borderRadius:6,cursor:"pointer",fontSize:12,fontWeight:700,height:32,whiteSpace:"nowrap",opacity:vLoading?0.6:1}}>{vLoading?"...":("💾 "+t.save)}</button>
               </div>
             </div>
             <div style={{flex:1,overflowY:"auto",padding:"8px 0"}}>
-              {versions.length===0&&<div style={{padding:"40px 20px",textAlign:"center",color:"#475569",fontSize:12}}><div style={{fontSize:32,marginBottom:8}}>📭</div><div>Aucune version</div></div>}
+              {versions.length===0&&<div style={{padding:"40px 20px",textAlign:"center",color:"#475569",fontSize:12}}><div style={{fontSize:32,marginBottom:8}}>📭</div><div>{t.aucuneVersion}</div></div>}
               {[...versions].reverse().map(v=>{
                 const isAct=activeVid===v.id;const isCf=confirmDel===v.id;
                 return(<div key={v.id} style={{margin:"0 8px 6px",borderRadius:8,background:isAct?"rgba(22,163,74,.12)":"#0F172A",border:`1px solid ${isAct?"#166534":"#1E2D40"}`}}>

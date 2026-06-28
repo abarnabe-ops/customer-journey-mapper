@@ -319,6 +319,18 @@ const en: typeof fr = {
   nodeAddList:          'Add to list',
   nodeDownloadPdf:      'Download PDF',
   nodeTextbox:          'Text box',
+  // ── Misc UI ───────────────────────────────────────────────────────────────
+  nodeSelected:         'Node selected',
+  resetCurve:           '↺ Reset curve',
+  zoomReset:            'Reset zoom (Ctrl+0)',
+  flashSaved:           'Saved',
+  flashError:           'Error',
+  briefNoResponse:      'No response from Claude.',
+  versionPlaceholder:   'Version',
+  aucuneVersion:        'No saved versions',
+  noConnections:        'No connections',
+  deleteNodeConfirm:    'and its connections',
+  noeudsConnexions:     'nodes and their connections',
 }
 
 export const translations = { fr, en } as const
