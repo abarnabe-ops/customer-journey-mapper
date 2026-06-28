@@ -5,7 +5,7 @@ import { storageGet, storageSet, storageDelete } from "./lib/supabase";
 import { useLanguage } from "./contexts/LanguageContext";
 import type { Translations } from "./i18n";
 
-const ARROW_COLORS=["#94A3B8","#3B82F6","#22C55E","#F97316","#EF4444","#8B5CF6","#EC4899","#FBBF24"];
+const ARROW_COLORS=["#94A3B8","#2563EB","#22C55E","#F97316","#EF4444","#8B5CF6","#EC4899","#FBBF24"];
 const FONTS=[
   {label:"Inter",v:"'Inter',system-ui,sans-serif"},
   {label:"Georgia",v:"Georgia,serif"},
@@ -583,11 +583,11 @@ function NShape({d,node,sel,cs,cm,w,h}){
   return(
     <div style={{width:w+pad,height:h+pad,position:"relative",flexShrink:0}}>
       {/* The circle itself, no overflow on wrapper */}
-      <div style={{width:w,height:h,borderRadius:"50%",overflow:"hidden",background:d.bg||"#3B82F6",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:shadow,border:`3px solid ${cs?"#F59E0B":sel?"#fff":"transparent"}`,cursor:cm?"crosshair":"move",userSelect:"none",color:d.fg||"#fff",fontSize:scaledFont,fontWeight:700}}>
+      <div style={{width:w,height:h,borderRadius:"50%",overflow:"hidden",background:d.bg||"#2563EB",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:shadow,border:`3px solid ${cs?"#F59E0B":sel?"#fff":"transparent"}`,cursor:cm?"crosshair":"move",userSelect:"none",color:d.fg||"#fff",fontSize:scaledFont,fontWeight:700}}>
         {logoEl||d.icon}
       </div>
       {/* Badge: positioned outside circle, no clipping */}
-      {hasBadge&&<div style={{position:"absolute",bottom:2,right:2,width:badgeSize,height:badgeSize,borderRadius:"50%",background:d.bg||"#3B82F6",border:"3px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(badgeSize*0.55),fontWeight:900,color:"#fff",lineHeight:1,pointerEvents:"none",zIndex:10,boxShadow:"0 1px 4px rgba(0,0,0,.25)"}}>$</div>}
+      {hasBadge&&<div style={{position:"absolute",bottom:2,right:2,width:badgeSize,height:badgeSize,borderRadius:"50%",background:d.bg||"#2563EB",border:"3px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:Math.round(badgeSize*0.55),fontWeight:900,color:"#fff",lineHeight:1,pointerEvents:"none",zIndex:10,boxShadow:"0 1px 4px rgba(0,0,0,.25)"}}>$</div>}
     </div>
   );
 }
@@ -597,11 +597,11 @@ function AlignIcon({type}){
   const x2s=type==="left"?[13,11]:type==="center"?[13,14]:[16,16];
   return(<svg width="16" height="12" viewBox="0 0 16 12"><line x1={0} y1={2} x2={16} y2={2} stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1={x1s[0]} y1={6} x2={x2s[0]} y2={6} stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1={x1s[1]} y1={10} x2={x2s[1]} y2={10} stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>);
 }
-function Toggle({on,onChange}){return(<div onClick={onChange} style={{width:42,height:24,borderRadius:12,background:on?"#2563EB":"#334155",cursor:"pointer",position:"relative",flexShrink:0,transition:"background .2s"}}><div style={{position:"absolute",top:3,left:on?21:3,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.3)"}}/></div>);}
-function ColorPicker({value,onChange,size=38}){return(<div style={{width:size,height:size-2,borderRadius:6,border:"1px solid #334155",overflow:"hidden",background:"#0F172A",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><input type="color" value={value} onChange={onChange} style={{width:size-8,height:size-10,border:"none",cursor:"pointer",background:"transparent",padding:0}}/></div>);}
-const SH=({children})=><div style={{fontSize:9.5,fontWeight:700,color:"#94A3B8",textTransform:"uppercase",letterSpacing:.8,marginBottom:6,marginTop:4}}>{children}</div>;
-const ActBtn=({onClick,icon,label,disabled})=>(<button onClick={onClick} disabled={disabled} style={{flex:1,background:disabled?"#0F172A":"#1E3A5F",border:`1px solid ${disabled?"#1E2D40":"#2563EB"}`,color:disabled?"#475569":"#fff",borderRadius:6,padding:"7px 4px",cursor:disabled?"not-allowed":"pointer",fontSize:11,fontWeight:600,display:"flex",flexDirection:"column",alignItems:"center",gap:3,opacity:disabled?0.5:1}}><span style={{fontSize:16}}>{icon}</span><span style={{fontSize:9,lineHeight:1.2,textAlign:"center"}}>{label}</span></button>);
-const LayerBtn=({onClick,icon,label,kbd})=>(<button onClick={onClick} title={`${label} (${kbd})`} style={{flex:1,background:"#0F172A",border:"1px solid #1E2D40",color:"#CBD5E1",borderRadius:5,padding:"5px 2px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:1}} onMouseEnter={e=>e.currentTarget.style.background="#1E2D40"} onMouseLeave={e=>e.currentTarget.style.background="#0F172A"}><span style={{fontSize:13}}>{icon}</span><span style={{fontSize:8,lineHeight:1.2,textAlign:"center",color:"#94A3B8"}}>{label}</span><span style={{fontSize:7,color:"#475569"}}>{kbd}</span></button>);
+function Toggle({on,onChange}){return(<div onClick={onChange} style={{width:42,height:24,borderRadius:12,background:on?"#2563EB":"#D1D5DB",cursor:"pointer",position:"relative",flexShrink:0,transition:"background .2s"}}><div style={{position:"absolute",top:3,left:on?21:3,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left .2s",boxShadow:"0 1px 3px rgba(0,0,0,.3)"}}/></div>);}
+function ColorPicker({value,onChange,size=38}){return(<div style={{width:size,height:size-2,borderRadius:6,border:"1px solid #334155",overflow:"hidden",background:"#F8FAFC",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><input type="color" value={value} onChange={onChange} style={{width:size-8,height:size-10,border:"none",cursor:"pointer",background:"transparent",padding:0}}/></div>);}
+const SH=({children})=><div style={{fontSize:9.5,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:.8,marginBottom:6,marginTop:4}}>{children}</div>;
+const ActBtn=({onClick,icon,label,disabled})=>(<button onClick={onClick} disabled={disabled} style={{flex:1,background:disabled?"#0F172A":"#1E3A5F",border:`1px solid ${disabled?"#E5E7EB":"#2563EB"}`,color:disabled?"#475569":"#fff",borderRadius:6,padding:"7px 4px",cursor:disabled?"not-allowed":"pointer",fontSize:11,fontWeight:600,display:"flex",flexDirection:"column",alignItems:"center",gap:3,opacity:disabled?0.5:1}}><span style={{fontSize:16}}>{icon}</span><span style={{fontSize:9,lineHeight:1.2,textAlign:"center"}}>{label}</span></button>);
+const LayerBtn=({onClick,icon,label,kbd})=>(<button onClick={onClick} title={`${label} (${kbd})`} style={{flex:1,background:"#F8FAFC",border:"1px solid #1E2D40",color:"#374151",borderRadius:5,padding:"5px 2px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:1}} onMouseEnter={e=>e.currentTarget.style.background="#E5E7EB"} onMouseLeave={e=>e.currentTarget.style.background="#0F172A"}><span style={{fontSize:13}}>{icon}</span><span style={{fontSize:8,lineHeight:1.2,textAlign:"center",color:"#6B7280"}}>{label}</span><span style={{fontSize:7,color:"#9CA3AF"}}>{kbd}</span></button>);
 
 export default function App(){
   const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
@@ -872,7 +872,7 @@ Génère le customer journey mapping complet en JSON.`}]
           newNodes.push(nd);
         });
       });
-      const newConns=mapping.connections.map(c=>({id:cuid(),from:idMap[c.from],to:idMap[c.to],dashed:false,color:"#94A3B8",curved:true})).filter(c=>c.from&&c.to);
+      const newConns=mapping.connections.map(c=>({id:cuid(),from:idMap[c.from],to:idMap[c.to],dashed:false,color:"#6B7280",curved:true})).filter(c=>c.from&&c.to);
       // Apply dagre layout to new nodes
       const laidOut=applyDagreLayout(newNodes,newConns);
       saveH(nodes,conns);
@@ -1250,7 +1250,7 @@ Génère le customer journey mapping complet en JSON.`}]
     }
     const ah=Math.atan2(tgt.y-src.y,tgt.x-src.x);const al=12,aw=.38;
     const isSel=selC===conn.id,isRel=selN.includes(conn.from)||selN.includes(conn.to);
-    const col=isSel?"#3B82F6":isRel?"#93C5FD":(conn.color||"#94A3B8");
+    const col=isSel?"#2563EB":isRel?"#93C5FD":(conn.color||"#CBD5E1");
     const midDisplayX=conn.midX!=null?conn.midX:(src.x+tgt.x)/2;
     const midDisplayY=conn.midY!=null?conn.midY:(src.y+tgt.y)/2;
     return(<g key={conn.id}>
@@ -1272,17 +1272,17 @@ Génère le customer journey mapping complet en JSON.`}]
   const can3=selN.length>=3;
   const hasNodes=nodes.length>0;
 
-  const btnS:React.CSSProperties={background:"#334155",border:"none",color:"#94A3B8",padding:"0 10px",height:30,borderRadius:6,cursor:"pointer",fontSize:12,fontWeight:600,whiteSpace:"nowrap"};
-  const lbS:React.CSSProperties={display:"block",color:"#94A3B8",fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:.5,marginBottom:4};
-  const inS:React.CSSProperties={width:"100%",background:"#0F172A",border:"1px solid #334155",color:"#F1F5F9",padding:"6px 8px",borderRadius:6,fontSize:12,outline:"none",boxSizing:"border-box",fontFamily:"inherit"};
-  const togBtnS=(act:boolean):React.CSSProperties=>({background:act?"#2563EB":"#0F172A",border:`1px solid ${act?"#3B82F6":"#334155"}`,color:"#fff",borderRadius:5,width:30,height:28,cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center"});
+  const btnS:React.CSSProperties={background:"transparent",border:"none",color:"#374151",padding:"0 10px",height:30,borderRadius:6,cursor:"pointer",fontSize:12,fontWeight:600,whiteSpace:"nowrap"};
+  const lbS:React.CSSProperties={display:"block",color:"#6B7280",fontSize:10,fontWeight:600,textTransform:"uppercase",letterSpacing:.5,marginBottom:4};
+  const inS:React.CSSProperties={width:"100%",background:"#F9FAFB",border:"1px solid #E5E7EB",color:"#111827",padding:"6px 8px",borderRadius:6,fontSize:12,outline:"none",boxSizing:"border-box",fontFamily:"inherit"};
+  const togBtnS=(act:boolean):React.CSSProperties=>({background:act?"#2563EB":"#0F172A",border:`1px solid ${act?"#2563EB":"#E5E7EB"}`,color:"#fff",borderRadius:5,width:30,height:28,cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center"});
   const onEF=()=>{editSnap.current={nodes:[...nodes],conns:[...conns]};};
   const onEB=()=>{if(editSnap.current){saveH(editSnap.current.nodes,editSnap.current.conns);editSnap.current=null;}};
   const cursorMap={n:"ns-resize",s:"ns-resize",e:"ew-resize",w:"ew-resize",ne:"nesw-resize",sw:"nesw-resize",nw:"nwse-resize",se:"nwse-resize",both:"nwse-resize",h:"ew-resize"};
   const mkH=(id,mode,w,h,ox,oy)=>({onMouseDown:e=>{e.stopPropagation();document.body.style.cursor=cursorMap[mode]||"nwse-resize";document.body.style.userSelect="none";tbResize.current={id,ow:w,oh:h,ox:ox||0,oy:oy||0,mx:e.clientX,my:e.clientY,pNodes:nodes,pConns:conns,mode};}});
-  const btnDup={background:"#1E3A5F",border:"1px solid #2563EB",color:"#fff",padding:"7px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",gap:4,flex:1};
+  const btnDup={background:"#EFF6FF",border:"1px solid #BFDBFE",color:"#fff",padding:"7px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",gap:4,flex:1};
   const btnDel={background:"#fff",border:"1.5px solid #EF4444",color:"#EF4444",padding:"7px",borderRadius:6,cursor:"pointer",fontSize:15,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:4,width:38,flexShrink:0};
-  const btnCopy={background:"#0F172A",border:"1px solid #334155",color:"#CBD5E1",padding:"6px 8px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",gap:4,flex:1};
+  const btnCopy={background:"#F9FAFB",border:"1px solid #E5E7EB",color:"#374151",padding:"6px 8px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",gap:4,flex:1};
 
   const LayerSection=()=>(
     <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid #2D3F55"}}>
@@ -1304,23 +1304,23 @@ Génère le customer journey mapping complet en JSON.`}]
       <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid #2D3F55"}}>
         <SH>Connexions entrantes</SH>
         {inConns.length===0
-          ?<div style={{color:"#475569",fontSize:11,fontStyle:"italic",marginBottom:8}}>{t.noConnections}</div>
-          :inConns.map(c=>{const fn=gn(c.from);return fn?(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",fontSize:11,color:"#CBD5E1",borderBottom:"1px solid #1E2D40"}}>
+          ?<div style={{color:"#9CA3AF",fontSize:11,fontStyle:"italic",marginBottom:8}}>{t.noConnections}</div>
+          :inConns.map(c=>{const fn=gn(c.from);return fn?(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",fontSize:11,color:"#374151",borderBottom:"1px solid #1E2D40"}}>
             <span style={{display:"flex",alignItems:"center",gap:4}}>
               <span style={{width:8,height:8,borderRadius:"50%",background:c.color||"#94A3B8",flexShrink:0,display:"inline-block"}}/>
               {fn.label}  →
             </span>
-            <button onClick={()=>{saveH(nodes,conns);setConns(p=>p.filter(x=>x.id!==c.id));}} style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:11,flexShrink:0}}>✕</button>
+            <button onClick={()=>{saveH(nodes,conns);setConns(p=>p.filter(x=>x.id!==c.id));}} style={{background:"none",border:"none",color:"#9CA3AF",cursor:"pointer",fontSize:11,flexShrink:0}}>✕</button>
           </div>):null;})}
         <SH>Connexions sortantes</SH>
         {outConns.length===0
-          ?<div style={{color:"#475569",fontSize:11,fontStyle:"italic"}}>{t.noConnections}</div>
-          :outConns.map(c=>{const tn=gn(c.to);return tn?(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",fontSize:11,color:"#CBD5E1",borderBottom:"1px solid #1E2D40"}}>
+          ?<div style={{color:"#9CA3AF",fontSize:11,fontStyle:"italic"}}>{t.noConnections}</div>
+          :outConns.map(c=>{const tn=gn(c.to);return tn?(<div key={c.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"4px 0",fontSize:11,color:"#374151",borderBottom:"1px solid #1E2D40"}}>
             <span style={{display:"flex",alignItems:"center",gap:4}}>
               <span style={{width:8,height:8,borderRadius:"50%",background:c.color||"#94A3B8",flexShrink:0,display:"inline-block"}}/>
               → {tn.label}
             </span>
-            <button onClick={()=>{saveH(nodes,conns);setConns(p=>p.filter(x=>x.id!==c.id));}} style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:11,flexShrink:0}}>✕</button>
+            <button onClick={()=>{saveH(nodes,conns);setConns(p=>p.filter(x=>x.id!==c.id));}} style={{background:"none",border:"none",color:"#9CA3AF",cursor:"pointer",fontSize:11,flexShrink:0}}>✕</button>
           </div>):null;})}
       </div>
     );
@@ -1338,9 +1338,9 @@ Génère le customer journey mapping complet en JSON.`}]
             return(
               <div key={ps.id}
                 onClick={()=>{saveH(nodes,conns);upN(node.id,{pageStyle:ps.id,label:t[ps.labelKey]});}}
-                style={{cursor:"pointer",borderRadius:6,border:`2px solid ${isSel?"#3B82F6":"#2D3F55"}`,background:isSel?"rgba(59,130,246,.08)":"#0F172A",padding:"5px 4px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,transition:"border-color .15s",boxShadow:isSel?"0 0 0 1px #1D4ED8":""}}
+                style={{cursor:"pointer",borderRadius:6,border:`2px solid ${isSel?"#2563EB":"#E5E7EB"}`,background:isSel?"rgba(59,130,246,.08)":"#0F172A",padding:"5px 4px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,transition:"border-color .15s",boxShadow:isSel?"0 0 0 1px #1D4ED8":""}}
                 onMouseEnter={e=>{if(!isSel)e.currentTarget.style.borderColor="#475569";}}
-                onMouseLeave={e=>{if(!isSel)e.currentTarget.style.borderColor="#2D3F55";}}>
+                onMouseLeave={e=>{if(!isSel)e.currentTarget.style.borderColor="#E5E7EB";}}>
                 <div style={{width:86,height:108,borderRadius:3,overflow:"hidden",flexShrink:0}}>{ps.thumb(t)}</div>
                 <span style={{fontSize:8.5,color:isSel?"#93C5FD":"#94A3B8",textAlign:"center",lineHeight:1.3,fontWeight:isSel?700:400}}>{t[ps.labelKey]}</span>
               </div>
@@ -1433,7 +1433,7 @@ Génère le customer journey mapping complet en JSON.`}]
       if(cvEl){
         const r=cvEl.getBoundingClientRect();
         const over=t0.clientX>=r.left&&t0.clientX<=r.right&&t0.clientY>=r.top&&t0.clientY<=r.bottom;
-        sd.ghost.style.borderColor=over?'#22C55E':'#3B82F6';
+        sd.ghost.style.borderColor=over?'#22C55E':'#2563EB';
       }
     };
 
@@ -1505,7 +1505,7 @@ Génère le customer journey mapping complet en JSON.`}]
           {(sectionMap[activeTab]||[]).map(section=>(
             section.items.length===0?null:
             <div key={section.title} style={{marginBottom:24}}>
-              <div style={{fontSize:11,fontWeight:700,color:"#94A3B8",textTransform:"uppercase",letterSpacing:.8,marginBottom:12,paddingBottom:6,borderBottom:"1px solid #E2E8F0"}}>{section.title}</div>
+              <div style={{fontSize:11,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:.8,marginBottom:12,paddingBottom:6,borderBottom:"1px solid #E2E8F0"}}>{section.title}</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:16}}>
                 {section.items.map(d=>{
                   const dl=getDL(d.type,customLabels);
@@ -1539,14 +1539,14 @@ Génère le customer journey mapping complet en JSON.`}]
                           </div>
                         ):(
                           <div style={{width:56,height:56,position:"relative"}}>
-                            <div style={{width:56,height:56,borderRadius:"50%",overflow:"hidden",background:d.bg||"#3B82F6",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,.15)"}}>
+                            <div style={{width:56,height:56,borderRadius:"50%",overflow:"hidden",background:d.bg||"#2563EB",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,.15)"}}>
                               {LOGOS[d.type]?React.cloneElement(LOGOS[d.type],{width:56,height:56,style:{display:"block"}}):<span style={{fontSize:20,color:d.fg||"#fff"}}>{d.icon}</span>}
                             </div>
-                            {hasBadge&&<div style={{position:"absolute",bottom:0,right:0,width:18,height:18,borderRadius:"50%",background:d.bg||"#3B82F6",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:900,color:"#fff"}}>$</div>}
+                            {hasBadge&&<div style={{position:"absolute",bottom:0,right:0,width:18,height:18,borderRadius:"50%",background:d.bg||"#2563EB",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:900,color:"#fff"}}>$</div>}
                           </div>
                         )}
                       </div>
-                      <span style={{fontSize:10,color:"#334155",fontWeight:600,lineHeight:1.3,wordBreak:"break-word"}}>{dl}</span>
+                      <span style={{fontSize:10,color:"#E5E7EB",fontWeight:600,lineHeight:1.3,wordBreak:"break-word"}}>{dl}</span>
                     </div>
                   );
                 })}
@@ -1558,19 +1558,19 @@ Génère le customer journey mapping complet en JSON.`}]
     );
   };
 
-  const ArrowToolBar=()=>(    <div style={{borderTop:"1px solid #2D3F55",background:"#1E293B",padding:"8px 8px 10px",flexShrink:0}}>
-      <div style={{fontSize:9.5,fontWeight:700,color:"#475569",textTransform:"uppercase",letterSpacing:.8,marginBottom:6}}>🔗 Outil Connexion</div>
+  const ArrowToolBar=()=>(    <div style={{borderTop:"1px solid #2D3F55",background:"#FFFFFF",padding:"8px 8px 10px",flexShrink:0}}>
+      <div style={{fontSize:9.5,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:.8,marginBottom:6}}>🔗 Outil Connexion</div>
       <div
         onClick={()=>{if(hasNodes){setConnMode(m=>!m);setConnFrom(null);setConnectAllMode(false);}}}
-        style={{display:"flex",alignItems:"center",gap:7,padding:"6px 8px",cursor:hasNodes?"pointer":"not-allowed",borderRadius:6,background:connMode?"#1E3A5F":"#0F172A",border:`1px solid ${connMode?"#2563EB":"#334155"}`,opacity:hasNodes?1:0.4,marginBottom:6,transition:"background .1s"}}
-        onMouseEnter={e=>{if(hasNodes&&!connMode)e.currentTarget.style.background="#2D3F55";}}
+        style={{display:"flex",alignItems:"center",gap:7,padding:"6px 8px",cursor:hasNodes?"pointer":"not-allowed",borderRadius:6,background:connMode?"#1E3A5F":"#0F172A",border:`1px solid ${connMode?"#2563EB":"#E5E7EB"}`,opacity:hasNodes?1:0.4,marginBottom:6,transition:"background .1s"}}
+        onMouseEnter={e=>{if(hasNodes&&!connMode)e.currentTarget.style.background="#E5E7EB";}}
         onMouseLeave={e=>{if(!connMode)e.currentTarget.style.background="#0F172A";}}>
-        <div style={{width:24,height:16,borderRadius:3,background:connMode?"#2563EB":"#334155",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"#fff",fontWeight:700,flexShrink:0}}>→</div>
+        <div style={{width:24,height:16,borderRadius:3,background:connMode?"#2563EB":"#E5E7EB",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"#fff",fontWeight:700,flexShrink:0}}>→</div>
         <span style={{color:connMode?"#93C5FD":"#CBD5E1",fontSize:11,flex:1}}>
           {connMode?(connFrom?t.clickTarget:t.clickStart):t.connectionTool}
         </span>
       </div>
-      <div style={{marginTop:4,fontSize:9,color:"#334155",lineHeight:1.7}}>
+      <div style={{marginTop:4,fontSize:9,color:"#E5E7EB",lineHeight:1.7}}>
         <div>• Ctrl+C/V : copier/coller</div>
         <div>• Ctrl+D : dupliquer  • Suppr : effacer</div>
         <div>• Ctrl+] / [ : calque</div>
@@ -1580,7 +1580,7 @@ Génère le customer journey mapping complet en JSON.`}]
 
   // ─── Auth loading screen ───────────────────────────────────────────────────
   if (authLoading) return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#0F172A',color:'#94A3B8',flexDirection:'column',gap:16}}>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#F8FAFC',color:'#6B7280',flexDirection:'column',gap:16}}>
       <span style={{fontSize:32}}>🗺️</span>
       <span style={{fontSize:14}}>{t.loading}</span>
     </div>
@@ -1588,21 +1588,21 @@ Génère le customer journey mapping complet en JSON.`}]
 
   // ─── Login screen ──────────────────────────────────────────────────────────
   if (!user) return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#0F172A',fontFamily:"'Inter',system-ui,sans-serif"}}>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#F8FAFC',fontFamily:"'Inter',system-ui,sans-serif"}}>
       {/* Language toggle — top right */}
       <button
         onClick={()=>setLang(lang==='fr'?'en':'fr')}
-        style={{position:'fixed',top:16,right:16,background:'#1E293B',border:'1px solid #334155',borderRadius:8,padding:'6px 14px',cursor:'pointer',color:'#94A3B8',fontSize:12,fontWeight:600,display:'flex',alignItems:'center',gap:6}}
-        onMouseEnter={e=>(e.currentTarget.style.background='#334155')}
+        style={{position:'fixed',top:16,right:16,background:'#FFFFFF',border:'1px solid #334155',borderRadius:8,padding:'6px 14px',cursor:'pointer',color:'#6B7280',fontSize:12,fontWeight:600,display:'flex',alignItems:'center',gap:6}}
+        onMouseEnter={e=>(e.currentTarget.style.background='#E5E7EB')}
         onMouseLeave={e=>(e.currentTarget.style.background='#1E293B')}
       >
         <span style={{fontSize:15}}>{lang==='fr'?'🇬🇧':'🇫🇷'}</span>
         {t.switchLang}
       </button>
-      <div style={{background:'#1E293B',border:'1px solid #334155',borderRadius:16,padding:'40px 48px',textAlign:'center',maxWidth:400,boxShadow:'0 24px 64px rgba(0,0,0,.5)'}}>
+      <div style={{background:'#FFFFFF',border:'1px solid #334155',borderRadius:16,padding:'40px 48px',textAlign:'center',maxWidth:400,boxShadow:'0 24px 64px rgba(0,0,0,.5)'}}>
         <div style={{fontSize:48,marginBottom:16}}>🗺️</div>
-        <div style={{color:'#F1F5F9',fontWeight:800,fontSize:22,marginBottom:8}}>Customer Journey Mapper</div>
-        <div style={{color:'#64748B',fontSize:14,marginBottom:32,lineHeight:1.6}}>{t.tagline}</div>
+        <div style={{color:'#111827',fontWeight:800,fontSize:22,marginBottom:8}}>Customer Journey Mapper</div>
+        <div style={{color:'#9CA3AF',fontSize:14,marginBottom:32,lineHeight:1.6}}>{t.tagline}</div>
         <button onClick={signInWithGoogle} style={{width:'100%',background:'#fff',border:'1.5px solid #E2E8F0',color:'#1E293B',borderRadius:10,padding:'12px 20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:12,fontSize:14,fontWeight:600,boxShadow:'0 2px 8px rgba(0,0,0,.1)'}}>
           <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
           {t.signInGoogle}
@@ -1612,20 +1612,20 @@ Génère le customer journey mapping complet en JSON.`}]
   );
 
   return(
-    <div style={{display:"flex",flexDirection:"column",height:"100vh",background:"#0F172A",fontFamily:"'Inter',system-ui,sans-serif",overflow:"hidden"}}>
+    <div style={{display:"flex",flexDirection:"column",height:"100vh",background:"#F8FAFC",fontFamily:"'Inter',system-ui,sans-serif",overflow:"hidden"}}>
 
       {/* ── MAP IT MODAL ─────────────────────────────────────────────────── */}
       {showMapIt&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.55)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={()=>setShowMapIt(false)}>
           <div style={{background:"#F8FAFC",borderRadius:14,width:700,maxHeight:"85vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 24px 80px rgba(0,0,0,.5)"}} onClick={e=>e.stopPropagation()}>
             {/* Header */}
-            <div style={{background:"#1E293B",padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",borderRadius:"14px 14px 0 0"}}>
+            <div style={{background:"#FFFFFF",padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",borderRadius:"14px 14px 0 0"}}>
               <div style={{display:"flex",alignItems:"center",gap:10}}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3-6-3z" stroke="white" strokeWidth="1.8" strokeLinejoin="round"/><line x1="9" y1="3" x2="9" y2="18" stroke="white" strokeWidth="1.8"/><line x1="15" y1="6" x2="15" y2="21" stroke="white" strokeWidth="1.8"/></svg>
-                <span style={{color:"#F1F5F9",fontWeight:800,fontSize:16}}>MAP IT</span>
-                <span style={{color:"#64748B",fontSize:12}}>{t.mapItSubtitle}</span>
+                <span style={{color:"#111827",fontWeight:800,fontSize:16}}>MAP IT</span>
+                <span style={{color:"#9CA3AF",fontSize:12}}>{t.mapItSubtitle}</span>
               </div>
-              <button onClick={()=>setShowMapIt(false)} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:30,height:30,borderRadius:8,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+              <button onClick={()=>setShowMapIt(false)} style={{background:"#F3F4F6",border:"none",color:"#6B7280",cursor:"pointer",width:30,height:30,borderRadius:8,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
             {/* Tabs */}
             <MapItTabs addNodeCentered={addNodeCentered} customLabels={customLabels} />
@@ -1635,109 +1635,130 @@ Génère le customer journey mapping complet en JSON.`}]
 
       {deleteConfirm&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.65)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={()=>setDeleteConfirm(null)}>
-          <div style={{background:"#1E293B",borderRadius:12,padding:24,width:320,border:"1px solid #334155",boxShadow:"0 20px 60px rgba(0,0,0,.6)"}} onClick={e=>e.stopPropagation()}>
+          <div style={{background:"#FFFFFF",borderRadius:12,padding:24,width:320,border:"1px solid #334155",boxShadow:"0 20px 60px rgba(0,0,0,.6)"}} onClick={e=>e.stopPropagation()}>
             <div style={{fontSize:24,marginBottom:10,textAlign:"center"}}>🗑️</div>
-            <div style={{color:"#F1F5F9",fontWeight:700,fontSize:15,marginBottom:8,textAlign:"center"}}>{t.confirmDelete}</div>
-            <div style={{color:"#94A3B8",fontSize:13,marginBottom:20,textAlign:"center",lineHeight:1.5}}>{deleteConfirm.message}</div>
+            <div style={{color:"#111827",fontWeight:700,fontSize:15,marginBottom:8,textAlign:"center"}}>{t.confirmDelete}</div>
+            <div style={{color:"#6B7280",fontSize:13,marginBottom:20,textAlign:"center",lineHeight:1.5}}>{deleteConfirm.message}</div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>setDeleteConfirm(null)} style={{flex:1,background:"#334155",border:"none",color:"#F1F5F9",padding:"10px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>{t.cancel}</button>
+              <button onClick={()=>setDeleteConfirm(null)} style={{flex:1,background:"#F3F4F6",border:"none",color:"#111827",padding:"10px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>{t.cancel}</button>
               <button onClick={()=>{deleteConfirm.onConfirm();setDeleteConfirm(null);}} style={{flex:1,background:"#d82c0d",border:"none",color:"#fff",padding:"10px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700}}>{t.delete}</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* TOPBAR */}
-      <div style={{height:46,background:"#1E293B",borderBottom:"1px solid #2D3F55",display:"flex",alignItems:"center",padding:"0 12px",gap:5,flexShrink:0,flexWrap:"nowrap",overflow:"hidden"}}>
-        <span style={{fontSize:18,flexShrink:0}}>🗺️</span>
-        {/* Mobile hamburger — opens/closes sidebar overlay */}
-        {isMobile&&(
-          <button onClick={()=>setSidebarOpen(s=>!s)}
-            style={{...btnS,width:32,padding:0,display:'flex',alignItems:'center',justifyContent:'center',background:sidebarOpen?'#334155':'none',borderRadius:6}}>
-            {sidebarOpen
-              ?<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="2" y1="2" x2="13" y2="13"/><line x1="13" y1="2" x2="2" y2="13"/></svg>
-              :<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="2" y1="4" x2="13" y2="4"/><line x1="2" y1="7.5" x2="13" y2="7.5"/><line x1="2" y1="11" x2="13" y2="11"/></svg>
-            }
-          </button>
-        )}
-        {/* Campaign selector */}
-        <div style={{position:"relative",flexShrink:0}}>
-          <button onClick={()=>setShowCampMenu(s=>!s)}
-            style={{background:"transparent",border:"none",color:"#F1F5F9",fontSize:14,fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:6,maxWidth:"100%",padding:"0 4px"}}>
-            <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:220}}>{campName}</span>
-            <span style={{fontSize:10,color:"#64748B",flexShrink:0}}>▼</span>
-          </button>
-          {showCampMenu&&(
-            /* position:fixed escapes topbar's overflow:hidden — works on mobile */
-            <div style={{position:"fixed",top:52,left:12,background:"#1E293B",border:"1px solid #334155",borderRadius:10,boxShadow:"0 8px 24px rgba(0,0,0,.5)",zIndex:9000,minWidth:240,overflow:"hidden"}}>
-              {campaigns.map(c=>(
-                <div key={c.id}
-                  onClick={()=>{if(renamingCampId!==c.id&&c.id!==activeCampId)switchCampaign(c);}}
-                  style={{display:"flex",alignItems:"center",gap:6,padding:"10px 12px",background:c.id===activeCampId?"#1E3A5F":"transparent",borderBottom:"1px solid #2D3F55",cursor:c.id===activeCampId?"default":"pointer",minHeight:44}}
-                  onPointerEnter={e=>{if(c.id!==activeCampId)(e.currentTarget as HTMLElement).style.background="#2D3F55";}}
-                  onPointerLeave={e=>{if(c.id!==activeCampId)(e.currentTarget as HTMLElement).style.background="transparent";}}>
-                  <span style={{fontSize:12,color:"#3B82F6",flexShrink:0}}>{c.id===activeCampId?"▶":"○"}</span>
-                  {renamingCampId===c.id
-                    ?<input autoFocus value={renameVal}
-                        onChange={e=>setRenameVal(e.target.value)}
-                        onBlur={()=>renameCampaign(c.id,renameVal.trim()||c.name)}
-                        onKeyDown={e=>{if(e.key==="Enter")renameCampaign(c.id,renameVal.trim()||c.name);if(e.key==="Escape")setRenamingCampId(null);}}
-                        onClick={e=>e.stopPropagation()}
-                        style={{flex:1,background:"#0F172A",border:"1px solid #3B82F6",color:"#F1F5F9",borderRadius:4,padding:"2px 6px",fontSize:12,outline:"none"}}/>
-                    :<span style={{flex:1,color:"#F1F5F9",fontSize:13,fontWeight:c.id===activeCampId?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                        {c.name}
-                      </span>
-                  }
-                  <button onClick={e=>{e.stopPropagation();setRenamingCampId(c.id);setRenameVal(c.name);}}
-                    style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",padding:"4px 6px",flexShrink:0,fontSize:14}}
-                    title={t.rename}>✏️</button>
-                  {campaigns.length>1&&<button onClick={e=>{e.stopPropagation();deleteCampaign(c.id);}}
-                    style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",padding:"4px 6px",flexShrink:0,fontSize:14}}
-                    title={t.delete}>🗑</button>}
-                </div>
-              ))}
-              <div onClick={addCampaign}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"12px 12px",cursor:"pointer",color:"#3B82F6",fontSize:13,fontWeight:600,minHeight:44}}
-                onPointerEnter={e=>(e.currentTarget as HTMLElement).style.background="#1E3A5F"}
-                onPointerLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>
-                <span style={{fontSize:18,fontWeight:700,lineHeight:1}}>+</span>
-                <span>{t.newCampaign}</span>
-              </div>
-            </div>
+      {/* TOPBAR — Edge design: 3 zones [Logo+Campaign | Tools | User] */}
+      <div style={{height:48,background:"#FFFFFF",borderBottom:"1px solid #E5E7EB",display:"flex",alignItems:"stretch",flexShrink:0,overflow:"visible",position:"relative",zIndex:100}}>
+
+        {/* ── ZONE LEFT: Logo + Campaign ────────────────────────── */}
+        <div style={{display:"flex",alignItems:"center",padding:"0 14px",gap:10,borderRight:"1px solid #E5E7EB",flexShrink:0,minWidth:0}}>
+          {/* Mobile hamburger */}
+          {isMobile&&(
+            <button onClick={()=>setSidebarOpen(s=>!s)}
+              style={{width:30,height:30,background:sidebarOpen?"#EFF6FF":"transparent",border:"none",borderRadius:6,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,color:"#374151"}}>
+              {sidebarOpen
+                ?<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>
+                :<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="2" y1="3.5" x2="12" y2="3.5"/><line x1="2" y1="7" x2="12" y2="7"/><line x1="2" y1="10.5" x2="12" y2="10.5"/></svg>
+              }
+            </button>
           )}
+          {/* Logo mark */}
+          <div style={{width:28,height:28,borderRadius:7,background:"#2563EB",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 1px 4px rgba(37,99,235,.35)"}}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3-6-3z" stroke="white" strokeWidth="2" strokeLinejoin="round"/><line x1="9" y1="3" x2="9" y2="18" stroke="white" strokeWidth="2"/><line x1="15" y1="6" x2="15" y2="21" stroke="white" strokeWidth="2"/></svg>
+          </div>
+          {/* Campaign selector */}
+          <div style={{position:"relative",flexShrink:0,minWidth:0}}>
+            <button onClick={()=>setShowCampMenu(s=>!s)}
+              style={{background:"transparent",border:"none",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"flex-start",gap:0,padding:"2px 4px",borderRadius:6,minWidth:0}}
+              onPointerEnter={e=>(e.currentTarget as HTMLElement).style.background="#F9FAFB"}
+              onPointerLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>
+              <span style={{fontSize:9,fontWeight:600,color:"#9CA3AF",letterSpacing:.4,textTransform:"uppercase",lineHeight:1.2}}>CAMPAGNE</span>
+              <div style={{display:"flex",alignItems:"center",gap:5}}>
+                <span style={{fontSize:13,fontWeight:700,color:"#111827",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:180}}>{campName}</span>
+                <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 3.5L5 6.5L8 3.5" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              </div>
+            </button>
+            {showCampMenu&&(
+              <div style={{position:"fixed",top:54,left:12,background:"#FFFFFF",border:"1px solid #E5E7EB",borderRadius:10,boxShadow:"0 8px 24px rgba(0,0,0,.12)",zIndex:9000,minWidth:240,overflow:"hidden"}}>
+                {campaigns.map(c=>(
+                  <div key={c.id}
+                    onClick={()=>{if(renamingCampId!==c.id&&c.id!==activeCampId)switchCampaign(c);}}
+                    style={{display:"flex",alignItems:"center",gap:6,padding:"10px 12px",background:c.id===activeCampId?"#EFF6FF":"transparent",borderBottom:"1px solid #F1F5F9",cursor:c.id===activeCampId?"default":"pointer",minHeight:44}}
+                    onPointerEnter={e=>{if(c.id!==activeCampId)(e.currentTarget as HTMLElement).style.background="#F9FAFB";}}
+                    onPointerLeave={e=>{if(c.id!==activeCampId)(e.currentTarget as HTMLElement).style.background="transparent";}}>
+                    <span style={{fontSize:12,color:"#2563EB",flexShrink:0}}>{c.id===activeCampId?"▶":"○"}</span>
+                    {renamingCampId===c.id
+                      ?<input autoFocus value={renameVal}
+                          onChange={e=>setRenameVal(e.target.value)}
+                          onBlur={()=>renameCampaign(c.id,renameVal.trim()||c.name)}
+                          onKeyDown={e=>{if(e.key==="Enter")renameCampaign(c.id,renameVal.trim()||c.name);if(e.key==="Escape")setRenamingCampId(null);}}
+                          onClick={e=>e.stopPropagation()}
+                          style={{flex:1,background:"#F9FAFB",border:"1px solid #2563EB",color:"#111827",borderRadius:4,padding:"2px 6px",fontSize:12,outline:"none"}}/>
+                      :<span style={{flex:1,color:"#111827",fontSize:13,fontWeight:c.id===activeCampId?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.name}</span>
+                    }
+                    <button onClick={e=>{e.stopPropagation();setRenamingCampId(c.id);setRenameVal(c.name);}}
+                      style={{background:"none",border:"none",color:"#9CA3AF",cursor:"pointer",padding:"4px 6px",flexShrink:0,fontSize:14}} title={t.rename}>✏️</button>
+                    {campaigns.length>1&&<button onClick={e=>{e.stopPropagation();deleteCampaign(c.id);}}
+                      style={{background:"none",border:"none",color:"#9CA3AF",cursor:"pointer",padding:"4px 6px",flexShrink:0,fontSize:14}} title={t.delete}>🗑</button>}
+                  </div>
+                ))}
+                <div onClick={addCampaign}
+                  style={{display:"flex",alignItems:"center",gap:8,padding:"12px",cursor:"pointer",color:"#2563EB",fontSize:13,fontWeight:600,minHeight:44}}
+                  onPointerEnter={e=>(e.currentTarget as HTMLElement).style.background="#EFF6FF"}
+                  onPointerLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>
+                  <span style={{fontSize:16,fontWeight:700}}>+</span>
+                  <span>{t.newCampaign}</span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-        {/* Spacer pushes everything right */}
-        <div style={{flex:1}}/>
 
-        {/* ── Layout ── */}
-        <button onClick={autoLayout} disabled={!hasNodes} title="Auto-layout" style={{...btnS,color:hasNodes?"#94A3B8":"#475569",opacity:hasNodes?1:0.4,cursor:hasNodes?"pointer":"not-allowed",display:"flex",alignItems:"center",gap:4}}>
-          <span style={{fontSize:13}}>⬡</span><span style={{fontSize:11}}>Layout</span>
-        </button>
+        {/* ── ZONE CENTER: Tools ────────────────────────────────── */}
+        <div style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:2,padding:"0 8px",overflow:"hidden"}}>
+          {/* Layout */}
+          <button onClick={autoLayout} disabled={!hasNodes} title="Auto-layout"
+            style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:7,border:"none",background:"transparent",color:hasNodes?"#374151":"#D1D5DB",cursor:hasNodes?"pointer":"not-allowed",fontSize:12,fontWeight:500,whiteSpace:"nowrap"}}
+            onPointerEnter={e=>{if(hasNodes){(e.currentTarget as HTMLElement).style.background="#EFF6FF";(e.currentTarget as HTMLElement).style.color="#2563EB";}}}
+            onPointerLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";(e.currentTarget as HTMLElement).style.color=hasNodes?"#374151":"#D1D5DB";}}>
+            <span style={{fontSize:13}}>⬡</span><span>Layout</span>
+          </button>
 
-        <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
+          <div style={{width:1,height:18,background:"#E5E7EB",margin:"0 2px",flexShrink:0}}/>
 
-        {/* ── PDF ── */}
-        <button onClick={()=>window.print()} title="Exporter en PDF paysage" style={{...btnS,background:"#4C1D95",color:"#C4B5FD",display:"flex",alignItems:"center",gap:4}}>
-          <span style={{fontSize:13}}>📄</span><span style={{fontSize:11}}>PDF</span>
-        </button>
+          {/* PDF */}
+          <button onClick={()=>window.print()} title="Exporter PDF"
+            style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:7,border:"none",background:"transparent",color:"#374151",cursor:"pointer",fontSize:12,fontWeight:500,whiteSpace:"nowrap"}}
+            onPointerEnter={e=>{(e.currentTarget as HTMLElement).style.background="#EFF6FF";(e.currentTarget as HTMLElement).style.color="#2563EB";}}
+            onPointerLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";(e.currentTarget as HTMLElement).style.color="#374151";}}>
+            <span style={{fontSize:13}}>📄</span><span>PDF</span>
+          </button>
 
-        {/* ── Versions ── */}
-        <button onClick={()=>{setShowVersions(s=>!s);setShowBrief(false);}} style={{...btnS,background:showVersions?"#22C55E":"#334155",color:showVersions?"#fff":"#94A3B8",display:"flex",alignItems:"center",gap:4}}>
-          <span>📦</span><span>{t.versions}</span>
-          {versions.length>0&&<span style={{background:showVersions?"rgba(255,255,255,.25)":"#1E3A2F",color:"#4ADE80",borderRadius:10,padding:"0 5px",fontSize:10,fontWeight:700}}>{versions.length}</span>}
-        </button>
+          {/* Versions */}
+          <button onClick={()=>{setShowVersions(s=>!s);setShowBrief(false);}}
+            style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:7,border:"none",background:showVersions?"#EFF6FF":"transparent",color:showVersions?"#2563EB":"#374151",cursor:"pointer",fontSize:12,fontWeight:showVersions?700:500,whiteSpace:"nowrap"}}
+            onPointerEnter={e=>{if(!showVersions){(e.currentTarget as HTMLElement).style.background="#EFF6FF";(e.currentTarget as HTMLElement).style.color="#2563EB";}}}
+            onPointerLeave={e=>{if(!showVersions){(e.currentTarget as HTMLElement).style.background="transparent";(e.currentTarget as HTMLElement).style.color="#374151";}}}>
+            <span>📦</span><span>{t.versions}</span>
+            {versions.length>0&&<span style={{background:showVersions?"#DBEAFE":"#F3F4F6",color:showVersions?"#1D4ED8":"#6B7280",borderRadius:10,padding:"0 5px",fontSize:10,fontWeight:700}}>{versions.length}</span>}
+          </button>
 
-        {/* ── Brief ── */}
-        <button onClick={()=>{setShowBrief(s=>!s);setShowVersions(false);}} style={{...btnS,background:showBrief?"#F97316":"#334155",color:showBrief?"#fff":"#94A3B8",display:"flex",alignItems:"center",gap:4}}>
-          <span>📋</span><span>{t.brief}</span>
-        </button>
+          {/* Brief */}
+          <button onClick={()=>{setShowBrief(s=>!s);setShowVersions(false);}}
+            style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:7,border:"none",background:showBrief?"#FFF7ED":"transparent",color:showBrief?"#F97316":"#374151",cursor:"pointer",fontSize:12,fontWeight:showBrief?700:500,whiteSpace:"nowrap"}}
+            onPointerEnter={e=>{if(!showBrief){(e.currentTarget as HTMLElement).style.background="#FFF7ED";(e.currentTarget as HTMLElement).style.color="#F97316";}}}
+            onPointerLeave={e=>{if(!showBrief){(e.currentTarget as HTMLElement).style.background="transparent";(e.currentTarget as HTMLElement).style.color="#374151";}}}>
+            <span>📋</span><span>{t.brief}</span>
+          </button>
+        </div>
 
-        {/* ── Avatar — always last ── */}
-        <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
-        <AvatarPill user={user} onSignOut={signOut} />
+        {/* ── ZONE RIGHT: Avatar ────────────────────────────────── */}
+        <div style={{display:"flex",alignItems:"center",padding:"0 14px",borderLeft:"1px solid #E5E7EB",flexShrink:0}}>
+          <AvatarPill user={user} onSignOut={signOut} />
+        </div>
       </div>
 
-      {vMsg&&<div style={{position:"fixed",top:56,left:"50%",transform:"translateX(-50%)",background:vMsg.type==="ok"?"#14532D":"#7F1D1D",color:vMsg.type==="ok"?"#4ADE80":"#FCA5A5",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,zIndex:200,pointerEvents:"none"}}>{vMsg.text}</div>}
+      {vMsg&&<div style={{position:"fixed",top:58,left:"50%",transform:"translateX(-50%)",background:vMsg.type==="ok"?"#14532D":"#7F1D1D",color:vMsg.type==="ok"?"#4ADE80":"#FCA5A5",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,zIndex:200,pointerEvents:"none"}}>{vMsg.text}</div>}
 
       <div style={{display:"flex",flex:1,overflow:"hidden",position:"relative"}}>
 
@@ -1757,7 +1778,7 @@ Génère le customer journey mapping complet en JSON.`}]
             width:sidebarOpen?sidebarW:44,
             flexShrink:0,position:'relative',
           }),
-          background:"#1E293B",
+          background:"#FFFFFF",
           borderRight:"1px solid #2D3F55",
           display:"flex",flexDirection:"column",
           overflow:'hidden',
@@ -1784,8 +1805,8 @@ Génère le customer journey mapping complet en JSON.`}]
             }}>
               {/* Expand chevron */}
               <button onClick={()=>setSidebarOpen(true)} title="Expand sidebar"
-                style={{width:32,height:32,background:'none',border:'none',color:'#64748B',cursor:'pointer',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:4}}
-                onPointerEnter={e=>(e.currentTarget.style.background='#2D3F55')}
+                style={{width:32,height:32,background:'none',border:'none',color:'#9CA3AF',cursor:'pointer',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:4}}
+                onPointerEnter={e=>(e.currentTarget.style.background='#E5E7EB')}
                 onPointerLeave={e=>(e.currentTarget.style.background='none')}>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="5 2 10 7 5 12"/></svg>
               </button>
@@ -1793,8 +1814,8 @@ Génère le customer journey mapping complet en JSON.`}]
               {SIDEBAR_SECTIONS.map(s=>(
                 <button key={s.key} onClick={()=>setSidebarOpen(true)}
                   title={(t as any)[s.sectionKey]||s.label}
-                  style={{width:36,height:36,background:'none',border:'none',color:'#64748B',cursor:'pointer',borderRadius:6,fontSize:17,display:'flex',alignItems:'center',justifyContent:'center'}}
-                  onPointerEnter={e=>{e.currentTarget.style.background='#2D3F55';(e.currentTarget as HTMLElement).style.color='#94A3B8';}}
+                  style={{width:36,height:36,background:'none',border:'none',color:'#9CA3AF',cursor:'pointer',borderRadius:6,fontSize:17,display:'flex',alignItems:'center',justifyContent:'center'}}
+                  onPointerEnter={e=>{e.currentTarget.style.background='#E5E7EB';(e.currentTarget as HTMLElement).style.color='#94A3B8';}}
                   onPointerLeave={e=>{e.currentTarget.style.background='none';(e.currentTarget as HTMLElement).style.color='#64748B';}}>
                   {s.icon}
                 </button>
@@ -1812,15 +1833,15 @@ Génère le customer journey mapping complet en JSON.`}]
           }}>
             {/* Header: MAP IT button + collapse button */}
             <div style={{padding:"10px 10px 8px",borderBottom:"1px solid #2D3F55",display:'flex',gap:6,alignItems:'center'}}>
-              <button onClick={()=>setShowMapIt(s=>!s)} style={{flex:1,background:showMapIt?"#2563EB":"linear-gradient(135deg,#1E3A5F,#1E4080)",border:`1px solid ${showMapIt?"#3B82F6":"#2D4F80"}`,color:"#fff",borderRadius:8,padding:"9px 12px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontSize:12,fontWeight:700,boxShadow:showMapIt?"0 0 0 2px rgba(59,130,246,.4)":"0 2px 8px rgba(0,0,0,.3)",transition:"all .15s"}}>
+              <button onClick={()=>setShowMapIt(s=>!s)} style={{flex:1,background:showMapIt?"#2563EB":"linear-gradient(135deg,#1E3A5F,#1E4080)",border:`1px solid ${showMapIt?"#2563EB":"#2D4F80"}`,color:"#fff",borderRadius:8,padding:"9px 12px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontSize:12,fontWeight:700,boxShadow:showMapIt?"0 0 0 2px rgba(59,130,246,.4)":"0 2px 8px rgba(0,0,0,.3)",transition:"all .15s"}}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3-6-3z" stroke="white" strokeWidth="1.8" strokeLinejoin="round"/><line x1="9" y1="3" x2="9" y2="18" stroke="white" strokeWidth="1.8"/><line x1="15" y1="6" x2="15" y2="21" stroke="white" strokeWidth="1.8"/><circle cx="20" cy="4" r="4" fill="#22C55E"/><line x1="20" y1="2" x2="20" y2="6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="18" y1="4" x2="22" y2="4" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
                 <span>MAP IT</span>
               </button>
               {/* Collapse toggle */}
               <button onClick={()=>setSidebarOpen(false)}
                 title={isMobile?"Close":"Collapse sidebar"}
-                style={{width:32,height:32,background:'none',border:'1px solid #2D3F55',color:'#475569',cursor:'pointer',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}
-                onPointerEnter={e=>(e.currentTarget.style.background='#2D3F55')}
+                style={{width:32,height:32,background:'none',border:'1px solid #2D3F55',color:'#9CA3AF',cursor:'pointer',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}
+                onPointerEnter={e=>(e.currentTarget.style.background='#E5E7EB')}
                 onPointerLeave={e=>(e.currentTarget.style.background='none')}>
                 {isMobile
                   ?<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="1" y1="1" x2="12" y2="12"/><line x1="12" y1="1" x2="1" y2="12"/></svg>
@@ -1839,11 +1860,11 @@ Génère le customer journey mapping complet en JSON.`}]
                   <div key={section.key} style={{borderBottom:"1px solid #2D3F55"}}>
                     <div
                       onClick={()=>toggleCat(section.key)}
-                      style={{padding:"9px 10px 6px",fontSize:10,fontWeight:700,color:"#94A3B8",textTransform:"uppercase",letterSpacing:.9,display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",userSelect:"none",background:"#172133"}}
+                      style={{padding:"9px 10px 6px",fontSize:10,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:.9,display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",userSelect:"none",background:"#F9FAFB"}}
                       onPointerEnter={e=>(e.currentTarget as HTMLElement).style.background="#1E293B"}
                       onPointerLeave={e=>(e.currentTarget as HTMLElement).style.background="#172133"}>
                       <span>{(t as any)[section.sectionKey]||section.label}</span>
-                      <span style={{fontSize:9,color:"#475569",transition:"transform .2s",display:"inline-block",transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}>▼</span>
+                      <span style={{fontSize:9,color:"#9CA3AF",transition:"transform .2s",display:"inline-block",transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}>▼</span>
                     </div>
                     {!collapsed&&section.cats.map(catDef=>{
                       const items=ND.filter(d=>d.cat===catDef.k);
@@ -1852,9 +1873,9 @@ Génère le customer journey mapping complet en JSON.`}]
                         <div key={catDef.k}>
                           {catDef.subKey&&(
                             <div style={{padding:"5px 10px 3px",display:"flex",alignItems:"center",gap:6}}>
-                              <div style={{flex:1,height:1,background:"#2D3F55"}}/>
-                              <span style={{fontSize:8.5,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:.7,whiteSpace:"nowrap"}}>{(t as any)[catDef.subKey]||catDef.sub}</span>
-                              <div style={{flex:1,height:1,background:"#2D3F55"}}/>
+                              <div style={{flex:1,height:1,background:"#E5E7EB"}}/>
+                              <span style={{fontSize:8.5,fontWeight:600,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:.7,whiteSpace:"nowrap"}}>{(t as any)[catDef.subKey]||catDef.sub}</span>
+                              <div style={{flex:1,height:1,background:"#E5E7EB"}}/>
                             </div>
                           )}
                           {items.map(d=>{
@@ -1866,23 +1887,23 @@ Génère le customer journey mapping complet en JSON.`}]
                                   const t0=e.touches[0];
                                   sideDrag_.current={type:d.type,label:getDL(d.type,customLabels),startX:t0.clientX,startY:t0.clientY,clientX:t0.clientX,clientY:t0.clientY,started:false,ghost:null};
                                 }:undefined}
-                                style={{display:"flex",alignItems:"center",gap:7,padding:"4px 8px",cursor:editingType===d.type?"default":"grab",borderRadius:6,margin:"0 4px 1px",background:hoveredType===d.type&&editingType!==d.type?"#2D3F55":"transparent",transition:"background .1s"}}>
+                                style={{display:"flex",alignItems:"center",gap:7,padding:"4px 8px",cursor:editingType===d.type?"default":"grab",borderRadius:6,margin:"0 4px 1px",background:hoveredType===d.type&&editingType!==d.type?"#E5E7EB":"transparent",transition:"background .1s"}}>
                                 <div style={{width:26,height:26,flexShrink:0,position:"relative"}}>
-                                  <div style={{width:26,height:26,borderRadius:d.sh==="circle"?13:d.sh==="browser"?3:2,background:d.sh==="browser"?"#054547":d.sh==="textbox"?"transparent":(d.bg||"#3B82F6"),transform:d.sh==="diamond"?"rotate(45deg) scale(.6)":"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:d.fg||"#fff",overflow:"hidden",border:d.sh==="textbox"?"1.5px dashed #64748B":"none"}}>
-                                    {d.sh==="textbox"?<span style={{color:"#94A3B8",fontSize:9,fontWeight:800}}>Aa</span>
+                                  <div style={{width:26,height:26,borderRadius:d.sh==="circle"?13:d.sh==="browser"?3:2,background:d.sh==="browser"?"#054547":d.sh==="textbox"?"transparent":(d.bg||"#2563EB"),transform:d.sh==="diamond"?"rotate(45deg) scale(.6)":"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:d.fg||"#fff",overflow:"hidden",border:d.sh==="textbox"?"1.5px dashed #64748B":"none"}}>
+                                    {d.sh==="textbox"?<span style={{color:"#6B7280",fontSize:9,fontWeight:800}}>Aa</span>
                                       :d.sh==="browser"?<span style={{fontSize:7,color:"#fff"}}>📄</span>
                                       :LOGOS[d.type]
                                         ?React.cloneElement(LOGOS[d.type],{width:26,height:26,style:{display:"block"}})
                                         :<span style={{fontSize:10,fontWeight:700}}>{d.icon||"?"}</span>}
                                   </div>
-                                  {d.cat==="src_payant"&&<div style={{position:"absolute",bottom:-1,right:-1,width:12,height:12,borderRadius:"50%",background:d.bg||"#3B82F6",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:900,color:"#fff",lineHeight:1,zIndex:10,boxShadow:"0 1px 2px rgba(0,0,0,.25)"}}>$</div>}
+                                  {d.cat==="src_payant"&&<div style={{position:"absolute",bottom:-1,right:-1,width:12,height:12,borderRadius:"50%",background:d.bg||"#2563EB",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:900,color:"#fff",lineHeight:1,zIndex:10,boxShadow:"0 1px 2px rgba(0,0,0,.25)"}}>$</div>}
                                 </div>
                                 {editingType===d.type?(
-                                  <input value={editVal} onChange={e=>setEditVal(e.target.value)} onBlur={finishEdit} onKeyDown={e=>{if(e.key==="Enter")finishEdit();if(e.key==="Escape")setEditingType(null);}} autoFocus onClick={e=>e.stopPropagation()} style={{background:"#0F172A",border:"1px solid #3B82F6",color:"#F1F5F9",borderRadius:4,padding:"2px 5px",fontSize:11,outline:"none",flex:1,fontFamily:"inherit"}}/>
+                                  <input value={editVal} onChange={e=>setEditVal(e.target.value)} onBlur={finishEdit} onKeyDown={e=>{if(e.key==="Enter")finishEdit();if(e.key==="Escape")setEditingType(null);}} autoFocus onClick={e=>e.stopPropagation()} style={{background:"#F8FAFC",border:"1px solid #3B82F6",color:"#111827",borderRadius:4,padding:"2px 5px",fontSize:11,outline:"none",flex:1,fontFamily:"inherit"}}/>
                                 ):(
                                   <>
-                                    <span style={{color:"#CBD5E1",fontSize:11,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{dl}</span>
-                                    {d.type!=="page"&&<button onClick={e=>{e.stopPropagation();setEditingType(d.type);setEditVal(dl);}} style={{opacity:hoveredType===d.type?1:0,background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:11,padding:"0 2px",flexShrink:0}}>✏️</button>}
+                                    <span style={{color:"#374151",fontSize:11,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{dl}</span>
+                                    {d.type!=="page"&&<button onClick={e=>{e.stopPropagation();setEditingType(d.type);setEditVal(dl);}} style={{opacity:hoveredType===d.type?1:0,background:"none",border:"none",color:"#9CA3AF",cursor:"pointer",fontSize:11,padding:"0 2px",flexShrink:0}}>✏️</button>}
                                   </>
                                 )}
                               </div>
@@ -1903,7 +1924,7 @@ Génère le customer journey mapping complet en JSON.`}]
 
         {/* ── CANVAS ───────────────────────────────────────────────────────── */}
         <div ref={cvRef} className="cvbg" onMouseDown={onCvMD} onDragOver={e=>e.preventDefault()} onDrop={onCvDrop}
-          style={{flex:1,position:"relative",overflow:"hidden",background:"#F0F2F7",cursor:connMode||connectAllMode?"crosshair":"grab",
+          style={{flex:1,position:"relative",overflow:"hidden",background:"#FFFFFF",cursor:connMode||connectAllMode?"crosshair":"grab",
             touchAction:"none",
             backgroundImage:`linear-gradient(to right,#D8DCE8 1px,transparent 1px),linear-gradient(to bottom,#D8DCE8 1px,transparent 1px)`,
             backgroundSize:`${120*zoom}px ${120*zoom}px`,backgroundPosition:`${pan.x}px ${pan.y}px`}}>
@@ -1925,7 +1946,7 @@ Génère le customer journey mapping complet en JSON.`}]
                           style={{...ts,position:"absolute",inset:0,width:"100%",height:"100%",border:"none",outline:"none",background:"transparent",resize:"none",padding:"8px"}}/>
                       ):(
                         <div style={{...ts,padding:"8px",whiteSpace:"pre-wrap",wordBreak:"break-word",width:"100%",height:"100%",userSelect:"none"}}>
-                          {node.text||<span style={{color:"#94A3B8",fontStyle:"italic",fontSize:12,fontWeight:400}}>{t.dblClickEdit}...</span>}
+                          {node.text||<span style={{color:"#6B7280",fontStyle:"italic",fontSize:12,fontWeight:400}}>{t.dblClickEdit}...</span>}
                         </div>
                       )}
                     </div>
@@ -2012,26 +2033,26 @@ Génère le customer journey mapping complet en JSON.`}]
           </div>
           {connMode&&<div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",background:"rgba(59,130,246,.93)",color:"#fff",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,pointerEvents:"none",zIndex:50}}>{connFrom?t.clickTarget:t.clickStart}</div>}
           {connectAllMode&&<div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",background:"rgba(124,58,237,.93)",color:"#fff",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,pointerEvents:"none",zIndex:50}}>🔗 {t.clickTarget}</div>}
-          {selN.length>1&&!connectAllMode&&<div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",background:"#1E3A5F",color:"#93C5FD",padding:"6px 14px",borderRadius:8,fontSize:11,pointerEvents:"none",zIndex:50,border:"1px solid #2563EB"}}>✦ {selN.length} {t.nodesLabel}</div>}
-          {selC&&!selN.length&&<div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",background:"#1E293B",color:"#94A3B8",padding:"6px 14px",borderRadius:8,fontSize:11,pointerEvents:"none",zIndex:50,border:"1px solid #334155"}}>{t.connSelected}</div>}
-          {clipboard.length>0&&<div style={{position:"absolute",bottom:14,left:14,background:"#1E3A5F",color:"#60A5FA",padding:"4px 10px",borderRadius:6,fontSize:10,border:"1px solid #2563EB",pointerEvents:"none"}}>{clipboard.length} element{clipboard.length>1?"s":""} — Ctrl+V pour coller</div>}
-          {activeVid&&(()=>{const v=versions.find(x=>x.id===activeVid);return v?(<div style={{position:"absolute",bottom:16,left:16,background:"#14532D",color:"#4ADE80",padding:"4px 10px",borderRadius:6,fontSize:10,border:"1px solid #166534",pointerEvents:"none",display:"flex",alignItems:"center",gap:5,zIndex:40}}><span>📦</span><span>{v.name}</span></div>):null;})()}
+          {selN.length>1&&!connectAllMode&&<div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",background:"#DBEAFE",color:"#1D4ED8",padding:"6px 14px",borderRadius:8,fontSize:11,pointerEvents:"none",zIndex:50,border:"1px solid #2563EB"}}>✦ {selN.length} {t.nodesLabel}</div>}
+          {selC&&!selN.length&&<div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",background:"#FFFFFF",color:"#6B7280",padding:"6px 14px",borderRadius:8,fontSize:11,pointerEvents:"none",zIndex:50,border:"1px solid #334155"}}>{t.connSelected}</div>}
+          {clipboard.length>0&&<div style={{position:"absolute",bottom:14,left:14,background:"#DBEAFE",color:"#60A5FA",padding:"4px 10px",borderRadius:6,fontSize:10,border:"1px solid #2563EB",pointerEvents:"none"}}>{clipboard.length} element{clipboard.length>1?"s":""} — Ctrl+V pour coller</div>}
+          {activeVid&&(()=>{const v=versions.find(x=>x.id===activeVid);return v?(<div style={{position:"absolute",bottom:16,left:16,background:"#D1FAE5",color:"#059669",padding:"4px 10px",borderRadius:6,fontSize:10,border:"1px solid #166534",pointerEvents:"none",display:"flex",alignItems:"center",gap:5,zIndex:40}}><span>📦</span><span>{v.name}</span></div>):null;})()}
         </div>
 
         {/* ── RIGHT PANEL ──────────────────────────────────────────────────── */}
         {showRP&&(
-          <div style={{width:240,background:"#1E293B",borderLeft:"1px solid #2D3F55",flexShrink:0,overflowY:"auto"}}>
+          <div style={{width:240,background:"#FFFFFF",borderLeft:"1px solid #2D3F55",flexShrink:0,overflowY:"auto"}}>
 
             {/* MULTI */}
             {selN.length>1&&(
               <div style={{padding:"14px 14px 16px"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>{t.multiSelect}</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>{selN.length} {t.nodesLabel}</div></div>
-                  <button onClick={()=>setSelN([])} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                  <div><div style={{color:"#111827",fontWeight:700,fontSize:13}}>{t.multiSelect}</div><div style={{color:"#6B7280",fontSize:11,marginTop:2}}>{selN.length} {t.nodesLabel}</div></div>
+                  <button onClick={()=>setSelN([])} style={{background:"#F3F4F6",border:"none",color:"#6B7280",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
                 <SH>Actions</SH>
                 <div style={{display:"flex",gap:4,marginBottom:10}}>
-                  <button onClick={copySelected} style={btnCopy} onMouseEnter={e=>{e.currentTarget.style.background="#1E2D40";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#334155";}}>📋 Copier</button>
+                  <button onClick={copySelected} style={btnCopy} onMouseEnter={e=>{e.currentTarget.style.background="#E5E7EB";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#E5E7EB";}}>📋 Copier</button>
                   <button onClick={duplicateSelected} onMouseEnter={e=>e.currentTarget.style.background="#2563EB"} onMouseLeave={e=>e.currentTarget.style.background="#1E3A5F"} style={btnDup}>⎘ Dupliquer</button>
                 </div>
                 <LayerSection/>
@@ -2056,15 +2077,15 @@ Génère le customer journey mapping complet en JSON.`}]
             {sn&&isTB&&(
               <div style={{padding:14}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>{t.textBox}</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>{t.dblClickEdit}</div></div>
-                  <button onClick={()=>setSelN([])} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                  <div><div style={{color:"#111827",fontWeight:700,fontSize:13}}>{t.textBox}</div><div style={{color:"#6B7280",fontSize:11,marginTop:2}}>{t.dblClickEdit}</div></div>
+                  <button onClick={()=>setSelN([])} style={{background:"#F3F4F6",border:"none",color:"#6B7280",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
                 <ConnPanel nodeId={sn.id}/>
                 <LayerSection/>
                 <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid #2D3F55"}}>
                   <SH>Actions</SH>
                   <div style={{display:"flex",gap:4}}>
-                    <button onClick={copySelected} style={btnCopy} onMouseEnter={e=>{e.currentTarget.style.background="#1E2D40";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#334155";}}>📋 Copier</button>
+                    <button onClick={copySelected} style={btnCopy} onMouseEnter={e=>{e.currentTarget.style.background="#E5E7EB";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#E5E7EB";}}>📋 Copier</button>
                     <button onClick={duplicateSelected} onMouseEnter={e=>e.currentTarget.style.background="#2563EB"} onMouseLeave={e=>e.currentTarget.style.background="#1E3A5F"} style={btnDup}>⎘ Dupliquer</button>
                     <button onClick={()=>askDelete("Supprimer cette zone de texte ?",()=>{saveH(nodes,conns);setNodes(p=>p.filter(n=>n.id!==sn.id));setConns(p=>p.filter(c=>c.from!==sn.id&&c.to!==sn.id));setSelN([]);})}
                       style={btnDel} onMouseEnter={e=>{e.currentTarget.style.background="#FEE2E2";}} onMouseLeave={e=>{e.currentTarget.style.background="#fff";}}>🗑</button>
@@ -2086,10 +2107,10 @@ Génère le customer journey mapping complet en JSON.`}]
                   <label style={lbS}>Alignement</label>
                   <div style={{display:"flex",gap:4,marginBottom:8}}>{["left","center","right"].map(a=>(<button key={a} onClick={()=>upN(sn.id,{align:a})} style={{...togBtnS((sn.align||"left")===a),flex:1,padding:"4px 0"}}><AlignIcon type={a}/></button>))}</div>
                   <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-                    <span style={{fontSize:10,fontWeight:700,color:"#94A3B8",textTransform:"uppercase",letterSpacing:.5}}>Arriere-plan</span>
+                    <span style={{fontSize:10,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:.5}}>Arriere-plan</span>
                     <Toggle on={!!sn.bgColor} onChange={()=>upN(sn.id,{bgColor:sn.bgColor?"":"#ffffff"})}/>
                   </div>
-                  {sn.bgColor&&(<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><ColorPicker value={sn.bgColor} onChange={e=>upN(sn.id,{bgColor:e.target.value})}/><span style={{color:"#94A3B8",fontSize:11}}>{sn.bgColor}</span></div>)}
+                  {sn.bgColor&&(<div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><ColorPicker value={sn.bgColor} onChange={e=>upN(sn.id,{bgColor:e.target.value})}/><span style={{color:"#6B7280",fontSize:11}}>{sn.bgColor}</span></div>)}
                   <label style={{...lbS,marginTop:8}}>Lien URL</label>
                   <input value={sn.link||""} onChange={e=>upN(sn.id,{link:e.target.value})} placeholder="https://..." style={inS}/>
                 </div>
@@ -2100,8 +2121,8 @@ Génère le customer journey mapping complet en JSON.`}]
             {sn&&isPage&&(
               <div style={{padding:14}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>📄 Page</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>{t[getPageStyle(sn).labelKey]}</div></div>
-                  <button onClick={()=>setSelN([])} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                  <div><div style={{color:"#111827",fontWeight:700,fontSize:13}}>📄 Page</div><div style={{color:"#6B7280",fontSize:11,marginTop:2}}>{t[getPageStyle(sn).labelKey]}</div></div>
+                  <button onClick={()=>setSelN([])} style={{background:"#F3F4F6",border:"none",color:"#6B7280",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
                 <div style={{marginTop:0,paddingTop:0}}>
                   <label style={lbS}>Libelle</label>
@@ -2114,7 +2135,7 @@ Génère le customer journey mapping complet en JSON.`}]
                 <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid #2D3F55"}}>
                   <SH>Actions</SH>
                   <div style={{display:"flex",gap:4}}>
-                    <button onClick={copySelected} style={btnCopy} onMouseEnter={e=>{e.currentTarget.style.background="#1E2D40";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#334155";}}>📋 Copier</button>
+                    <button onClick={copySelected} style={btnCopy} onMouseEnter={e=>{e.currentTarget.style.background="#E5E7EB";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#E5E7EB";}}>📋 Copier</button>
                     <button onClick={duplicateSelected} onMouseEnter={e=>e.currentTarget.style.background="#2563EB"} onMouseLeave={e=>e.currentTarget.style.background="#1E3A5F"} style={btnDup}>⎘ Dupliquer</button>
                     <button onClick={()=>askDelete("Supprimer cette page et ses connexions ?",()=>{saveH(nodes,conns);setNodes(p=>p.filter(n=>n.id!==sn.id));setConns(p=>p.filter(c=>c.from!==sn.id&&c.to!==sn.id));setSelN([]);})}
                       style={btnDel} onMouseEnter={e=>{e.currentTarget.style.background="#FEE2E2";}} onMouseLeave={e=>{e.currentTarget.style.background="#fff";}}>🗑</button>
@@ -2128,8 +2149,8 @@ Génère le customer journey mapping complet en JSON.`}]
             {sn&&!isTB&&!isPage&&(
               <div style={{padding:14}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>{(t as any)[snD?.labelKey]||snD?.label||"Node"}</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>{t.nodeSelected}</div></div>
-                  <button onClick={()=>setSelN([])} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                  <div><div style={{color:"#111827",fontWeight:700,fontSize:13}}>{(t as any)[snD?.labelKey]||snD?.label||"Node"}</div><div style={{color:"#6B7280",fontSize:11,marginTop:2}}>{t.nodeSelected}</div></div>
+                  <button onClick={()=>setSelN([])} style={{background:"#F3F4F6",border:"none",color:"#6B7280",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
                 <div style={{marginTop:0}}>
                   <label style={lbS}>Libelle</label>
@@ -2142,7 +2163,7 @@ Génère le customer journey mapping complet en JSON.`}]
                 <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid #2D3F55"}}>
                   <SH>Actions</SH>
                   <div style={{display:"flex",gap:4}}>
-                    <button onClick={copySelected} style={btnCopy} onMouseEnter={e=>{e.currentTarget.style.background="#1E2D40";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#334155";}}>📋 Copier</button>
+                    <button onClick={copySelected} style={btnCopy} onMouseEnter={e=>{e.currentTarget.style.background="#E5E7EB";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#E5E7EB";}}>📋 Copier</button>
                     <button onClick={duplicateSelected} onMouseEnter={e=>e.currentTarget.style.background="#2563EB"} onMouseLeave={e=>e.currentTarget.style.background="#1E3A5F"} style={btnDup}>⎘ Dupliquer</button>
                     <button onClick={()=>askDelete(`Supprimer "${sn.label}" et ses connexions ?`,()=>{saveH(nodes,conns);setNodes(p=>p.filter(n=>n.id!==sn.id));setConns(p=>p.filter(c=>c.from!==sn.id&&c.to!==sn.id));setSelN([]);})}
                       style={btnDel} onMouseEnter={e=>{e.currentTarget.style.background="#FEE2E2";}} onMouseLeave={e=>{e.currentTarget.style.background="#fff";}}>🗑</button>
@@ -2155,29 +2176,29 @@ Génère le customer journey mapping complet en JSON.`}]
             {!sn&&selConn&&(
               <div style={{padding:14}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>🔗 Connexion</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>{gn(selConn.from)?.label||"?"} → {gn(selConn.to)?.label||"?"}</div></div>
-                  <button onClick={()=>setSelC(null)} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                  <div><div style={{color:"#111827",fontWeight:700,fontSize:13}}>🔗 Connexion</div><div style={{color:"#6B7280",fontSize:11,marginTop:2}}>{gn(selConn.from)?.label||"?"} → {gn(selConn.to)?.label||"?"}</div></div>
+                  <button onClick={()=>setSelC(null)} style={{background:"#F3F4F6",border:"none",color:"#6B7280",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
                 <SH>Actions</SH>
                 <div style={{display:"flex",gap:4,marginBottom:10}}>
-                  <button onClick={()=>{const c=conns.find(x=>x.id===selC);if(!c)return;saveH(nodes,conns);const nc={...c,id:cuid()};setConns(p=>[...p,nc]);setSelC(nc.id);}} style={{...btnCopy}} onMouseEnter={e=>{e.currentTarget.style.background="#1E2D40";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#334155";}}>📋 Copier</button>
+                  <button onClick={()=>{const c=conns.find(x=>x.id===selC);if(!c)return;saveH(nodes,conns);const nc={...c,id:cuid()};setConns(p=>[...p,nc]);setSelC(nc.id);}} style={{...btnCopy}} onMouseEnter={e=>{e.currentTarget.style.background="#E5E7EB";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#E5E7EB";}}>📋 Copier</button>
                   <button onClick={()=>{const c=conns.find(x=>x.id===selC);if(!c)return;saveH(nodes,conns);const nc={...c,id:cuid()};setConns(p=>[...p,nc]);setSelC(nc.id);}} style={{...btnDup}} onMouseEnter={e=>e.currentTarget.style.background="#2563EB"} onMouseLeave={e=>e.currentTarget.style.background="#1E3A5F"}>⎘ Dupliquer</button>
                 </div>
                 <label style={lbS}>Style</label>
                 <div style={{display:"flex",gap:5,marginBottom:8}}>
-                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{curved:true,midX:null,midY:null});}} style={{flex:1,height:30,background:selConn.curved!==false?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.curved!==false?"#2563EB":"#1E2D40"}`,color:selConn.curved!==false?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14}} title="Courbe">⌒</button>
-                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{curved:false,midX:null,midY:null});}} style={{flex:1,height:30,background:selConn.curved===false?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.curved===false?"#2563EB":"#1E2D40"}`,color:selConn.curved===false?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14,fontWeight:700}} title="Droite">—</button>
+                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{curved:true,midX:null,midY:null});}} style={{flex:1,height:30,background:selConn.curved!==false?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.curved!==false?"#2563EB":"#E5E7EB"}`,color:selConn.curved!==false?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14}} title="Courbe">⌒</button>
+                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{curved:false,midX:null,midY:null});}} style={{flex:1,height:30,background:selConn.curved===false?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.curved===false?"#2563EB":"#E5E7EB"}`,color:selConn.curved===false?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14,fontWeight:700}} title="Droite">—</button>
                 </div>
                 <label style={lbS}>Trait</label>
                 <div style={{display:"flex",gap:6,marginBottom:12}}>
-                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{dashed:false});}} style={{flex:1,height:30,background:!selConn.dashed?"#1E3A5F":"#0F172A",border:`1px solid ${!selConn.dashed?"#2563EB":"#1E2D40"}`,color:!selConn.dashed?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14,fontWeight:700}}>—</button>
-                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{dashed:true});}} style={{flex:1,height:30,background:selConn.dashed?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.dashed?"#2563EB":"#1E2D40"}`,color:selConn.dashed?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:12,letterSpacing:2}}>╌</button>
+                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{dashed:false});}} style={{flex:1,height:30,background:!selConn.dashed?"#1E3A5F":"#0F172A",border:`1px solid ${!selConn.dashed?"#2563EB":"#E5E7EB"}`,color:!selConn.dashed?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14,fontWeight:700}}>—</button>
+                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{dashed:true});}} style={{flex:1,height:30,background:selConn.dashed?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.dashed?"#2563EB":"#E5E7EB"}`,color:selConn.dashed?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:12,letterSpacing:2}}>╌</button>
                 </div>
-                {selConn.midX!=null&&<button onClick={()=>{saveH(nodes,conns);upC(selC,{midX:null,midY:null});}} style={{width:"100%",background:"#0F172A",border:"1px solid #334155",color:"#94A3B8",padding:"5px",borderRadius:5,cursor:"pointer",fontSize:11,marginBottom:10}}>{t.resetCurve}</button>}
+                {selConn.midX!=null&&<button onClick={()=>{saveH(nodes,conns);upC(selC,{midX:null,midY:null});}} style={{width:"100%",background:"#F8FAFC",border:"1px solid #334155",color:"#6B7280",padding:"5px",borderRadius:5,cursor:"pointer",fontSize:11,marginBottom:10}}>{t.resetCurve}</button>}
                 <label style={lbS}>Couleur</label>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
                   <ColorPicker value={selConn.color||"#94A3B8"} onChange={e=>{saveH(nodes,conns);upC(selC,{color:e.target.value});}}/>
-                  <span style={{color:"#94A3B8",fontSize:11}}>{selConn.color||"#94A3B8"}</span>
+                  <span style={{color:"#6B7280",fontSize:11}}>{selConn.color||"#94A3B8"}</span>
                 </div>
                 <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
                   {ARROW_COLORS.map(color=><button key={color} onClick={()=>{saveH(nodes,conns);upC(selC,{color});}} style={{width:28,height:28,borderRadius:"50%",background:color,border:(selConn.color||"#94A3B8")===color?"3px solid #F1F5F9":"3px solid transparent",cursor:"pointer",padding:0,boxSizing:"border-box"}}/>)}
@@ -2192,11 +2213,11 @@ Génère le customer journey mapping complet en JSON.`}]
 
         {/* VERSIONS */}
         {showVersions&&(
-          <div style={{position:"absolute",right:showRP?240:0,top:0,bottom:0,width:340,background:"#1E293B",borderLeft:"1px solid #2D3F55",display:"flex",flexDirection:"column",zIndex:50,boxShadow:"-4px 0 20px rgba(0,0,0,.4)"}}>
+          <div style={{position:"absolute",right:showRP?240:0,top:0,bottom:0,width:340,background:"#FFFFFF",borderLeft:"1px solid #2D3F55",display:"flex",flexDirection:"column",zIndex:50,boxShadow:"-4px 0 20px rgba(0,0,0,.4)"}}>
             <div style={{padding:"14px 16px 12px",borderBottom:"1px solid #2D3F55",flexShrink:0}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                <span style={{color:"#4ADE80",fontWeight:700,fontSize:14}}>📦 Versions</span>
-                <button onClick={()=>setShowVersions(false)} style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:15}}>✕</button>
+                <span style={{color:"#059669",fontWeight:700,fontSize:14}}>📦 Versions</span>
+                <button onClick={()=>setShowVersions(false)} style={{background:"none",border:"none",color:"#9CA3AF",cursor:"pointer",fontSize:15}}>✕</button>
               </div>
               <div style={{display:"flex",gap:6}}>
                 <input value={vName} onChange={e=>setVName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&saveVer()} placeholder={`${t.versionPlaceholder} ${versions.length+1}`} style={{...inS,flex:1,height:32,padding:"0 8px"}}/>
@@ -2204,21 +2225,21 @@ Génère le customer journey mapping complet en JSON.`}]
               </div>
             </div>
             <div style={{flex:1,overflowY:"auto",padding:"8px 0"}}>
-              {versions.length===0&&<div style={{padding:"40px 20px",textAlign:"center",color:"#475569",fontSize:12}}><div style={{fontSize:32,marginBottom:8}}>📭</div><div>{t.aucuneVersion}</div></div>}
+              {versions.length===0&&<div style={{padding:"40px 20px",textAlign:"center",color:"#9CA3AF",fontSize:12}}><div style={{fontSize:32,marginBottom:8}}>📭</div><div>{t.aucuneVersion}</div></div>}
               {[...versions].reverse().map(v=>{
                 const isAct=activeVid===v.id;const isCf=confirmDel===v.id;
-                return(<div key={v.id} style={{margin:"0 8px 6px",borderRadius:8,background:isAct?"rgba(22,163,74,.12)":"#0F172A",border:`1px solid ${isAct?"#166534":"#1E2D40"}`}}>
+                return(<div key={v.id} style={{margin:"0 8px 6px",borderRadius:8,background:isAct?"rgba(22,163,74,.12)":"#0F172A",border:`1px solid ${isAct?"#A7F3D0":"#E5E7EB"}`}}>
                   <div style={{padding:"10px 12px",display:"flex",alignItems:"flex-start",gap:8}}>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
-                        {isAct&&<span style={{background:"#14532D",color:"#4ADE80",borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700}}>ACTIF</span>}
-                        <span style={{color:"#F1F5F9",fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.name}</span>
+                        {isAct&&<span style={{background:"#D1FAE5",color:"#059669",borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700}}>ACTIF</span>}
+                        <span style={{color:"#111827",fontWeight:600,fontSize:12,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.name}</span>
                       </div>
-                      <div style={{color:"#475569",fontSize:10}}>{fmtDate(v.ts)}</div>
+                      <div style={{color:"#9CA3AF",fontSize:10}}>{fmtDate(v.ts)}</div>
                     </div>
                     <div style={{display:"flex",gap:4,flexShrink:0}}>
-                      <button onClick={()=>restoreVer(v)} disabled={vLoading||isAct} style={{background:isAct?"#1E2D40":"#1E3A5F",border:"none",color:isAct?"#374151":"#60A5FA",padding:"4px 8px",borderRadius:5,cursor:isAct?"not-allowed":"pointer",fontSize:11,fontWeight:600,opacity:isAct?0.5:1}}>↩ Restaurer</button>
-                      {!isCf?(<button onClick={()=>setConfirmDel(v.id)} style={{background:"#1A0A0A",border:"none",color:"#F87171",padding:"4px 6px",borderRadius:5,cursor:"pointer",fontSize:11}}>🗑</button>):(<div style={{display:"flex",gap:3,alignItems:"center"}}><span style={{color:"#F87171",fontSize:10}}>{t.confirmDelQ}</span><button onClick={()=>deleteVer(v.id)} style={{background:"#7F1D1D",border:"none",color:"#FCA5A5",padding:"3px 6px",borderRadius:4,cursor:"pointer",fontSize:10,fontWeight:700}}>{t.yes}</button><button onClick={()=>setConfirmDel(null)} style={{background:"#334155",border:"none",color:"#94A3B8",padding:"3px 6px",borderRadius:4,cursor:"pointer",fontSize:10}}>{t.no}</button></div>)}
+                      <button onClick={()=>restoreVer(v)} disabled={vLoading||isAct} style={{background:isAct?"#E5E7EB":"#1E3A5F",border:"none",color:isAct?"#374151":"#60A5FA",padding:"4px 8px",borderRadius:5,cursor:isAct?"not-allowed":"pointer",fontSize:11,fontWeight:600,opacity:isAct?0.5:1}}>↩ Restaurer</button>
+                      {!isCf?(<button onClick={()=>setConfirmDel(v.id)} style={{background:"#1A0A0A",border:"none",color:"#F87171",padding:"4px 6px",borderRadius:5,cursor:"pointer",fontSize:11}}>🗑</button>):(<div style={{display:"flex",gap:3,alignItems:"center"}}><span style={{color:"#F87171",fontSize:10}}>{t.confirmDelQ}</span><button onClick={()=>deleteVer(v.id)} style={{background:"#FEF2F2",border:"none",color:"#DC2626",padding:"3px 6px",borderRadius:4,cursor:"pointer",fontSize:10,fontWeight:700}}>{t.yes}</button><button onClick={()=>setConfirmDel(null)} style={{background:"#F3F4F6",border:"none",color:"#6B7280",padding:"3px 6px",borderRadius:4,cursor:"pointer",fontSize:10}}>{t.no}</button></div>)}
                     </div>
                   </div>
                 </div>);
@@ -2230,13 +2251,13 @@ Génère le customer journey mapping complet en JSON.`}]
 
         {/* BRIEF */}
         {showBrief&&(
-          <div style={{position:"absolute",right:showRP?240:0,top:0,bottom:0,width:308,background:"#1E293B",borderLeft:"1px solid #2D3F55",overflowY:"auto",padding:14,zIndex:50,boxShadow:"-4px 0 20px rgba(0,0,0,.35)"}}>
+          <div style={{position:"absolute",right:showRP?240:0,top:0,bottom:0,width:308,background:"#FFFFFF",borderLeft:"1px solid #2D3F55",overflowY:"auto",padding:14,zIndex:50,boxShadow:"-4px 0 20px rgba(0,0,0,.35)"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <span style={{color:"#F97316",fontWeight:700,fontSize:14}}>{t.briefTitle}</span>
-              <button onClick={()=>setShowBrief(false)} style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:15}}>✕</button>
+              <button onClick={()=>setShowBrief(false)} style={{background:"none",border:"none",color:"#9CA3AF",cursor:"pointer",fontSize:15}}>✕</button>
             </div>
             {/* Brief initial paste zone */}
-            <div style={{marginBottom:14,padding:12,background:"#0F172A",borderRadius:8,border:"1px solid #2D3F55"}}>
+            <div style={{marginBottom:14,padding:12,background:"#F8FAFC",borderRadius:8,border:"1px solid #2D3F55"}}>
               <label style={{...lbS,color:"#F97316",marginBottom:6,display:"block"}}>{t.briefInitialLabel}</label>
               <textarea
                 value={briefInitial}
@@ -2260,7 +2281,7 @@ Génère le customer journey mapping complet en JSON.`}]
                 {genMsg.text}
               </div>}
             </div>
-            <div style={{height:1,background:"#2D3F55",marginBottom:14}}/>
+            <div style={{height:1,background:"#E5E7EB",marginBottom:14}}/>
             {[
               {k:"campagne",  l:t.briefCampaignName},
               {k:"site",      l:t.briefClientSite},
@@ -2281,8 +2302,8 @@ Génère le customer journey mapping complet en JSON.`}]
             ))}
             <div>
               <label style={lbS}>{t.briefSources}</label>
-              {(brief.sources||[]).map((s,i)=>(<div key={i} style={{display:"flex",gap:4,marginBottom:4}}><input value={s} onChange={e=>{const a=[...brief.sources];a[i]=e.target.value;setBrief(b=>({...b,sources:a}));}} style={{...inS,flex:1}}/><button onClick={()=>setBrief(b=>({...b,sources:b.sources.filter((_,j)=>j!==i)}))} style={{background:"#450A0A",border:"none",color:"#FCA5A5",padding:"0 6px",borderRadius:4,cursor:"pointer",fontSize:11}}>✕</button></div>))}
-              <button onClick={()=>setBrief(b=>({...b,sources:[...(b.sources||[]),""]}))} style={{background:"#334155",border:"none",color:"#94A3B8",padding:"4px 10px",borderRadius:4,cursor:"pointer",fontSize:11,marginTop:2}}>{t.briefAddSource}</button>
+              {(brief.sources||[]).map((s,i)=>(<div key={i} style={{display:"flex",gap:4,marginBottom:4}}><input value={s} onChange={e=>{const a=[...brief.sources];a[i]=e.target.value;setBrief(b=>({...b,sources:a}));}} style={{...inS,flex:1}}/><button onClick={()=>setBrief(b=>({...b,sources:b.sources.filter((_,j)=>j!==i)}))} style={{background:"#FEE2E2",border:"none",color:"#DC2626",padding:"0 6px",borderRadius:4,cursor:"pointer",fontSize:11}}>✕</button></div>))}
+              <button onClick={()=>setBrief(b=>({...b,sources:[...(b.sources||[]),""]}))} style={{background:"#F3F4F6",border:"none",color:"#6B7280",padding:"4px 10px",borderRadius:4,cursor:"pointer",fontSize:11,marginTop:2}}>{t.briefAddSource}</button>
             </div>
           </div>
         )}
@@ -2295,7 +2316,7 @@ Génère le customer journey mapping complet en JSON.`}]
           bottom:"calc(16px + env(safe-area-inset-bottom, 0px))",
           left: sidebarW+12,
           display:"flex",alignItems:"center",
-          background:"#1E293B",border:"1px solid #475569",
+          background:"#FFFFFF",border:"1px solid #475569",
           borderRadius:12,
           boxShadow:"0 4px 24px rgba(0,0,0,.7)",
           zIndex:9999,userSelect:"none",overflow:"hidden",
@@ -2307,7 +2328,7 @@ Génère le customer journey mapping complet en JSON.`}]
             disabled={!canUndo}
             title="Undo (Ctrl+Z)"
             style={{width:36,height:36,background:"none",border:"none",color:canUndo?"#CBD5E1":"#475569",cursor:canUndo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
-            onPointerEnter={e=>{if(canUndo)e.currentTarget.style.background="#334155"}}
+            onPointerEnter={e=>{if(canUndo)e.currentTarget.style.background="#E5E7EB"}}
             onPointerLeave={e=>{e.currentTarget.style.background="none"}}
           >
             <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -2315,13 +2336,13 @@ Génère le customer journey mapping complet en JSON.`}]
               <polyline points="2 4 2 7.5 5.5 7.5"/>
             </svg>
           </button>
-          <div style={{width:1,height:18,background:"#334155",flexShrink:0}}/>
+          <div style={{width:1,height:18,background:"#F3F4F6",flexShrink:0}}/>
           <button
             onClick={()=>redoRef.current?.()}
             disabled={!canRedo}
             title="Redo (Ctrl+Y)"
             style={{width:36,height:36,background:"none",border:"none",color:canRedo?"#CBD5E1":"#475569",cursor:canRedo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
-            onPointerEnter={e=>{if(canRedo)e.currentTarget.style.background="#334155"}}
+            onPointerEnter={e=>{if(canRedo)e.currentTarget.style.background="#E5E7EB"}}
             onPointerLeave={e=>{e.currentTarget.style.background="none"}}
           >
             <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
@@ -2334,7 +2355,7 @@ Génère le customer journey mapping complet en JSON.`}]
 
       {/* ── Zoom controls — position:fixed so always visible, unaffected by overflow:hidden ── */}
       {(()=>{
-        const zb:React.CSSProperties={width:36,height:36,background:"none",border:"none",color:"#CBD5E1",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0};
+        const zb:React.CSSProperties={width:36,height:36,background:"none",border:"none",color:"#374151",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0};
         const fitToScreen=()=>{
           if(!nodes.length||!cvRef.current){setPan({x:80,y:50});setZoom(0.8);return;}
           const rect=cvRef.current.getBoundingClientRect();
@@ -2353,36 +2374,36 @@ Génère le customer journey mapping complet en JSON.`}]
             bottom:"calc(16px + env(safe-area-inset-bottom, 0px))",
             right:rOffset,
             display:"flex",alignItems:"center",
-            background:"#1E293B",border:"1px solid #475569",
+            background:"#FFFFFF",border:"1px solid #475569",
             borderRadius:12,
             boxShadow:"0 4px 24px rgba(0,0,0,.7)",
             zIndex:9999,userSelect:"none",overflow:"hidden",
           }}>
             <button onClick={()=>setZoom(z=>Math.max(0.15,+(z-.1).toFixed(2)))} style={zb}
               title="Zoom −"
-              onPointerEnter={e=>(e.currentTarget.style.background="#334155")} onPointerLeave={e=>(e.currentTarget.style.background="none")}>
+              onPointerEnter={e=>(e.currentTarget.style.background="#E5E7EB")} onPointerLeave={e=>(e.currentTarget.style.background="none")}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="3" y1="8" x2="13" y2="8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
             </button>
             {zoomInput===null
               ?<span onClick={()=>setZoomInput(String(Math.round(zoom*100)))}
-                  style={{color:"#F1F5F9",fontSize:13,fontWeight:700,minWidth:52,textAlign:"center",cursor:"text",padding:"0 4px",lineHeight:"36px"}}>
+                  style={{color:"#111827",fontSize:13,fontWeight:700,minWidth:52,textAlign:"center",cursor:"text",padding:"0 4px",lineHeight:"36px"}}>
                   {Math.round(zoom*100)}%
                 </span>
               :<input autoFocus value={zoomInput}
                   onChange={e=>setZoomInput(e.target.value.replace(/[^0-9]/g,""))}
                   onBlur={()=>{const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}}
                   onKeyDown={e=>{if(e.key==="Enter"){const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}if(e.key==="Escape")setZoomInput(null);}}
-                  style={{width:52,background:"transparent",border:"none",borderBottom:"2px solid #3B82F6",color:"#F1F5F9",padding:"0 4px",fontSize:13,fontWeight:700,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
+                  style={{width:52,background:"transparent",border:"none",borderBottom:"2px solid #3B82F6",color:"#111827",padding:"0 4px",fontSize:13,fontWeight:700,textAlign:"center",outline:"none",fontFamily:"inherit"}}/>
             }
             <button onClick={()=>setZoom(z=>Math.min(4,+(z+.1).toFixed(2)))} style={zb}
               title="Zoom +"
-              onPointerEnter={e=>(e.currentTarget.style.background="#334155")} onPointerLeave={e=>(e.currentTarget.style.background="none")}>
+              onPointerEnter={e=>(e.currentTarget.style.background="#E5E7EB")} onPointerLeave={e=>(e.currentTarget.style.background="none")}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><line x1="3" y1="8" x2="13" y2="8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="8" y1="3" x2="8" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
             </button>
-            <div style={{width:1,height:20,background:"#334155",margin:"0 1px",flexShrink:0}}/>
+            <div style={{width:1,height:20,background:"#F3F4F6",margin:"0 1px",flexShrink:0}}/>
             <button onClick={fitToScreen} style={zb}
               title="Fit to screen"
-              onPointerEnter={e=>(e.currentTarget.style.background="#334155")} onPointerLeave={e=>(e.currentTarget.style.background="none")}>
+              onPointerEnter={e=>(e.currentTarget.style.background="#E5E7EB")} onPointerLeave={e=>(e.currentTarget.style.background="none")}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                 <path d="M1 5.5V2h3.5M11.5 2H15v3.5M15 10.5V14h-3.5M4.5 14H1v-3.5"/>
               </svg>
