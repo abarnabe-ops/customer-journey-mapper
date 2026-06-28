@@ -1546,7 +1546,7 @@ Génère le customer journey mapping complet en JSON.`}]
                           </div>
                         )}
                       </div>
-                      <span style={{fontSize:10,color:"#E5E7EB",fontWeight:600,lineHeight:1.3,wordBreak:"break-word"}}>{dl}</span>
+                      <span style={{fontSize:10,color:"#374151",fontWeight:600,lineHeight:1.3,wordBreak:"break-word"}}>{dl}</span>
                     </div>
                   );
                 })}
@@ -1570,7 +1570,7 @@ Génère le customer journey mapping complet en JSON.`}]
           {connMode?(connFrom?t.clickTarget:t.clickStart):t.connectionTool}
         </span>
       </div>
-      <div style={{marginTop:4,fontSize:9,color:"#E5E7EB",lineHeight:1.7}}>
+      <div style={{marginTop:4,fontSize:9,color:"#9CA3AF",lineHeight:1.7}}>
         <div>• Ctrl+C/V : copier/coller</div>
         <div>• Ctrl+D : dupliquer  • Suppr : effacer</div>
         <div>• Ctrl+] / [ : calque</div>
