@@ -654,6 +654,14 @@ export default function App(){
   const [hoveredType,setHoveredType]=useState(null);
   const [collapsedCats,setCollapsedCats]=useState({sources:true,pages:true,actions:true,text:true});
   const [showMapIt,setShowMapIt]=useState(false);
+  const [sidebarOpen,setSidebarOpen]=useState(false); // collapsed by default
+  const [isMobile,setIsMobile]=useState(()=>typeof window!=='undefined'?window.innerWidth<768:false);
+  useEffect(()=>{
+    const mq=window.matchMedia('(max-width:767px)');
+    const h=(e:MediaQueryListEvent)=>setIsMobile(e.matches);
+    mq.addEventListener('change',h);
+    return()=>mq.removeEventListener('change',h);
+  },[]);
 
   const cvRef=useRef(null);
   const pan_=useRef(null);
@@ -1372,6 +1380,8 @@ Génère le customer journey mapping complet en JSON.`}]
   addCenteredRef.current=addNodeCentered;
   const setShowMapItRef=useRef<any>(null);
   setShowMapItRef.current=setShowMapIt;
+  const setSidebarOpenRef=useRef<any>(null);
+  setSidebarOpenRef.current=setSidebarOpen;
   dropOnCvRef.current=(type:string,clientX:number,clientY:number)=>{
     const cvEl=cvRef.current;if(!cvEl)return;
     const rect=cvEl.getBoundingClientRect();
@@ -1442,7 +1452,11 @@ Génère le customer journey mapping complet en JSON.`}]
       } else {
         // Tap (no drag) — add to canvas center
         // MapIt items already have onClick → don't double-add
-        if(!sd.fromMapIt) addCenteredRef.current?.(sd.type);
+        if(!sd.fromMapIt){
+          addCenteredRef.current?.(sd.type);
+          // Close sidebar overlay on mobile after adding
+          setSidebarOpenRef.current?.(false);
+        }
       }
       sideDrag_.current=null;
     };
@@ -1636,6 +1650,16 @@ Génère le customer journey mapping complet en JSON.`}]
       {/* TOPBAR */}
       <div style={{height:46,background:"#1E293B",borderBottom:"1px solid #2D3F55",display:"flex",alignItems:"center",padding:"0 12px",gap:5,flexShrink:0,flexWrap:"nowrap",overflow:"hidden"}}>
         <span style={{fontSize:18,flexShrink:0}}>🗺️</span>
+        {/* Mobile hamburger — opens/closes sidebar overlay */}
+        {isMobile&&(
+          <button onClick={()=>setSidebarOpen(s=>!s)}
+            style={{...btnS,width:32,padding:0,display:'flex',alignItems:'center',justifyContent:'center',background:sidebarOpen?'#334155':'none',borderRadius:6}}>
+            {sidebarOpen
+              ?<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="2" y1="2" x2="13" y2="13"/><line x1="13" y1="2" x2="2" y2="13"/></svg>
+              :<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="2" y1="4" x2="13" y2="4"/><line x1="2" y1="7.5" x2="13" y2="7.5"/><line x1="2" y1="11" x2="13" y2="11"/></svg>
+            }
+          </button>
+        )}
         {/* Campaign selector */}
         <div style={{position:"relative",flexShrink:0}}>
           <button onClick={()=>setShowCampMenu(s=>!s)}
@@ -1717,94 +1741,164 @@ Génère le customer journey mapping complet en JSON.`}]
 
       <div style={{display:"flex",flex:1,overflow:"hidden",position:"relative"}}>
 
+        {/* ── SIDEBAR backdrop (mobile overlay) ─────────────────────────────── */}
+        {isMobile&&sidebarOpen&&(
+          <div onClick={()=>setSidebarOpen(false)}
+            style={{position:'fixed',inset:0,top:46,background:'rgba(0,0,0,.55)',zIndex:499}}/>
+        )}
+
         {/* ── SIDEBAR ──────────────────────────────────────────────────────── */}
-        <div style={{width:sidebarW,background:"#1E293B",borderRight:"1px solid #2D3F55",flexShrink:0,display:"flex",flexDirection:"column",position:"relative"}}>
-          {/* resize handle */}
-          <div onMouseDown={e=>{e.preventDefault();e.stopPropagation();sidebarDrag.current=true;document.body.style.cursor="col-resize";document.body.style.userSelect="none";}}
-            onMouseEnter={e=>e.currentTarget.style.background="rgba(59,130,246,.4)"}
-            onMouseLeave={e=>e.currentTarget.style.background="transparent"}
-            style={{position:"absolute",right:0,top:0,bottom:0,width:5,cursor:"col-resize",zIndex:20,background:"transparent"}}/>
+        <div style={{
+          ...(isMobile?{
+            position:'fixed',top:46,left:0,bottom:0,
+            width:sidebarOpen?Math.min(280,sidebarW):0,
+            zIndex:500,flexShrink:0,
+          }:{
+            width:sidebarOpen?sidebarW:44,
+            flexShrink:0,position:'relative',
+          }),
+          background:"#1E293B",
+          borderRight:"1px solid #2D3F55",
+          display:"flex",flexDirection:"column",
+          overflow:'hidden',
+          transition:'width .22s cubic-bezier(.4,0,.2,1)',
+        }}>
 
-          {/* MAP IT button */}
-          <div style={{padding:"10px 10px 8px",borderBottom:"1px solid #2D3F55"}}>
-            <button onClick={()=>setShowMapIt(s=>!s)} style={{width:"100%",background:showMapIt?"#2563EB":"linear-gradient(135deg,#1E3A5F,#1E4080)",border:`1px solid ${showMapIt?"#3B82F6":"#2D4F80"}`,color:"#fff",borderRadius:8,padding:"9px 12px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontSize:12,fontWeight:700,boxShadow:showMapIt?"0 0 0 2px rgba(59,130,246,.4)":"0 2px 8px rgba(0,0,0,.3)",transition:"all .15s"}}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3-6-3z" stroke="white" strokeWidth="1.8" strokeLinejoin="round"/><line x1="9" y1="3" x2="9" y2="18" stroke="white" strokeWidth="1.8"/><line x1="15" y1="6" x2="15" y2="21" stroke="white" strokeWidth="1.8"/><circle cx="20" cy="4" r="4" fill="#22C55E"/><line x1="20" y1="2" x2="20" y2="6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="18" y1="4" x2="22" y2="4" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
-              <span>MAP IT</span>
-            </button>
-          </div>
+          {/* Desktop: resize handle (expanded only) */}
+          {!isMobile&&sidebarOpen&&(
+            <div onMouseDown={e=>{e.preventDefault();e.stopPropagation();sidebarDrag.current=true;document.body.style.cursor="col-resize";document.body.style.userSelect="none";}}
+              onMouseEnter={e=>e.currentTarget.style.background="rgba(59,130,246,.4)"}
+              onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+              style={{position:"absolute",right:0,top:0,bottom:0,width:5,cursor:"col-resize",zIndex:20,background:"transparent"}}/>
+          )}
 
-          {/* scrollable node list — 3 main sections with flat subcategory separators */}
-          <div style={{flex:1,overflowY:"auto"}}>
-            {SIDEBAR_SECTIONS.map(section=>{
-              const collapsed=collapsedCats[section.key];
-              const allItems=section.cats.flatMap(c=>ND.filter(d=>d.cat===c.k));
-              if(!allItems.length)return null;
-              return(
-                <div key={section.key} style={{borderBottom:"1px solid #2D3F55"}}>
-                  {/* Section header — collapsible */}
-                  <div
-                    onClick={()=>toggleCat(section.key)}
-                    style={{padding:"9px 10px 6px",fontSize:10,fontWeight:700,color:"#94A3B8",textTransform:"uppercase",letterSpacing:.9,display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",userSelect:"none",background:"#172133"}}
-                    onMouseEnter={e=>e.currentTarget.style.background="#1E293B"}
-                    onMouseLeave={e=>e.currentTarget.style.background="#172133"}>
-                    <span>{(t as any)[section.sectionKey]||section.label}</span>
-                    <span style={{fontSize:9,color:"#475569",transition:"transform .2s",display:"inline-block",transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}>▼</span>
-                  </div>
-                  {!collapsed&&section.cats.map(catDef=>{
-                    const items=ND.filter(d=>d.cat===catDef.k);
-                    if(!items.length)return null;
-                    return(
-                      <div key={catDef.k}>
-                        {/* Subcategory separator — flat, non-clickable */}
-                        {catDef.subKey&&(
-                          <div style={{padding:"5px 10px 3px",display:"flex",alignItems:"center",gap:6}}>
-                            <div style={{flex:1,height:1,background:"#2D3F55"}}/>
-                            <span style={{fontSize:8.5,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:.7,whiteSpace:"nowrap"}}>{(t as any)[catDef.subKey]||catDef.sub}</span>
-                            <div style={{flex:1,height:1,background:"#2D3F55"}}/>
-                          </div>
-                        )}
-                        {items.map(d=>{
-                          const dl=getDL(d.type,customLabels);
-                          return(
-                            <div key={d.type} draggable={editingType!==d.type} onDragStart={editingType!==d.type?(e=>onSBDS(e,d.type)):undefined}
-                              onPointerEnter={()=>setHoveredType(d.type)} onPointerLeave={()=>setHoveredType(null)}
-                              onTouchStart={editingType!==d.type?e=>{
-                                const t0=e.touches[0];
-                                sideDrag_.current={type:d.type,label:getDL(d.type,customLabels),startX:t0.clientX,startY:t0.clientY,clientX:t0.clientX,clientY:t0.clientY,started:false,ghost:null};
-                              }:undefined}
-                              style={{display:"flex",alignItems:"center",gap:7,padding:"4px 8px",cursor:editingType===d.type?"default":"grab",borderRadius:6,margin:"0 4px 1px",background:hoveredType===d.type&&editingType!==d.type?"#2D3F55":"transparent",transition:"background .1s"}}>
-                              {/* Icon */}
-                              <div style={{width:26,height:26,flexShrink:0,position:"relative"}}>
-                                <div style={{width:26,height:26,borderRadius:d.sh==="circle"?13:d.sh==="browser"?3:2,background:d.sh==="browser"?"#054547":d.sh==="textbox"?"transparent":(d.bg||"#3B82F6"),transform:d.sh==="diamond"?"rotate(45deg) scale(.6)":"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:d.fg||"#fff",overflow:"hidden",border:d.sh==="textbox"?"1.5px dashed #64748B":"none"}}>
-                                  {d.sh==="textbox"?<span style={{color:"#94A3B8",fontSize:9,fontWeight:800}}>Aa</span>
-                                    :d.sh==="browser"?<span style={{fontSize:7,color:"#fff"}}>📄</span>
-                                    :LOGOS[d.type]
-                                      ?React.cloneElement(LOGOS[d.type],{width:26,height:26,style:{display:"block"}})
-                                      :<span style={{fontSize:10,fontWeight:700}}>{d.icon||"?"}</span>}
-                                </div>
-                                {d.cat==="src_payant"&&<div style={{position:"absolute",bottom:-1,right:-1,width:12,height:12,borderRadius:"50%",background:d.bg||"#3B82F6",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:900,color:"#fff",lineHeight:1,zIndex:10,boxShadow:"0 1px 2px rgba(0,0,0,.25)"}}>$</div>}
-                              </div>
-                              {editingType===d.type?(
-                                <input value={editVal} onChange={e=>setEditVal(e.target.value)} onBlur={finishEdit} onKeyDown={e=>{if(e.key==="Enter")finishEdit();if(e.key==="Escape")setEditingType(null);}} autoFocus onClick={e=>e.stopPropagation()} style={{background:"#0F172A",border:"1px solid #3B82F6",color:"#F1F5F9",borderRadius:4,padding:"2px 5px",fontSize:11,outline:"none",flex:1,fontFamily:"inherit"}}/>
-                              ):(
-                                <>
-                                  <span style={{color:"#CBD5E1",fontSize:11,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{dl}</span>
-                                  {d.type!=="page"&&<button onClick={e=>{e.stopPropagation();setEditingType(d.type);setEditVal(dl);}} style={{opacity:hoveredType===d.type?1:0,background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:11,padding:"0 2px",flexShrink:0}}>✏️</button>}
-                                </>
-                              )}
+          {/* Desktop: icon strip shown when collapsed */}
+          {!isMobile&&(
+            <div style={{
+              position:'absolute',top:0,left:0,width:44,height:'100%',
+              display:'flex',flexDirection:'column',alignItems:'center',
+              paddingTop:10,gap:2,zIndex:5,
+              opacity:sidebarOpen?0:1,
+              pointerEvents:sidebarOpen?'none':'auto',
+              transition:'opacity .12s ease',
+            }}>
+              {/* Expand chevron */}
+              <button onClick={()=>setSidebarOpen(true)} title="Expand sidebar"
+                style={{width:32,height:32,background:'none',border:'none',color:'#64748B',cursor:'pointer',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:4}}
+                onPointerEnter={e=>(e.currentTarget.style.background='#2D3F55')}
+                onPointerLeave={e=>(e.currentTarget.style.background='none')}>
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="5 2 10 7 5 12"/></svg>
+              </button>
+              {/* Section icons */}
+              {SIDEBAR_SECTIONS.map(s=>(
+                <button key={s.key} onClick={()=>setSidebarOpen(true)}
+                  title={(t as any)[s.sectionKey]||s.label}
+                  style={{width:36,height:36,background:'none',border:'none',color:'#64748B',cursor:'pointer',borderRadius:6,fontSize:17,display:'flex',alignItems:'center',justifyContent:'center'}}
+                  onPointerEnter={e=>{e.currentTarget.style.background='#2D3F55';(e.currentTarget as HTMLElement).style.color='#94A3B8';}}
+                  onPointerLeave={e=>{e.currentTarget.style.background='none';(e.currentTarget as HTMLElement).style.color='#64748B';}}>
+                  {s.icon}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Full sidebar content — always in DOM, opacity + pointerEvents control visibility */}
+          <div style={{
+            display:'flex',flexDirection:'column',flex:1,
+            minWidth:isMobile?undefined:sidebarW, // prevent squishing during animation
+            opacity:sidebarOpen?1:0,
+            pointerEvents:sidebarOpen?'auto':'none',
+            transition:'opacity .12s ease',
+          }}>
+            {/* Header: MAP IT button + collapse button */}
+            <div style={{padding:"10px 10px 8px",borderBottom:"1px solid #2D3F55",display:'flex',gap:6,alignItems:'center'}}>
+              <button onClick={()=>setShowMapIt(s=>!s)} style={{flex:1,background:showMapIt?"#2563EB":"linear-gradient(135deg,#1E3A5F,#1E4080)",border:`1px solid ${showMapIt?"#3B82F6":"#2D4F80"}`,color:"#fff",borderRadius:8,padding:"9px 12px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontSize:12,fontWeight:700,boxShadow:showMapIt?"0 0 0 2px rgba(59,130,246,.4)":"0 2px 8px rgba(0,0,0,.3)",transition:"all .15s"}}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3-6-3z" stroke="white" strokeWidth="1.8" strokeLinejoin="round"/><line x1="9" y1="3" x2="9" y2="18" stroke="white" strokeWidth="1.8"/><line x1="15" y1="6" x2="15" y2="21" stroke="white" strokeWidth="1.8"/><circle cx="20" cy="4" r="4" fill="#22C55E"/><line x1="20" y1="2" x2="20" y2="6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="18" y1="4" x2="22" y2="4" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                <span>MAP IT</span>
+              </button>
+              {/* Collapse toggle */}
+              <button onClick={()=>setSidebarOpen(false)}
+                title={isMobile?"Close":"Collapse sidebar"}
+                style={{width:32,height:32,background:'none',border:'1px solid #2D3F55',color:'#475569',cursor:'pointer',borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}
+                onPointerEnter={e=>(e.currentTarget.style.background='#2D3F55')}
+                onPointerLeave={e=>(e.currentTarget.style.background='none')}>
+                {isMobile
+                  ?<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="1" y1="1" x2="12" y2="12"/><line x1="12" y1="1" x2="1" y2="12"/></svg>
+                  :<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="9 2 4 6.5 9 11"/></svg>
+                }
+              </button>
+            </div>
+
+            {/* Scrollable node list */}
+            <div style={{flex:1,overflowY:"auto"}}>
+              {SIDEBAR_SECTIONS.map(section=>{
+                const collapsed=collapsedCats[section.key];
+                const allItems=section.cats.flatMap(c=>ND.filter(d=>d.cat===c.k));
+                if(!allItems.length)return null;
+                return(
+                  <div key={section.key} style={{borderBottom:"1px solid #2D3F55"}}>
+                    <div
+                      onClick={()=>toggleCat(section.key)}
+                      style={{padding:"9px 10px 6px",fontSize:10,fontWeight:700,color:"#94A3B8",textTransform:"uppercase",letterSpacing:.9,display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",userSelect:"none",background:"#172133"}}
+                      onPointerEnter={e=>(e.currentTarget as HTMLElement).style.background="#1E293B"}
+                      onPointerLeave={e=>(e.currentTarget as HTMLElement).style.background="#172133"}>
+                      <span>{(t as any)[section.sectionKey]||section.label}</span>
+                      <span style={{fontSize:9,color:"#475569",transition:"transform .2s",display:"inline-block",transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}>▼</span>
+                    </div>
+                    {!collapsed&&section.cats.map(catDef=>{
+                      const items=ND.filter(d=>d.cat===catDef.k);
+                      if(!items.length)return null;
+                      return(
+                        <div key={catDef.k}>
+                          {catDef.subKey&&(
+                            <div style={{padding:"5px 10px 3px",display:"flex",alignItems:"center",gap:6}}>
+                              <div style={{flex:1,height:1,background:"#2D3F55"}}/>
+                              <span style={{fontSize:8.5,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:.7,whiteSpace:"nowrap"}}>{(t as any)[catDef.subKey]||catDef.sub}</span>
+                              <div style={{flex:1,height:1,background:"#2D3F55"}}/>
                             </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })}
-          </div>
+                          )}
+                          {items.map(d=>{
+                            const dl=getDL(d.type,customLabels);
+                            return(
+                              <div key={d.type} draggable={editingType!==d.type} onDragStart={editingType!==d.type?(e=>onSBDS(e,d.type)):undefined}
+                                onPointerEnter={()=>setHoveredType(d.type)} onPointerLeave={()=>setHoveredType(null)}
+                                onTouchStart={editingType!==d.type?e=>{
+                                  const t0=e.touches[0];
+                                  sideDrag_.current={type:d.type,label:getDL(d.type,customLabels),startX:t0.clientX,startY:t0.clientY,clientX:t0.clientX,clientY:t0.clientY,started:false,ghost:null};
+                                }:undefined}
+                                style={{display:"flex",alignItems:"center",gap:7,padding:"4px 8px",cursor:editingType===d.type?"default":"grab",borderRadius:6,margin:"0 4px 1px",background:hoveredType===d.type&&editingType!==d.type?"#2D3F55":"transparent",transition:"background .1s"}}>
+                                <div style={{width:26,height:26,flexShrink:0,position:"relative"}}>
+                                  <div style={{width:26,height:26,borderRadius:d.sh==="circle"?13:d.sh==="browser"?3:2,background:d.sh==="browser"?"#054547":d.sh==="textbox"?"transparent":(d.bg||"#3B82F6"),transform:d.sh==="diamond"?"rotate(45deg) scale(.6)":"none",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:d.fg||"#fff",overflow:"hidden",border:d.sh==="textbox"?"1.5px dashed #64748B":"none"}}>
+                                    {d.sh==="textbox"?<span style={{color:"#94A3B8",fontSize:9,fontWeight:800}}>Aa</span>
+                                      :d.sh==="browser"?<span style={{fontSize:7,color:"#fff"}}>📄</span>
+                                      :LOGOS[d.type]
+                                        ?React.cloneElement(LOGOS[d.type],{width:26,height:26,style:{display:"block"}})
+                                        :<span style={{fontSize:10,fontWeight:700}}>{d.icon||"?"}</span>}
+                                  </div>
+                                  {d.cat==="src_payant"&&<div style={{position:"absolute",bottom:-1,right:-1,width:12,height:12,borderRadius:"50%",background:d.bg||"#3B82F6",border:"2px solid #fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:7,fontWeight:900,color:"#fff",lineHeight:1,zIndex:10,boxShadow:"0 1px 2px rgba(0,0,0,.25)"}}>$</div>}
+                                </div>
+                                {editingType===d.type?(
+                                  <input value={editVal} onChange={e=>setEditVal(e.target.value)} onBlur={finishEdit} onKeyDown={e=>{if(e.key==="Enter")finishEdit();if(e.key==="Escape")setEditingType(null);}} autoFocus onClick={e=>e.stopPropagation()} style={{background:"#0F172A",border:"1px solid #3B82F6",color:"#F1F5F9",borderRadius:4,padding:"2px 5px",fontSize:11,outline:"none",flex:1,fontFamily:"inherit"}}/>
+                                ):(
+                                  <>
+                                    <span style={{color:"#CBD5E1",fontSize:11,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{dl}</span>
+                                    {d.type!=="page"&&<button onClick={e=>{e.stopPropagation();setEditingType(d.type);setEditVal(dl);}} style={{opacity:hoveredType===d.type?1:0,background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:11,padding:"0 2px",flexShrink:0}}>✏️</button>}
+                                  </>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
 
-          {/* ── Arrow tool pinned at bottom ─────────────────────────────── */}
-          <ArrowToolBar/>
+            {/* Arrow tool pinned at bottom */}
+            <ArrowToolBar/>
+          </div>
         </div>
 
         {/* ── CANVAS ───────────────────────────────────────────────────────── */}
