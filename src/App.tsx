@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { AvatarPill } from "./components/AvatarPill";
 import { storageGet, storageSet, storageDelete } from "./lib/supabase";
+import { useLanguage } from "./contexts/LanguageContext";
+import type { Translations } from "./i18n";
 
 const ARROW_COLORS=["#94A3B8","#3B82F6","#22C55E","#F97316","#EF4444","#8B5CF6","#EC4899","#FBBF24"];
 const FONTS=[
@@ -128,13 +130,19 @@ const LOGOS={
   popup:(<svg viewBox="0 0 24 24" width="38" height="38"><rect width="24" height="24" rx="12" fill="#EC4899"/><rect x="5" y="6" width="14" height="12" rx="2" fill="none" stroke="white" strokeWidth="1.5"/><line x1="9" y1="6" x2="9" y2="18" stroke="white" strokeWidth="1" opacity="0.4"/><rect x="9" y="9" width="8" height="6" rx="1" fill="white" opacity="0.3"/></svg>),
 };
 
+
 // ─── PAGE STYLES ──────────────────────────────────────────────────────────────
-const PAGE_STYLES = [
+// thumb is a function (t: Translations) => JSX so button labels & calendar
+// day abbreviations update when the language changes.
+// labelKey references a key in Translations for the human-readable page name.
+// ─────────────────────────────────────────────────────────────────────────────
+const _BROWSER_BAR = (<><rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/></>);
+const PAGE_STYLES: {id:string; labelKey:keyof Translations; hc:string; thumb:(t:Translations)=>JSX.Element}[] = [
   {
-    id:"abonnement", label:"Page d'abonnement", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"abonnement", labelKey:"pageAbonnement", hc:"#054547",
+    thumb:(t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#FFFFFF" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <rect x="8" y="22" width="70" height="2" rx="1" fill="#054547"/>
       <rect x="16" y="28" width="54" height="2.5" rx="1.5" fill="#D0D8D7"/>
       <rect x="22" y="33" width="42" height="2" rx="1" fill="#EFF7F5"/>
@@ -142,14 +150,14 @@ const PAGE_STYLES = [
       <rect x="8" y="51" width="70" height="8" rx="2" fill="white" stroke="#D0D8D7" strokeWidth="1"/>
       <rect x="8" y="62" width="70" height="8" rx="2" fill="white" stroke="#D0D8D7" strokeWidth="1"/>
       <rect x="8" y="75" width="70" height="12" rx="3" fill="#E9C92B"/>
-      <text x="43" y="81.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">INSCRIPTION</text>
+      <text x="43" y="81.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">{t.ctaSignUp}</text>
     </svg>),
   },
   {
-    id:"blog", label:"Page de blog", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"blog", labelKey:"pageBlog", hc:"#054547",
+    thumb:(_t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#FFFFFF" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <rect x="8" y="18" width="70" height="28" rx="3" fill="#EFF7F5" stroke="#D0D8D7" strokeWidth="1"/>
       <rect x="14" y="22" width="58" height="18" rx="2" fill="#D0D8D7"/>
       <polygon points="26,40 40,26 54,40" fill="#B0BCBA"/>
@@ -167,26 +175,22 @@ const PAGE_STYLES = [
     </svg>),
   },
   {
-    id:"calendrier", label:"Page de calendrier", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"calendrier", labelKey:"pageCalendrier", hc:"#054547",
+    thumb:(t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#F8FAFA" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/>
-      <circle cx="8" cy="7" r="2.5" fill="#FF5F57"/>
-      <circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/>
-      <circle cx="22" cy="7" r="2.5" fill="#28C840"/>
-      <rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <rect x="6" y="17" width="74" height="88" rx="5" fill="white"/>
       <rect x="6" y="17" width="74" height="12" rx="5" fill="#054547"/>
       <rect x="11" y="19.5" width="20" height="2.5" rx="1.2" fill="rgba(255,255,255,0.85)"/>
       <text x="72" y="24.5" fontSize="6" fill="rgba(255,255,255,0.65)" textAnchor="middle">{"‹›"}</text>
       <rect x="6" y="29" width="74" height="7" fill="#EFF7F5"/>
-      <text x="11"   y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">D</text>
-      <text x="21.5" y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">L</text>
-      <text x="32"   y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">M</text>
-      <text x="42.5" y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">M</text>
-      <text x="53"   y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">J</text>
-      <text x="63.5" y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">V</text>
-      <text x="74"   y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">S</text>
+      <text x="11"   y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">{t.calDays[0]}</text>
+      <text x="21.5" y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">{t.calDays[1]}</text>
+      <text x="32"   y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">{t.calDays[2]}</text>
+      <text x="42.5" y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">{t.calDays[3]}</text>
+      <text x="53"   y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">{t.calDays[4]}</text>
+      <text x="63.5" y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">{t.calDays[5]}</text>
+      <text x="74"   y="34" fontSize="4" fill="#054547" textAnchor="middle" fontWeight="600">{t.calDays[6]}</text>
       <line x1="6" y1="39" x2="80" y2="39" stroke="#EFF7F5" strokeWidth="0.5"/>
       <line x1="6" y1="48" x2="80" y2="48" stroke="#EFF7F5" strokeWidth="0.5"/>
       <line x1="6" y1="57" x2="80" y2="57" stroke="#EFF7F5" strokeWidth="0.5"/>
@@ -228,14 +232,14 @@ const PAGE_STYLES = [
       <text x="21.5" y="88" fontSize="5" fill="#054547" textAnchor="middle">30</text>
       <text x="32"   y="88" fontSize="5" fill="#054547" textAnchor="middle">31</text>
       <rect x="8" y="90" width="70" height="12" rx="3" fill="#E9C92B"/>
-      <text x="43" y="96.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">RENDEZ-VOUS</text>
+      <text x="43" y="96.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">{t.ctaBook}</text>
     </svg>),
   },
   {
-    id:"commande", label:"Page de commande", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"commande", labelKey:"pageCommande", hc:"#054547",
+    thumb:(t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#FFFFFF" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <rect x="8" y="18" width="35" height="22" rx="2" fill="#EFF7F5" stroke="#D0D8D7" strokeWidth="1"/>
       <circle cx="20" cy="27" r="5" fill="#D0D8D7"/>
       <rect x="27" y="20" width="12" height="2" rx="1" fill="#054547"/>
@@ -250,14 +254,14 @@ const PAGE_STYLES = [
       <rect x="8" y="78" width="7" height="7" rx="1.5" fill="#EFF7F5" stroke="#054547" strokeWidth="1"/>
       <rect x="18" y="80" width="40" height="2" rx="1" fill="#D0D8D7"/>
       <rect x="8" y="90" width="70" height="12" rx="3" fill="#E9C92B"/>
-      <text x="43" y="96.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">ACHETER</text>
+      <text x="43" y="96.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">{t.ctaBuy}</text>
     </svg>),
   },
   {
-    id:"membres", label:"Page de membres", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"membres", labelKey:"pageMembers", hc:"#054547",
+    thumb:(_t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#FFFFFF" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <rect x="8" y="19" width="70" height="1.5" rx="0.75" fill="#054547"/>
       <rect x="8" y="25" width="50" height="2" rx="1" fill="#D0D8D7"/>
       <rect x="8" y="30" width="70" height="26" rx="3" fill="#EFF7F5" stroke="#D0D8D7" strokeWidth="1"/>
@@ -275,10 +279,10 @@ const PAGE_STYLES = [
     </svg>),
   },
   {
-    id:"remerciement", label:"Page de remerciement", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"remerciement", labelKey:"pageRemerciement", hc:"#054547",
+    thumb:(t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#FFFFFF" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <circle cx="43" cy="36" r="14" fill="#EFF7F5" stroke="#054547" strokeWidth="1.5"/>
       <polyline points="36,36 41,42 51,29" stroke="#054547" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
       <rect x="12" y="56" width="62" height="1.5" rx="0.75" fill="#054547"/>
@@ -287,14 +291,14 @@ const PAGE_STYLES = [
       <rect x="22" y="71" width="42" height="2" rx="1" fill="#EFF7F5"/>
       <rect x="8" y="78" width="70" height="8" rx="2" fill="white" stroke="#D0D8D7" strokeWidth="1"/>
       <rect x="8" y="91" width="70" height="12" rx="3" fill="#E9C92B"/>
-      <text x="43" y="97.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">MERCI</text>
+      <text x="43" y="97.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">{t.ctaThanks}</text>
     </svg>),
   },
   {
-    id:"sondage", label:"Page de checklist", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"sondage", labelKey:"pageSondage", hc:"#054547",
+    thumb:(t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#FFFFFF" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <rect x="8" y="19" width="70" height="1.5" rx="0.75" fill="#054547"/>
       <rect x="8" y="26" width="50" height="2" rx="1" fill="#D0D8D7"/>
       <rect x="8"  y="33" width="6" height="6" rx="1.5" fill="#E9C92B"/>
@@ -308,14 +312,14 @@ const PAGE_STYLES = [
       <rect x="8"  y="73" width="6" height="6" rx="1.5" fill="#EFF7F5" stroke="#054547" strokeWidth="1"/>
       <rect x="17" y="74.5" width="36" height="2" rx="1" fill="#D0D8D7"/>
       <rect x="8" y="85" width="70" height="12" rx="3" fill="#E9C92B"/>
-      <text x="43" y="91.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">TÉLÉCHARGER</text>
+      <text x="43" y="91.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">{t.ctaDownload}</text>
     </svg>),
   },
   {
-    id:"telechargement", label:"Page de téléchargement", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"telechargement", labelKey:"pageTelechargement", hc:"#054547",
+    thumb:(t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#FFFFFF" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <circle cx="43" cy="36" r="14" fill="#EFF7F5" stroke="#054547" strokeWidth="1.5"/>
       <line x1="43" y1="27" x2="43" y2="38" stroke="#054547" strokeWidth="2.5" strokeLinecap="round"/>
       <polyline points="36,34 43,41 50,34" stroke="#054547" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
@@ -325,14 +329,14 @@ const PAGE_STYLES = [
       <rect x="18" y="68" width="50" height="2" rx="1" fill="#D0D8D7"/>
       <rect x="8" y="75" width="70" height="8" rx="2" fill="white" stroke="#D0D8D7" strokeWidth="1"/>
       <rect x="8" y="85" width="70" height="12" rx="3" fill="#E9C92B"/>
-      <text x="43" y="91.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">TÉLÉCHARGER</text>
+      <text x="43" y="91.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">{t.ctaDownload}</text>
     </svg>),
   },
   {
-    id:"vente_video", label:"Page de vente vidéo", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"vente_video", labelKey:"pageVenteVideo", hc:"#054547",
+    thumb:(t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#FFFFFF" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <rect x="8" y="18" width="70" height="34" rx="3" fill="#054547"/>
       <circle cx="43" cy="35" r="9" fill="rgba(255,255,255,0.15)"/>
       <polygon points="40,30 40,40 50,35" fill="#E9C92B"/>
@@ -341,14 +345,14 @@ const PAGE_STYLES = [
       <rect x="8" y="68" width="70" height="8" rx="2" fill="white" stroke="#D0D8D7" strokeWidth="1"/>
       <rect x="8" y="79" width="70" height="8" rx="2" fill="white" stroke="#D0D8D7" strokeWidth="1"/>
       <rect x="8" y="92" width="70" height="12" rx="3" fill="#E9C92B"/>
-      <text x="43" y="98.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">ACHETER</text>
+      <text x="43" y="98.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">{t.ctaBuy}</text>
     </svg>),
   },
   {
-    id:"vente", label:"Page de vente", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"vente", labelKey:"pageVente", hc:"#054547",
+    thumb:(t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#FFFFFF" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <rect x="8" y="18" width="70" height="28" rx="3" fill="#EFF7F5" stroke="#D0D8D7" strokeWidth="1"/>
       <polygon points="26,46 43,24 60,46" fill="#D0D8D7"/>
       <circle cx="57" cy="28" r="5" fill="#D0D8D7"/>
@@ -358,14 +362,14 @@ const PAGE_STYLES = [
       <rect x="8" y="65" width="70" height="8" rx="2" fill="white" stroke="#D0D8D7" strokeWidth="1"/>
       <rect x="8" y="76" width="70" height="8" rx="2" fill="white" stroke="#D0D8D7" strokeWidth="1"/>
       <rect x="8" y="89" width="70" height="12" rx="3" fill="#E9C92B"/>
-      <text x="43" y="95.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">ACHETER</text>
+      <text x="43" y="95.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">{t.ctaBuy}</text>
     </svg>),
   },
   {
-    id:"webinaire", label:"Page de webinaire live", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"webinaire", labelKey:"pageWebinaire", hc:"#054547",
+    thumb:(_t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#FFFFFF" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <rect x="8" y="18" width="32" height="24" rx="2" fill="#EFF7F5" stroke="#D0D8D7" strokeWidth="1"/>
       <circle cx="24" cy="27" r="6" fill="#D0D8D7"/>
       <circle cx="24" cy="24" r="2.5" fill="#B0BCBA"/>
@@ -389,20 +393,21 @@ const PAGE_STYLES = [
     </svg>),
   },
   {
-    id:"upsell", label:"Page d'upsell", hc:"#054547",
-    thumb:(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
+    id:"upsell", labelKey:"pageUpsell", hc:"#054547",
+    thumb:(t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">
       <rect width="86" height="108" fill="#FFFFFF" rx="4"/>
-      <rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/>
+      {_BROWSER_BAR}
       <rect x="8" y="19" width="70" height="1.5" rx="0.75" fill="#054547"/>
       <rect x="16" y="25" width="54" height="2" rx="1" fill="#D0D8D7"/>
       <rect x="8" y="31" width="70" height="30" rx="3" fill="#054547"/>
       <circle cx="43" cy="46" r="9" fill="rgba(255,255,255,0.12)"/>
       <polygon points="40,41 40,51 50,46" fill="#E9C92B"/>
       <rect x="8" y="66" width="70" height="12" rx="3" fill="#E9C92B"/>
-      <text x="43" y="72.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">ACHETER</text>
+      <text x="43" y="72.0" fontSize="7" fontWeight="bold" fill="white" textAnchor="middle" dominantBaseline="middle">{t.ctaBuy}</text>
       <rect x="22" y="84" width="42" height="2" rx="1" fill="#D0D8D7"/>
     </svg>),
-  },];
+  },
+];
 
 const ND=[
   // ── SOURCES › Payantes ──
@@ -541,7 +546,7 @@ function BrowserNode({node,sel,cs,cm,w,h}){
         transform:`scale(${scaleX},${scaleY})`,
         transformOrigin:"top left",
       }}>
-        {ps.thumb}
+        {ps.thumb(t)}
       </div>
     </div>
   );
@@ -598,32 +603,9 @@ const SH=({children})=><div style={{fontSize:9.5,fontWeight:700,color:"#94A3B8",
 const ActBtn=({onClick,icon,label,disabled})=>(<button onClick={onClick} disabled={disabled} style={{flex:1,background:disabled?"#0F172A":"#1E3A5F",border:`1px solid ${disabled?"#1E2D40":"#2563EB"}`,color:disabled?"#475569":"#fff",borderRadius:6,padding:"7px 4px",cursor:disabled?"not-allowed":"pointer",fontSize:11,fontWeight:600,display:"flex",flexDirection:"column",alignItems:"center",gap:3,opacity:disabled?0.5:1}}><span style={{fontSize:16}}>{icon}</span><span style={{fontSize:9,lineHeight:1.2,textAlign:"center"}}>{label}</span></button>);
 const LayerBtn=({onClick,icon,label,kbd})=>(<button onClick={onClick} title={`${label} (${kbd})`} style={{flex:1,background:"#0F172A",border:"1px solid #1E2D40",color:"#CBD5E1",borderRadius:5,padding:"5px 2px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:1}} onMouseEnter={e=>e.currentTarget.style.background="#1E2D40"} onMouseLeave={e=>e.currentTarget.style.background="#0F172A"}><span style={{fontSize:13}}>{icon}</span><span style={{fontSize:8,lineHeight:1.2,textAlign:"center",color:"#94A3B8"}}>{label}</span><span style={{fontSize:7,color:"#475569"}}>{kbd}</span></button>);
 
-// ─── i18n ──────────────────────────────────────────────────────────────────
-const T={
-  fr:{
-    loading:'Chargement...',
-    tagline:"Visualisez et automatisez vos parcours clients avec l'IA",
-    signInGoogle:'Se connecter avec Google',
-    signOut:'Déconnexion',
-    language:'Langue',
-    switchLang:'English',
-  },
-  en:{
-    loading:'Loading...',
-    tagline:'Visualize and automate your customer journeys with AI',
-    signInGoogle:'Sign in with Google',
-    signOut:'Sign out',
-    language:'Language',
-    switchLang:'Français',
-  },
-} as const;
-type Lang='fr'|'en';
-
 export default function App(){
-  const { user, loading, signInWithGoogle, signOut } = useAuth();
-  const [lang,setLangState]=useState<Lang>(()=>(localStorage.getItem('cjm_lang') as Lang)||'fr');
-  const t=T[lang];
-  const setLang=(l:Lang)=>{localStorage.setItem('cjm_lang',l);setLangState(l);};
+  const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
+  const { t, lang, setLang } = useLanguage();
 
   const [nodes,setNodes]=useState([]);
   const [conns,setConns]=useState([]);
@@ -776,7 +758,7 @@ export default function App(){
 
   const generateMapping=async()=>{
     if(!briefInitial.trim()){setGenMsg({type:"err",text:"Veuillez coller votre brief marketing d'abord."});setTimeout(()=>setGenMsg(null),4000);return;}
-    setGenerating(true);setGenMsg({type:"info",text:"🤖 Analyse du brief en cours..."});
+    setGenerating(true);setGenMsg({type:"info",text:t.analyzing});
     try{
       const nodeTypes=`
 SOURCES PAYANTES (shape: cercle): facebook, instagram, google, twitter, youtube, linkedin, reddit, tiktok, pinterest, bing
@@ -1152,10 +1134,10 @@ Génère le customer journey mapping complet en JSON.`}]
     <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid #2D3F55"}}>
       <SH>Calque</SH>
       <div style={{display:"flex",gap:4}}>
-        <LayerBtn onClick={bringToFront} icon="⬆" label="Premier" kbd="⌘⇧]"/>
-        <LayerBtn onClick={bringForward} icon="↑" label="Avancer" kbd="⌘]"/>
-        <LayerBtn onClick={sendBackward} icon="↓" label="Reculer" kbd="⌘["/>
-        <LayerBtn onClick={sendToBack} icon="⬇" label="Arriere" kbd="⌘⇧["/>
+        <LayerBtn onClick={bringToFront} icon="⬆" label={t.bringToFront} kbd="⌘⇧]"/>
+        <LayerBtn onClick={bringForward} icon="↑" label={t.bringForward} kbd="⌘]"/>
+        <LayerBtn onClick={sendBackward} icon="↓" label={t.sendBackward} kbd="⌘["/>
+        <LayerBtn onClick={sendToBack} icon="⬇" label={t.sendToBack} kbd="⌘⇧["/>
       </div>
     </div>
   );
@@ -1201,12 +1183,12 @@ Génère le customer journey mapping complet en JSON.`}]
             const isSel=currentStyle===ps.id;
             return(
               <div key={ps.id}
-                onClick={()=>{saveH(nodes,conns);upN(node.id,{pageStyle:ps.id,label:ps.label});}}
+                onClick={()=>{saveH(nodes,conns);upN(node.id,{pageStyle:ps.id,label:t[ps.labelKey]});}}
                 style={{cursor:"pointer",borderRadius:6,border:`2px solid ${isSel?"#3B82F6":"#2D3F55"}`,background:isSel?"rgba(59,130,246,.08)":"#0F172A",padding:"5px 4px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,transition:"border-color .15s",boxShadow:isSel?"0 0 0 1px #1D4ED8":""}}
                 onMouseEnter={e=>{if(!isSel)e.currentTarget.style.borderColor="#475569";}}
                 onMouseLeave={e=>{if(!isSel)e.currentTarget.style.borderColor="#2D3F55";}}>
-                <div style={{width:86,height:108,borderRadius:3,overflow:"hidden",flexShrink:0}}>{ps.thumb}</div>
-                <span style={{fontSize:8.5,color:isSel?"#93C5FD":"#94A3B8",textAlign:"center",lineHeight:1.3,fontWeight:isSel?700:400}}>{ps.label}</span>
+                <div style={{width:86,height:108,borderRadius:3,overflow:"hidden",flexShrink:0}}>{ps.thumb(t)}</div>
+                <span style={{fontSize:8.5,color:isSel?"#93C5FD":"#94A3B8",textAlign:"center",lineHeight:1.3,fontWeight:isSel?700:400}}>{t[ps.labelKey]}</span>
               </div>
             );
           })}
@@ -1252,7 +1234,7 @@ Génère le customer journey mapping complet en JSON.`}]
         {title:"Autres",              items:ND.filter(d=>d.cat==="src_autres")},
         {title:"Messages",            items:ND.filter(d=>d.cat==="src_msg")},
       ],
-      pages:[{title:"Styles de pages", items:PAGE_STYLES.map(ps=>({type:"page_"+ps.id,label:ps.label,sh:"browser",_pageStyle:ps.id,_thumb:ps.thumb}))}],
+      pages:[{title:"Styles de pages", items:PAGE_STYLES.map(ps=>({type:"page_"+ps.id,label:t[ps.labelKey],sh:"browser",_pageStyle:ps.id,_thumb:ps.thumb(t)}))}],
       actions:[
         {title:"Délais",      items:ND.filter(d=>d.cat==="act_delai")},
         {title:"Conversions", items:ND.filter(d=>d.cat==="act_conv")},
@@ -1331,7 +1313,7 @@ Génère le customer journey mapping complet en JSON.`}]
         onMouseLeave={e=>{if(!connMode)e.currentTarget.style.background="#0F172A";}}>
         <div style={{width:24,height:16,borderRadius:3,background:connMode?"#2563EB":"#334155",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,color:"#fff",fontWeight:700,flexShrink:0}}>→</div>
         <span style={{color:connMode?"#93C5FD":"#CBD5E1",fontSize:11,flex:1}}>
-          {connMode?(connFrom?"Cliquer la cible":"Cliquer la source"):"Flèche / Connexion"}
+          {connMode?(connFrom?t.clickTarget:t.clickStart):t.connectionTool}
         </span>
       </div>
       <div style={{marginTop:4,fontSize:9,color:"#334155",lineHeight:1.7}}>
@@ -1343,7 +1325,7 @@ Génère le customer journey mapping complet en JSON.`}]
   );
 
   // ─── Auth loading screen ───────────────────────────────────────────────────
-  if (loading) return (
+  if (authLoading) return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'#0F172A',color:'#94A3B8',flexDirection:'column',gap:16}}>
       <span style={{fontSize:32}}>🗺️</span>
       <span style={{fontSize:14}}>{t.loading}</span>
@@ -1387,7 +1369,7 @@ Génère le customer journey mapping complet en JSON.`}]
               <div style={{display:"flex",alignItems:"center",gap:10}}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3-6-3z" stroke="white" strokeWidth="1.8" strokeLinejoin="round"/><line x1="9" y1="3" x2="9" y2="18" stroke="white" strokeWidth="1.8"/><line x1="15" y1="6" x2="15" y2="21" stroke="white" strokeWidth="1.8"/></svg>
                 <span style={{color:"#F1F5F9",fontWeight:800,fontSize:16}}>MAP IT</span>
-                <span style={{color:"#64748B",fontSize:12}}>— Cliquez un élément pour l'ajouter au canvas</span>
+                <span style={{color:"#64748B",fontSize:12}}>{t.mapItSubtitle}</span>
               </div>
               <button onClick={()=>setShowMapIt(false)} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:30,height:30,borderRadius:8,fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
             </div>
@@ -1401,11 +1383,11 @@ Génère le customer journey mapping complet en JSON.`}]
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.65)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center"}} onClick={()=>setDeleteConfirm(null)}>
           <div style={{background:"#1E293B",borderRadius:12,padding:24,width:320,border:"1px solid #334155",boxShadow:"0 20px 60px rgba(0,0,0,.6)"}} onClick={e=>e.stopPropagation()}>
             <div style={{fontSize:24,marginBottom:10,textAlign:"center"}}>🗑️</div>
-            <div style={{color:"#F1F5F9",fontWeight:700,fontSize:15,marginBottom:8,textAlign:"center"}}>Confirmer la suppression</div>
+            <div style={{color:"#F1F5F9",fontWeight:700,fontSize:15,marginBottom:8,textAlign:"center"}}>{t.confirmDelete}</div>
             <div style={{color:"#94A3B8",fontSize:13,marginBottom:20,textAlign:"center",lineHeight:1.5}}>{deleteConfirm.message}</div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>setDeleteConfirm(null)} style={{flex:1,background:"#334155",border:"none",color:"#F1F5F9",padding:"10px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>Annuler</button>
-              <button onClick={()=>{deleteConfirm.onConfirm();setDeleteConfirm(null);}} style={{flex:1,background:"#d82c0d",border:"none",color:"#fff",padding:"10px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700}}>Supprimer</button>
+              <button onClick={()=>setDeleteConfirm(null)} style={{flex:1,background:"#334155",border:"none",color:"#F1F5F9",padding:"10px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600}}>{t.cancel}</button>
+              <button onClick={()=>{deleteConfirm.onConfirm();setDeleteConfirm(null);}} style={{flex:1,background:"#d82c0d",border:"none",color:"#fff",padding:"10px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:700}}>{t.delete}</button>
             </div>
           </div>
         </div>
@@ -1443,10 +1425,10 @@ Génère le customer journey mapping complet en JSON.`}]
                   }
                   <button onClick={e=>{e.stopPropagation();setRenamingCampId(c.id);setRenameVal(c.name);}}
                     style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:11,padding:"0 3px",flexShrink:0}}
-                    title="Renommer">✏️</button>
+                    title={t.rename}>✏️</button>
                   {campaigns.length>1&&<button onClick={e=>{e.stopPropagation();deleteCampaign(c.id);}}
                     style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:11,padding:"0 3px",flexShrink:0}}
-                    title="Supprimer">🗑</button>}
+                    title={t.delete}>🗑</button>}
                 </div>
               ))}
               {/* Add new campaign */}
@@ -1455,7 +1437,7 @@ Génère le customer journey mapping complet en JSON.`}]
                 onMouseEnter={e=>e.currentTarget.style.background="#1E3A5F"}
                 onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                 <span style={{fontSize:16,fontWeight:700}}>+</span>
-                <span>Nouvelle campagne</span>
+                <span>{t.newCampaign}</span>
               </div>
             </div>
           )}
@@ -1483,18 +1465,18 @@ Génère le customer journey mapping complet en JSON.`}]
 
         {/* ── Versions ── */}
         <button onClick={()=>{setShowVersions(s=>!s);setShowBrief(false);}} style={{...btnS,background:showVersions?"#22C55E":"#334155",color:showVersions?"#fff":"#94A3B8",display:"flex",alignItems:"center",gap:4}}>
-          <span>📦</span><span>Versions</span>
+          <span>📦</span><span>{t.versions}</span>
           {versions.length>0&&<span style={{background:showVersions?"rgba(255,255,255,.25)":"#1E3A2F",color:"#4ADE80",borderRadius:10,padding:"0 5px",fontSize:10,fontWeight:700}}>{versions.length}</span>}
         </button>
 
         {/* ── Brief ── */}
         <button onClick={()=>{setShowBrief(s=>!s);setShowVersions(false);}} style={{...btnS,background:showBrief?"#F97316":"#334155",color:showBrief?"#fff":"#94A3B8",display:"flex",alignItems:"center",gap:4}}>
-          <span>📋</span><span>Brief</span>
+          <span>📋</span><span>{t.brief}</span>
         </button>
 
         {/* ── Avatar — always last ── */}
         <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
-        <AvatarPill user={user} onSignOut={signOut} lang={lang} onSetLang={setLang} />
+        <AvatarPill user={user} onSignOut={signOut} />
       </div>
 
       {vMsg&&<div style={{position:"fixed",top:56,left:"50%",transform:"translateX(-50%)",background:vMsg.type==="ok"?"#14532D":"#7F1D1D",color:vMsg.type==="ok"?"#4ADE80":"#FCA5A5",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,zIndex:200,pointerEvents:"none"}}>{vMsg.text}</div>}
@@ -1610,7 +1592,7 @@ Génère le customer journey mapping complet en JSON.`}]
                           style={{...ts,position:"absolute",inset:0,width:"100%",height:"100%",border:"none",outline:"none",background:"transparent",resize:"none",padding:"8px"}}/>
                       ):(
                         <div style={{...ts,padding:"8px",whiteSpace:"pre-wrap",wordBreak:"break-word",width:"100%",height:"100%",userSelect:"none"}}>
-                          {node.text||<span style={{color:"#94A3B8",fontStyle:"italic",fontSize:12,fontWeight:400}}>Double-cliquer pour editer...</span>}
+                          {node.text||<span style={{color:"#94A3B8",fontStyle:"italic",fontSize:12,fontWeight:400}}>{t.dblClickEdit}...</span>}
                         </div>
                       )}
                     </div>
@@ -1695,10 +1677,10 @@ Génère le customer journey mapping complet en JSON.`}]
               );
             })}
           </div>
-          {connMode&&<div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",background:"rgba(59,130,246,.93)",color:"#fff",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,pointerEvents:"none",zIndex:50}}>{connFrom?"Source selectionnee — Cliquer la cible":"Cliquer le noeud de depart"}</div>}
-          {connectAllMode&&<div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",background:"rgba(124,58,237,.93)",color:"#fff",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,pointerEvents:"none",zIndex:50}}>🔗 Cliquer le noeud de destination</div>}
-          {selN.length>1&&!connectAllMode&&<div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",background:"#1E3A5F",color:"#93C5FD",padding:"6px 14px",borderRadius:8,fontSize:11,pointerEvents:"none",zIndex:50,border:"1px solid #2563EB"}}>✦ {selN.length} noeuds selectionnes</div>}
-          {selC&&!selN.length&&<div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",background:"#1E293B",color:"#94A3B8",padding:"6px 14px",borderRadius:8,fontSize:11,pointerEvents:"none",zIndex:50,border:"1px solid #334155"}}>Connexion selectionnee — Suppr pour effacer</div>}
+          {connMode&&<div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",background:"rgba(59,130,246,.93)",color:"#fff",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,pointerEvents:"none",zIndex:50}}>{connFrom?t.clickTarget:t.clickStart}</div>}
+          {connectAllMode&&<div style={{position:"absolute",bottom:16,left:"50%",transform:"translateX(-50%)",background:"rgba(124,58,237,.93)",color:"#fff",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,pointerEvents:"none",zIndex:50}}>🔗 {t.clickTarget}</div>}
+          {selN.length>1&&!connectAllMode&&<div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",background:"#1E3A5F",color:"#93C5FD",padding:"6px 14px",borderRadius:8,fontSize:11,pointerEvents:"none",zIndex:50,border:"1px solid #2563EB"}}>✦ {selN.length} {t.nodesLabel}</div>}
+          {selC&&!selN.length&&<div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",background:"#1E293B",color:"#94A3B8",padding:"6px 14px",borderRadius:8,fontSize:11,pointerEvents:"none",zIndex:50,border:"1px solid #334155"}}>{t.connSelected}</div>}
           {clipboard.length>0&&<div style={{position:"absolute",bottom:14,left:14,background:"#1E3A5F",color:"#60A5FA",padding:"4px 10px",borderRadius:6,fontSize:10,border:"1px solid #2563EB",pointerEvents:"none"}}>{clipboard.length} element{clipboard.length>1?"s":""} — Ctrl+V pour coller</div>}
           {activeVid&&(()=>{const v=versions.find(x=>x.id===activeVid);return v?(<div style={{position:"absolute",bottom:14,right:14,background:"#14532D",color:"#4ADE80",padding:"4px 10px",borderRadius:6,fontSize:10,border:"1px solid #166534",pointerEvents:"none",display:"flex",alignItems:"center",gap:5}}><span>📦</span><span>{v.name}</span></div>):null;})()}
 
@@ -1752,7 +1734,7 @@ Génère le customer journey mapping complet en JSON.`}]
             {selN.length>1&&(
               <div style={{padding:"14px 14px 16px"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>✦ Multi-selection</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>{selN.length} noeuds</div></div>
+                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>{t.multiSelect}</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>{selN.length} {t.nodesLabel}</div></div>
                   <button onClick={()=>setSelN([])} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
                 <SH>Actions</SH>
@@ -1763,13 +1745,13 @@ Génère le customer journey mapping complet en JSON.`}]
                 <LayerSection/>
                 <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid #2D3F55"}}>
                   <SH>Alignement</SH>
-                  <div style={{display:"flex",gap:5,marginBottom:5}}><ActBtn onClick={alignV} icon="⬍" label="Centrer vert." disabled={false}/><ActBtn onClick={alignH} icon="⬌" label="Centrer horiz." disabled={false}/></div>
+                  <div style={{display:"flex",gap:5,marginBottom:5}}><ActBtn onClick={alignV} icon="⬍" label={t.centerVert} disabled={false}/><ActBtn onClick={alignH} icon="⬌" label={t.centerHoriz} disabled={false}/></div>
                   <SH>Distribution {!can3&&<span style={{color:"#3D4F61",fontSize:9,fontWeight:400}}>(3 min.)</span>}</SH>
-                  <div style={{display:"flex",gap:5,marginBottom:10}}><ActBtn onClick={distH} icon="↔" label="Espacer horiz." disabled={!can3}/><ActBtn onClick={distV} icon="↕" label="Espacer vert." disabled={!can3}/></div>
+                  <div style={{display:"flex",gap:5,marginBottom:10}}><ActBtn onClick={distH} icon="↔" label={t.spaceHoriz} disabled={!can3}/><ActBtn onClick={distV} icon="↕" label={t.spaceVert} disabled={!can3}/></div>
                   <SH>Connexions</SH>
                   <button onClick={()=>setConnectAllMode(true)} style={{width:"100%",background:"#2D1F5E",border:"1px solid #4C1D95",color:"#C4B5FD",padding:"8px",borderRadius:7,cursor:"pointer",fontSize:12,fontWeight:600,marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>🔗 Connecter tous vers...</button>
                   <SH>Danger</SH>
-                  <button onClick={()=>askDelete(`Supprimer ${selN.length} noeuds et leurs connexions ?`,deleteSel)}
+                  <button onClick={()=>askDelete(`Supprimer ${selN.length} {t.nodesLabel} et leurs connexions ?`,deleteSel)}
                     onMouseEnter={e=>e.currentTarget.style.background="#b52209"} onMouseLeave={e=>e.currentTarget.style.background="#d82c0d"}
                     style={{width:"100%",background:"#d82c0d",border:"none",color:"#fff",padding:"8px",borderRadius:7,cursor:"pointer",fontSize:12,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
                     🗑 Supprimer la selection
@@ -1782,7 +1764,7 @@ Génère le customer journey mapping complet en JSON.`}]
             {sn&&isTB&&(
               <div style={{padding:14}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>📝 Zone de texte</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>Double-cliquer pour editer</div></div>
+                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>{t.textBox}</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>{t.dblClickEdit}</div></div>
                   <button onClick={()=>setSelN([])} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
                 <ConnPanel nodeId={sn.id}/>
@@ -1826,7 +1808,7 @@ Génère le customer journey mapping complet en JSON.`}]
             {sn&&isPage&&(
               <div style={{padding:14}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>📄 Page</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>{getPageStyle(sn).label}</div></div>
+                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>📄 Page</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>{t[getPageStyle(sn).labelKey]}</div></div>
                   <button onClick={()=>setSelN([])} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
                 <div style={{marginTop:0,paddingTop:0}}>
@@ -1926,7 +1908,7 @@ Génère le customer journey mapping complet en JSON.`}]
               </div>
               <div style={{display:"flex",gap:6}}>
                 <input value={vName} onChange={e=>setVName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&saveVer()} placeholder={`Version ${versions.length+1}`} style={{...inS,flex:1,height:32,padding:"0 8px"}}/>
-                <button onClick={saveVer} disabled={vLoading} style={{background:"#16A34A",border:"none",color:"#fff",padding:"0 14px",borderRadius:6,cursor:"pointer",fontSize:12,fontWeight:700,height:32,whiteSpace:"nowrap",opacity:vLoading?0.6:1}}>{vLoading?"...":"💾 Sauver"}</button>
+                <button onClick={saveVer} disabled={vLoading} style={{background:"#16A34A",border:"none",color:"#fff",padding:"0 14px",borderRadius:6,cursor:"pointer",fontSize:12,fontWeight:700,height:32,whiteSpace:"nowrap",opacity:vLoading?0.6:1}}>{vLoading?"...":("💾 "+t.save)}</button>
               </div>
             </div>
             <div style={{flex:1,overflowY:"auto",padding:"8px 0"}}>
@@ -1944,7 +1926,7 @@ Génère le customer journey mapping complet en JSON.`}]
                     </div>
                     <div style={{display:"flex",gap:4,flexShrink:0}}>
                       <button onClick={()=>restoreVer(v)} disabled={vLoading||isAct} style={{background:isAct?"#1E2D40":"#1E3A5F",border:"none",color:isAct?"#374151":"#60A5FA",padding:"4px 8px",borderRadius:5,cursor:isAct?"not-allowed":"pointer",fontSize:11,fontWeight:600,opacity:isAct?0.5:1}}>↩ Restaurer</button>
-                      {!isCf?(<button onClick={()=>setConfirmDel(v.id)} style={{background:"#1A0A0A",border:"none",color:"#F87171",padding:"4px 6px",borderRadius:5,cursor:"pointer",fontSize:11}}>🗑</button>):(<div style={{display:"flex",gap:3,alignItems:"center"}}><span style={{color:"#F87171",fontSize:10}}>Suppr?</span><button onClick={()=>deleteVer(v.id)} style={{background:"#7F1D1D",border:"none",color:"#FCA5A5",padding:"3px 6px",borderRadius:4,cursor:"pointer",fontSize:10,fontWeight:700}}>Oui</button><button onClick={()=>setConfirmDel(null)} style={{background:"#334155",border:"none",color:"#94A3B8",padding:"3px 6px",borderRadius:4,cursor:"pointer",fontSize:10}}>Non</button></div>)}
+                      {!isCf?(<button onClick={()=>setConfirmDel(v.id)} style={{background:"#1A0A0A",border:"none",color:"#F87171",padding:"4px 6px",borderRadius:5,cursor:"pointer",fontSize:11}}>🗑</button>):(<div style={{display:"flex",gap:3,alignItems:"center"}}><span style={{color:"#F87171",fontSize:10}}>{t.confirmDelQ}</span><button onClick={()=>deleteVer(v.id)} style={{background:"#7F1D1D",border:"none",color:"#FCA5A5",padding:"3px 6px",borderRadius:4,cursor:"pointer",fontSize:10,fontWeight:700}}>{t.yes}</button><button onClick={()=>setConfirmDel(null)} style={{background:"#334155",border:"none",color:"#94A3B8",padding:"3px 6px",borderRadius:4,cursor:"pointer",fontSize:10}}>{t.no}</button></div>)}
                     </div>
                   </div>
                 </div>);
