@@ -1586,12 +1586,6 @@ Génère le customer journey mapping complet en JSON.`}]
         {/* Spacer pushes everything right */}
         <div style={{flex:1}}/>
 
-        {/* ── Undo / Redo ── */}
-        <button onClick={()=>undoRef.current?.()} title="Ctrl+Z" style={{...btnS,width:32,padding:0,textAlign:"center",opacity:canUndo?1:.35,cursor:canUndo?"pointer":"not-allowed",fontSize:15}}>↩</button>
-        <button onClick={()=>redoRef.current?.()} title="Ctrl+Y" style={{...btnS,width:32,padding:0,textAlign:"center",opacity:canRedo?1:.35,cursor:canRedo?"pointer":"not-allowed",fontSize:15}}>↪</button>
-
-        <div style={{width:1,height:22,background:"#334155",flexShrink:0}}/>
-
         {/* ── Layout ── */}
         <button onClick={autoLayout} disabled={!hasNodes} title="Auto-layout" style={{...btnS,color:hasNodes?"#94A3B8":"#475569",opacity:hasNodes?1:0.4,cursor:hasNodes?"pointer":"not-allowed",display:"flex",alignItems:"center",gap:4}}>
           <span style={{fontSize:13}}>⬡</span><span style={{fontSize:11}}>Layout</span>
@@ -2096,6 +2090,50 @@ Génère le customer journey mapping complet en JSON.`}]
           </div>
         )}
       </div>
+
+      {/* ── BEE-style Undo / Redo — bottom-left, appears only when there's history ── */}
+      {(canUndo||canRedo)&&(
+        <div style={{
+          position:"fixed",
+          bottom:"calc(16px + env(safe-area-inset-bottom, 0px))",
+          left: sidebarW+12,
+          display:"flex",alignItems:"center",
+          background:"#1E293B",border:"1px solid #475569",
+          borderRadius:12,
+          boxShadow:"0 4px 24px rgba(0,0,0,.7)",
+          zIndex:9999,userSelect:"none",overflow:"hidden",
+          animation:"fadeSlideUp .18s ease",
+        }}>
+          <style>{`@keyframes fadeSlideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
+          <button
+            onClick={()=>undoRef.current?.()}
+            disabled={!canUndo}
+            title="Undo (Ctrl+Z)"
+            style={{width:36,height:36,background:"none",border:"none",color:canUndo?"#CBD5E1":"#475569",cursor:canUndo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
+            onPointerEnter={e=>{if(canUndo)e.currentTarget.style.background="#334155"}}
+            onPointerLeave={e=>{e.currentTarget.style.background="none"}}
+          >
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 7.5h7.5a4 4 0 1 1 0 8H6"/>
+              <polyline points="2 4 2 7.5 5.5 7.5"/>
+            </svg>
+          </button>
+          <div style={{width:1,height:18,background:"#334155",flexShrink:0}}/>
+          <button
+            onClick={()=>redoRef.current?.()}
+            disabled={!canRedo}
+            title="Redo (Ctrl+Y)"
+            style={{width:36,height:36,background:"none",border:"none",color:canRedo?"#CBD5E1":"#475569",cursor:canRedo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
+            onPointerEnter={e=>{if(canRedo)e.currentTarget.style.background="#334155"}}
+            onPointerLeave={e=>{e.currentTarget.style.background="none"}}
+          >
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 7.5H7.5a4 4 0 1 0 0 8H11"/>
+              <polyline points="15 4 15 7.5 11.5 7.5"/>
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* ── Zoom controls — position:fixed so always visible, unaffected by overflow:hidden ── */}
       {(()=>{
