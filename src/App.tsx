@@ -1370,6 +1370,8 @@ Génère le customer journey mapping complet en JSON.`}]
 
   // Keep fresh-closure refs current so touch listeners always call latest logic
   addCenteredRef.current=addNodeCentered;
+  const setShowMapItRef=useRef<any>(null);
+  setShowMapItRef.current=setShowMapIt;
   dropOnCvRef.current=(type:string,clientX:number,clientY:number)=>{
     const cvEl=cvRef.current;if(!cvEl)return;
     const rect=cvEl.getBoundingClientRect();
@@ -1407,6 +1409,8 @@ Génère le customer journey mapping complet en JSON.`}]
           sd.started=true;
           sd.ghost=mkGhost(sd.label,t0.clientX,t0.clientY);
           touch_.current=null; // cancel any canvas pan/pinch
+          // If dragging from MapIt modal, close it so canvas is visible
+          if(sd.fromMapIt)setShowMapItRef.current?.(false);
         }
         return;
       }
@@ -1436,8 +1440,9 @@ Génère le customer journey mapping complet en JSON.`}]
           }
         }
       } else {
-        // Tap — add to canvas center
-        addCenteredRef.current?.(sd.type);
+        // Tap (no drag) — add to canvas center
+        // MapIt items already have onClick → don't double-add
+        if(!sd.fromMapIt) addCenteredRef.current?.(sd.type);
       }
       sideDrag_.current=null;
     };
@@ -1497,9 +1502,13 @@ Génère le customer journey mapping complet en JSON.`}]
                   const itemW=isPage?110:72;
                   return(
                     <div key={d.type} onClick={()=>addNodeCentered(d.type)}
+                      onTouchStart={e=>{
+                        const t0=e.touches[0];
+                        sideDrag_.current={type:d.type,label:dl,startX:t0.clientX,startY:t0.clientY,clientX:t0.clientX,clientY:t0.clientY,started:false,ghost:null,fromMapIt:true};
+                      }}
                       style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,cursor:"pointer",padding:"10px 8px",borderRadius:10,border:"2px solid transparent",transition:"all .15s",width:itemW,textAlign:"center",boxSizing:"border-box"}}
-                      onMouseEnter={e=>{e.currentTarget.style.background="#EFF6FF";e.currentTarget.style.borderColor="#BFDBFE";e.currentTarget.style.boxShadow="0 2px 8px rgba(59,130,246,.12)";}}
-                      onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="transparent";e.currentTarget.style.boxShadow="none";}}>
+                      onPointerEnter={e=>{(e.currentTarget as HTMLElement).style.background="#EFF6FF";(e.currentTarget as HTMLElement).style.borderColor="#BFDBFE";(e.currentTarget as HTMLElement).style.boxShadow="0 2px 8px rgba(59,130,246,.12)";}}
+                      onPointerLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";(e.currentTarget as HTMLElement).style.borderColor="transparent";(e.currentTarget as HTMLElement).style.boxShadow="none";}}>
                       <div style={{position:"relative",width:isPage?94:56,height:isPage?118:56,flexShrink:0}}>
                         {isPage?(
                           <div style={{width:94,height:118,borderRadius:6,overflow:"hidden",border:"1.5px solid #CBD5E1",background:"#fff",boxShadow:"0 2px 8px rgba(0,0,0,.12)"}}>
