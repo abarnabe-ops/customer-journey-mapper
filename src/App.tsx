@@ -760,7 +760,7 @@ export default function App(){
   };
 
   const generateMapping=async()=>{
-    if(!briefInitial.trim()){setGenMsg({type:"err",text:"Veuillez coller votre brief marketing d'abord."});setTimeout(()=>setGenMsg(null),4000);return;}
+    if(!briefInitial.trim()){setGenMsg({type:"err",text:t.briefNoBriefError});setTimeout(()=>setGenMsg(null),4000);return;}
     setGenerating(true);setGenMsg({type:"info",text:t.analyzing});
     try{
       const nodeTypes=`
@@ -819,10 +819,10 @@ Types disponibles: ${nodeTypes}`,
 ${briefInitial}
 
 Informations supplémentaires:
-Objectif: ${brief.objectif||"Non spécifié"}
-Public cible: ${brief.publicCible||"Non spécifié"}
-Lead Magnet: ${brief.leadMagnet||"Non spécifié"}
-Sources: ${(brief.sources||[]).filter(Boolean).join(", ")||"Non spécifié"}
+Objectif: ${brief.objectif||t.notSpecified}
+Public cible: ${brief.publicCible||t.notSpecified}
+Lead Magnet: ${brief.leadMagnet||t.notSpecified}
+Sources: ${(brief.sources||[]).filter(Boolean).join(", ")||t.notSpecified}
 
 Génère le customer journey mapping complet en JSON.`}]
         })
@@ -1943,16 +1943,16 @@ Génère le customer journey mapping complet en JSON.`}]
         {showBrief&&(
           <div style={{position:"absolute",right:showRP?240:0,top:0,bottom:0,width:308,background:"#1E293B",borderLeft:"1px solid #2D3F55",overflowY:"auto",padding:14,zIndex:50,boxShadow:"-4px 0 20px rgba(0,0,0,.35)"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-              <span style={{color:"#F97316",fontWeight:700,fontSize:14}}>📋 Brief Marketing</span>
+              <span style={{color:"#F97316",fontWeight:700,fontSize:14}}>{t.briefTitle}</span>
               <button onClick={()=>setShowBrief(false)} style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:15}}>✕</button>
             </div>
             {/* Brief initial paste zone */}
             <div style={{marginBottom:14,padding:12,background:"#0F172A",borderRadius:8,border:"1px solid #2D3F55"}}>
-              <label style={{...lbS,color:"#F97316",marginBottom:6,display:"block"}}>📄 Brief initial (coller ici)</label>
+              <label style={{...lbS,color:"#F97316",marginBottom:6,display:"block"}}>{t.briefInitialLabel}</label>
               <textarea
                 value={briefInitial}
                 onChange={e=>setBriefInitial(e.target.value)}
-                placeholder="Collez votre brief marketing complet ici..."
+                placeholder={t.briefPlaceholder}
                 rows={6}
                 style={{...inS,resize:"vertical",lineHeight:1.6,marginBottom:10,minHeight:100}}
               />
@@ -1961,8 +1961,8 @@ Génère le customer journey mapping complet en JSON.`}]
                 disabled={generating}
                 style={{width:"100%",background:generating?"#1E3A5F":"linear-gradient(135deg,#2563EB,#1E40AF)",border:"none",color:"#fff",borderRadius:8,padding:"10px",cursor:generating?"not-allowed":"pointer",fontSize:13,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",gap:8,opacity:generating?0.7:1,boxShadow:generating?"none":"0 2px 8px rgba(37,99,235,.4)"}}>
                 {generating
-                  ?<><span style={{animation:"spin 1s linear infinite",display:"inline-block"}}>⟳</span><span>Génération en cours...</span></>
-                  :<><span>🤖</span><span>Générer le mapping avec Claude</span></>
+                  ?<><span style={{animation:"spin 1s linear infinite",display:"inline-block"}}>⟳</span><span>{t.briefGenerating}</span></>
+                  :<><span>🤖</span><span>{t.briefGenerate}</span></>
                 }
               </button>
               {genMsg&&<div style={{marginTop:8,padding:"6px 10px",borderRadius:6,fontSize:11,fontWeight:600,
@@ -1972,16 +1972,28 @@ Génère le customer journey mapping complet en JSON.`}]
               </div>}
             </div>
             <div style={{height:1,background:"#2D3F55",marginBottom:14}}/>
-            {[{k:"campagne",l:"Nom de la campagne"},{k:"site",l:"Site du client"},{k:"objectif",l:"Objectif",m:true},{k:"dateDebut",l:"Date de debut"},{k:"dateFin",l:"Date de fin"},{k:"annonce",l:"Annonce des resultats"},{k:"publicCible",l:"Public cible",m:true},{k:"region",l:"Region cible"},{k:"tonalite",l:"Tonalite",m:true},{k:"leadMagnet",l:"Lead Magnet / Offre",m:true},{k:"notes",l:"Notes supplementaires",m:true}].map(f=>(
+            {[
+              {k:"campagne",  l:t.briefCampaignName},
+              {k:"site",      l:t.briefClientSite},
+              {k:"objectif",  l:t.briefObjective,       m:true},
+              {k:"dateDebut", l:t.briefStartDate},
+              {k:"dateFin",   l:t.briefEndDate},
+              {k:"annonce",   l:t.briefResultsDate},
+              {k:"publicCible",l:t.briefTargetAudience, m:true},
+              {k:"region",    l:t.briefTargetRegion},
+              {k:"tonalite",  l:t.briefTone,            m:true},
+              {k:"leadMagnet",l:t.briefLeadMagnet,      m:true},
+              {k:"notes",     l:t.briefNotes,           m:true},
+            ].map(f=>(
               <div key={f.k} style={{marginBottom:10}}>
                 <label style={lbS}>{f.l}</label>
                 {f.m?<textarea value={brief[f.k]||""} onChange={e=>setBrief(b=>({...b,[f.k]:e.target.value}))} rows={2} style={{...inS,resize:"vertical",lineHeight:1.5}}/>:<input value={brief[f.k]||""} onChange={e=>setBrief(b=>({...b,[f.k]:e.target.value}))} style={inS}/>}
               </div>
             ))}
             <div>
-              <label style={lbS}>Sources de diffusion</label>
+              <label style={lbS}>{t.briefSources}</label>
               {(brief.sources||[]).map((s,i)=>(<div key={i} style={{display:"flex",gap:4,marginBottom:4}}><input value={s} onChange={e=>{const a=[...brief.sources];a[i]=e.target.value;setBrief(b=>({...b,sources:a}));}} style={{...inS,flex:1}}/><button onClick={()=>setBrief(b=>({...b,sources:b.sources.filter((_,j)=>j!==i)}))} style={{background:"#450A0A",border:"none",color:"#FCA5A5",padding:"0 6px",borderRadius:4,cursor:"pointer",fontSize:11}}>✕</button></div>))}
-              <button onClick={()=>setBrief(b=>({...b,sources:[...(b.sources||[]),""]}))} style={{background:"#334155",border:"none",color:"#94A3B8",padding:"4px 10px",borderRadius:4,cursor:"pointer",fontSize:11,marginTop:2}}>+ Ajouter une source</button>
+              <button onClick={()=>setBrief(b=>({...b,sources:[...(b.sources||[]),""]}))} style={{background:"#334155",border:"none",color:"#94A3B8",padding:"4px 10px",borderRadius:4,cursor:"pointer",fontSize:11,marginTop:2}}>{t.briefAddSource}</button>
             </div>
           </div>
         )}
