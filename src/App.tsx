@@ -1685,48 +1685,60 @@ Génère le customer journey mapping complet en JSON.`}]
           {selN.length>1&&!connectAllMode&&<div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",background:"#1E3A5F",color:"#93C5FD",padding:"6px 14px",borderRadius:8,fontSize:11,pointerEvents:"none",zIndex:50,border:"1px solid #2563EB"}}>✦ {selN.length} {t.nodesLabel}</div>}
           {selC&&!selN.length&&<div style={{position:"absolute",top:12,left:"50%",transform:"translateX(-50%)",background:"#1E293B",color:"#94A3B8",padding:"6px 14px",borderRadius:8,fontSize:11,pointerEvents:"none",zIndex:50,border:"1px solid #334155"}}>{t.connSelected}</div>}
           {clipboard.length>0&&<div style={{position:"absolute",bottom:14,left:14,background:"#1E3A5F",color:"#60A5FA",padding:"4px 10px",borderRadius:6,fontSize:10,border:"1px solid #2563EB",pointerEvents:"none"}}>{clipboard.length} element{clipboard.length>1?"s":""} — Ctrl+V pour coller</div>}
-          {activeVid&&(()=>{const v=versions.find(x=>x.id===activeVid);return v?(<div style={{position:"absolute",bottom:14,right:14,background:"#14532D",color:"#4ADE80",padding:"4px 10px",borderRadius:6,fontSize:10,border:"1px solid #166534",pointerEvents:"none",display:"flex",alignItems:"center",gap:5}}><span>📦</span><span>{v.name}</span></div>):null;})()}
+          {activeVid&&(()=>{const v=versions.find(x=>x.id===activeVid);return v?(<div style={{position:"absolute",bottom:16,left:16,background:"#14532D",color:"#4ADE80",padding:"4px 10px",borderRadius:6,fontSize:10,border:"1px solid #166534",pointerEvents:"none",display:"flex",alignItems:"center",gap:5,zIndex:40}}><span>📦</span><span>{v.name}</span></div>):null;})()}
 
-          {/* ── Floating zoom controls — bottom-left, like Figma/Miro ── */}
-          <div style={{position:"absolute",bottom:14,left:"50%",transform:"translateX(-50%)",display:"flex",alignItems:"center",gap:2,background:"#1E293B",border:"1px solid #334155",borderRadius:8,padding:"3px 4px",boxShadow:"0 2px 12px rgba(0,0,0,.4)",zIndex:40,userSelect:"none"}}>
-            <button
-              onClick={()=>setZoom(z=>Math.max(0.25,z*.9))}
-              title="Zoom − (Ctrl −)"
-              style={{width:28,height:28,background:"none",border:"none",color:"#CBD5E1",cursor:"pointer",borderRadius:5,fontSize:18,fontWeight:300,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}
-              onMouseEnter={e=>e.currentTarget.style.background="#334155"}
-              onMouseLeave={e=>e.currentTarget.style.background="none"}
-            >−</button>
-            {zoomInput===null
-              ? <span
-                  onClick={()=>setZoomInput(String(Math.round(zoom*100)))}
-                  title="Cliquer pour saisir un %"
-                  style={{color:"#F1F5F9",fontSize:12,fontWeight:600,minWidth:46,textAlign:"center",cursor:"text",padding:"0 4px"}}
-                >{Math.round(zoom*100)}%</span>
-              : <input
-                  autoFocus
-                  value={zoomInput}
-                  onChange={e=>setZoomInput(e.target.value.replace(/[^0-9]/g,""))}
-                  onBlur={()=>{const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}}
-                  onKeyDown={e=>{if(e.key==="Enter"){const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}if(e.key==="Escape")setZoomInput(null);}}
-                  style={{width:46,background:"transparent",border:"1px solid #3B82F6",color:"#F1F5F9",borderRadius:4,padding:"1px 4px",fontSize:12,fontWeight:600,textAlign:"center",outline:"none",fontFamily:"inherit"}}
-                />
-            }
-            <button
-              onClick={()=>setZoom(z=>Math.min(2,z*1.1))}
-              title="Zoom + (Ctrl +)"
-              style={{width:28,height:28,background:"none",border:"none",color:"#CBD5E1",cursor:"pointer",borderRadius:5,fontSize:18,fontWeight:300,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}
-              onMouseEnter={e=>e.currentTarget.style.background="#334155"}
-              onMouseLeave={e=>e.currentTarget.style.background="none"}
-            >+</button>
-            <div style={{width:1,height:18,background:"#334155",margin:"0 2px"}}/>
-            <button
-              onClick={()=>{setPan({x:80,y:50});setZoom(1);}}
-              title={t.zoomReset}
-              style={{height:28,background:"none",border:"none",color:"#94A3B8",cursor:"pointer",borderRadius:5,fontSize:11,fontWeight:600,padding:"0 6px",display:"flex",alignItems:"center"}}
-              onMouseEnter={e=>e.currentTarget.style.background="#334155"}
-              onMouseLeave={e=>e.currentTarget.style.background="none"}
-            >100%</button>
-          </div>
+          {/* ── Floating zoom controls — bottom-right, Miro/Figma style ── */}
+          {(()=>{
+            const zbtn:React.CSSProperties={width:32,height:32,background:"none",border:"none",color:"#CBD5E1",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:400,transition:"background .12s",flexShrink:0};
+            const fitToScreen=()=>{
+              if(!nodes.length||!cvRef.current){setPan({x:80,y:50});setZoom(0.8);return;}
+              const rect=cvRef.current.getBoundingClientRect();
+              const pad=64;
+              let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+              nodes.forEach(n=>{const{w,h}=gs(gd(n.type),n);x0=Math.min(x0,n.x);y0=Math.min(y0,n.y);x1=Math.max(x1,n.x+w);y1=Math.max(y1,n.y+h);});
+              const bw=x1-x0+pad*2,bh=y1-y0+pad*2;
+              const z=Math.min(Math.max(rect.width/bw,0.15),Math.min(rect.height/bh,2));
+              setPan({x:rect.width/2-(x0-pad+bw/2)*z,y:rect.height/2-(y0-pad+bh/2)*z});
+              setZoom(z);
+            };
+            return(
+              <div style={{position:"absolute",bottom:16,right:16,display:"flex",alignItems:"center",background:"#1E293B",border:"1px solid #334155",borderRadius:10,boxShadow:"0 4px 20px rgba(0,0,0,.55)",zIndex:40,userSelect:"none",overflow:"hidden"}}>
+                {/* Zoom out */}
+                <button onClick={()=>setZoom(z=>Math.max(0.15,+(z-.1).toFixed(2)))} title="Zoom − (Ctrl −)" style={zbtn}
+                  onPointerEnter={e=>(e.currentTarget.style.background="#334155")} onPointerLeave={e=>(e.currentTarget.style.background="none")}>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="3" y1="7" x2="11" y2="7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                </button>
+
+                {/* Zoom % — click to type */}
+                {zoomInput===null
+                  ?<span onClick={()=>setZoomInput(String(Math.round(zoom*100)))} title="Click to set zoom" style={{color:"#F1F5F9",fontSize:12,fontWeight:600,minWidth:44,textAlign:"center",cursor:"text",padding:"0 2px",lineHeight:"32px"}}>{Math.round(zoom*100)}%</span>
+                  :<input autoFocus value={zoomInput}
+                      onChange={e=>setZoomInput(e.target.value.replace(/[^0-9]/g,""))}
+                      onBlur={()=>{const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}}
+                      onKeyDown={e=>{if(e.key==="Enter"){const v=parseInt(zoomInput);if(!isNaN(v)&&v>=10&&v<=400)setZoom(v/100);setZoomInput(null);}if(e.key==="Escape")setZoomInput(null);}}
+                      style={{width:44,background:"transparent",border:"none",borderBottom:"1px solid #3B82F6",color:"#F1F5F9",padding:"0 4px",fontSize:12,fontWeight:600,textAlign:"center",outline:"none",fontFamily:"inherit",lineHeight:"32px"}}/>
+                }
+
+                {/* Zoom in */}
+                <button onClick={()=>setZoom(z=>Math.min(4,+(z+.1).toFixed(2)))} title="Zoom + (Ctrl +)" style={zbtn}
+                  onPointerEnter={e=>(e.currentTarget.style.background="#334155")} onPointerLeave={e=>(e.currentTarget.style.background="none")}>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="3" y1="7" x2="11" y2="7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><line x1="7" y1="3" x2="7" y2="11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                </button>
+
+                {/* Separator */}
+                <div style={{width:1,height:18,background:"#334155",margin:"0 2px",flexShrink:0}}/>
+
+                {/* Fit to screen */}
+                <button onClick={fitToScreen} title="Fit to screen" style={zbtn}
+                  onPointerEnter={e=>(e.currentTarget.style.background="#334155")} onPointerLeave={e=>(e.currentTarget.style.background="none")}>
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                    <path d="M1 5V2h3M11 2h3v3M14 10v3h-3M4 13H1v-3"/>
+                    <rect x="4" y="4" width="7" height="7" rx="1" strokeWidth="1.4"/>
+                  </svg>
+                </button>
+              </div>
+            );
+          })()}
         </div>
 
         {/* ── RIGHT PANEL ──────────────────────────────────────────────────── */}
