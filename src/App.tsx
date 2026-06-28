@@ -1545,12 +1545,14 @@ Génère le customer journey mapping complet en JSON.`}]
             <span style={{fontSize:10,color:"#64748B",flexShrink:0}}>▼</span>
           </button>
           {showCampMenu&&(
-            <div style={{position:"absolute",top:"calc(100% + 6px)",left:0,background:"#1E293B",border:"1px solid #334155",borderRadius:10,boxShadow:"0 8px 24px rgba(0,0,0,.5)",zIndex:300,minWidth:240,overflow:"hidden"}}>
-              {/* Campaign list */}
+            /* position:fixed escapes topbar's overflow:hidden — works on mobile */
+            <div style={{position:"fixed",top:52,left:12,background:"#1E293B",border:"1px solid #334155",borderRadius:10,boxShadow:"0 8px 24px rgba(0,0,0,.5)",zIndex:9000,minWidth:240,overflow:"hidden"}}>
               {campaigns.map(c=>(
-                <div key={c.id} style={{display:"flex",alignItems:"center",gap:6,padding:"8px 12px",background:c.id===activeCampId?"#1E3A5F":"transparent",borderBottom:"1px solid #2D3F55"}}
-                  onMouseEnter={e=>{if(c.id!==activeCampId)e.currentTarget.style.background="#2D3F55";}}
-                  onMouseLeave={e=>{if(c.id!==activeCampId)e.currentTarget.style.background="transparent";}}>
+                <div key={c.id}
+                  onClick={()=>{if(renamingCampId!==c.id&&c.id!==activeCampId)switchCampaign(c);}}
+                  style={{display:"flex",alignItems:"center",gap:6,padding:"10px 12px",background:c.id===activeCampId?"#1E3A5F":"transparent",borderBottom:"1px solid #2D3F55",cursor:c.id===activeCampId?"default":"pointer",minHeight:44}}
+                  onPointerEnter={e=>{if(c.id!==activeCampId)(e.currentTarget as HTMLElement).style.background="#2D3F55";}}
+                  onPointerLeave={e=>{if(c.id!==activeCampId)(e.currentTarget as HTMLElement).style.background="transparent";}}>
                   <span style={{fontSize:12,color:"#3B82F6",flexShrink:0}}>{c.id===activeCampId?"▶":"○"}</span>
                   {renamingCampId===c.id
                     ?<input autoFocus value={renameVal}
@@ -1559,25 +1561,23 @@ Génère le customer journey mapping complet en JSON.`}]
                         onKeyDown={e=>{if(e.key==="Enter")renameCampaign(c.id,renameVal.trim()||c.name);if(e.key==="Escape")setRenamingCampId(null);}}
                         onClick={e=>e.stopPropagation()}
                         style={{flex:1,background:"#0F172A",border:"1px solid #3B82F6",color:"#F1F5F9",borderRadius:4,padding:"2px 6px",fontSize:12,outline:"none"}}/>
-                    :<span onClick={()=>c.id!==activeCampId&&switchCampaign(c)}
-                        style={{flex:1,color:"#F1F5F9",fontSize:12,fontWeight:c.id===activeCampId?700:400,cursor:c.id===activeCampId?"default":"pointer",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                    :<span style={{flex:1,color:"#F1F5F9",fontSize:13,fontWeight:c.id===activeCampId?700:400,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                         {c.name}
                       </span>
                   }
                   <button onClick={e=>{e.stopPropagation();setRenamingCampId(c.id);setRenameVal(c.name);}}
-                    style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:11,padding:"0 3px",flexShrink:0}}
+                    style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",padding:"4px 6px",flexShrink:0,fontSize:14}}
                     title={t.rename}>✏️</button>
                   {campaigns.length>1&&<button onClick={e=>{e.stopPropagation();deleteCampaign(c.id);}}
-                    style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",fontSize:11,padding:"0 3px",flexShrink:0}}
+                    style={{background:"none",border:"none",color:"#64748B",cursor:"pointer",padding:"4px 6px",flexShrink:0,fontSize:14}}
                     title={t.delete}>🗑</button>}
                 </div>
               ))}
-              {/* Add new campaign */}
               <div onClick={addCampaign}
-                style={{display:"flex",alignItems:"center",gap:8,padding:"10px 12px",cursor:"pointer",color:"#3B82F6",fontSize:12,fontWeight:600}}
-                onMouseEnter={e=>e.currentTarget.style.background="#1E3A5F"}
-                onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <span style={{fontSize:16,fontWeight:700}}>+</span>
+                style={{display:"flex",alignItems:"center",gap:8,padding:"12px 12px",cursor:"pointer",color:"#3B82F6",fontSize:13,fontWeight:600,minHeight:44}}
+                onPointerEnter={e=>(e.currentTarget as HTMLElement).style.background="#1E3A5F"}
+                onPointerLeave={e=>(e.currentTarget as HTMLElement).style.background="transparent"}>
+                <span style={{fontSize:18,fontWeight:700,lineHeight:1}}>+</span>
                 <span>{t.newCampaign}</span>
               </div>
             </div>
