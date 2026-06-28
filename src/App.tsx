@@ -1729,9 +1729,16 @@ Génère le customer journey mapping complet en JSON.`}]
           {/* PDF */}
           <button onClick={()=>window.print()} title="Exporter PDF"
             style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:7,border:"none",background:"transparent",color:"#374151",cursor:"pointer",fontSize:12,fontWeight:500,whiteSpace:"nowrap"}}
-            onPointerEnter={e=>{(e.currentTarget as HTMLElement).style.background="#EFF6FF";(e.currentTarget as HTMLElement).style.color="#2563EB";}}
+            onPointerEnter={e=>{(e.currentTarget as HTMLElement).style.background="#FEF2F2";(e.currentTarget as HTMLElement).style.color="#DC2626";}}
             onPointerLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";(e.currentTarget as HTMLElement).style.color="#374151";}}>
-            <span style={{fontSize:13}}>📄</span><span>PDF</span>
+            {/* PDF icon — document shape with red badge */}
+            <svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 1h8l4 4v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#E5E7EB" stroke="#D1D5DB" strokeWidth="0.75"/>
+              <path d="M9 1l4 4H9.5a.5.5 0 0 1-.5-.5V1z" fill="#D1D5DB"/>
+              <rect x="1" y="8" width="14" height="6.5" rx="1" fill="#DC2626"/>
+              <text x="8" y="12.6" fontSize="4.5" fontWeight="800" fill="white" textAnchor="middle" fontFamily="Arial,sans-serif" letterSpacing="0.3">PDF</text>
+            </svg>
+            <span>PDF</span>
           </button>
 
           {/* Versions */}
