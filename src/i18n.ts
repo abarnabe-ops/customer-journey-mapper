@@ -1,274 +1,276 @@
 // ─── i18n ─────────────────────────────────────────────────────────────────────
 // Single source of truth for all UI strings.
-// Add new strings to `fr` first — TypeScript will error if `en` is missing any.
+// Add new keys to `fr` first — TypeScript errors if `en` is missing any.
 // ─────────────────────────────────────────────────────────────────────────────
-
 export type Lang = 'fr' | 'en'
 
 const fr = {
-  // ── Auth ─────────────────────────────────────────────────────────────────
-  loading:          'Chargement...',
-  tagline:          "Visualisez et automatisez vos parcours clients avec l'IA",
-  signInGoogle:     'Se connecter avec Google',
-
-  // ── Avatar menu ──────────────────────────────────────────────────────────
-  signOut:          'Déconnexion',
-  language:         'Langue',
-  switchLang:       'English',
-  switchFlag:       '🇬🇧',
-
-  // ── Topbar ───────────────────────────────────────────────────────────────
-  newCampaign:      'Nouvelle campagne',
-  rename:           'Renommer',
-  versions:         'Versions',
-  brief:            'Brief',
-
-  // ── Map It modal ─────────────────────────────────────────────────────────
-  mapItSubtitle:    "Cliquez un élément pour l'ajouter au canvas",
-
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  loading:              'Chargement...',
+  tagline:              "Visualisez et automatisez vos parcours clients avec l'IA",
+  signInGoogle:         'Se connecter avec Google',
+  // ── Avatar menu ───────────────────────────────────────────────────────────
+  signOut:              'Déconnexion',
+  language:             'Langue',
+  switchLang:           'English',
+  switchFlag:           '🇬🇧',
+  // ── Topbar ────────────────────────────────────────────────────────────────
+  newCampaign:          'Nouvelle campagne',
+  rename:               'Renommer',
+  versions:             'Versions',
+  brief:                'Brief',
+  // ── Map It modal ──────────────────────────────────────────────────────────
+  mapItSubtitle:        "Cliquez un élément pour l'ajouter au canvas",
   // ── Confirm dialogs ───────────────────────────────────────────────────────
-  confirmDelete:    'Confirmer la suppression',
-  cancel:           'Annuler',
-  delete:           'Supprimer',
-  yes:              'Oui',
-  no:               'Non',
-
+  confirmDelete:        'Confirmer la suppression',
+  cancel:               'Annuler',
+  delete:               'Supprimer',
+  yes:                  'Oui',
+  no:                   'Non',
   // ── Canvas hints ──────────────────────────────────────────────────────────
-  clickTarget:      'Source sélectionnée — Cliquer la cible',
-  clickStart:       'Cliquer le nœud de départ',
-  connSelected:     'Connexion sélectionnée — Suppr pour effacer',
-  connectionTool:   'Flèche / Connexion',
-
+  clickTarget:          'Source sélectionnée — Cliquer la cible',
+  clickStart:           'Cliquer le nœud de départ',
+  connSelected:         'Connexion sélectionnée — Suppr pour effacer',
+  connectionTool:       'Flèche / Connexion',
   // ── Layer buttons ─────────────────────────────────────────────────────────
-  bringToFront:     'Premier',
-  bringForward:     'Avancer',
-  sendBackward:     'Reculer',
-  sendToBack:       'Arrière',
-
+  bringToFront:         'Premier',
+  bringForward:         'Avancer',
+  sendBackward:         'Reculer',
+  sendToBack:           'Arrière',
   // ── Align / distribute ────────────────────────────────────────────────────
-  centerVert:       'Centrer vert.',
-  centerHoriz:      'Centrer horiz.',
-  spaceHoriz:       'Espacer horiz.',
-  spaceVert:        'Espacer vert.',
-
+  centerVert:           'Centrer vert.',
+  centerHoriz:          'Centrer horiz.',
+  spaceHoriz:           'Espacer horiz.',
+  spaceVert:            'Espacer vert.',
   // ── Inspector ─────────────────────────────────────────────────────────────
-  multiSelect:      '✦ Multi-sélection',
-  nodesLabel:       'nœuds',
-  textBox:          '📝 Zone de texte',
-  dblClickEdit:     'Double-cliquer pour éditer',
-  pageLabel:        '📄 Page',
-  connectionLabel:  '🔗 Connexion',
-
+  multiSelect:          '✦ Multi-sélection',
+  nodesLabel:           'nœuds',
+  textBox:              '📝 Zone de texte',
+  dblClickEdit:         'Double-cliquer pour éditer',
+  pageLabel:            '📄 Page',
+  connectionLabel:      '🔗 Connexion',
   // ── Versions panel ────────────────────────────────────────────────────────
-  save:             'Sauver',
-  confirmDelQ:      'Suppr?',
-
+  save:                 'Sauver',
+  confirmDelQ:          'Suppr?',
   // ── Brief / generate ──────────────────────────────────────────────────────
-  notSpecified:     'Non spécifié',
-  analyzing:        '🤖 Analyse du brief en cours...',
-  errorPrefix:      '❌ Erreur : ',
-
+  notSpecified:         'Non spécifié',
+  analyzing:            '🤖 Analyse du brief en cours...',
+  errorPrefix:          '❌ Erreur : ',
   // ── Sidebar section labels ────────────────────────────────────────────────
-  secSources:       '🌐 Sources',
-  secPages:         '📄 Pages',
-  secActions:       '⚡ Actions',
-  secText:          '📝 Texte',
-  subPaid:          'Payantes',
-  subSocial:        'Médias sociaux',
-  subSearch:        'Moteur de recherche',
-  subDelay:         'Délais',
-  subConv:          'Conversions',
-  subOther:         'Autres actions',
-
+  secSources:           '🌐 Sources',
+  secPages:             '📄 Pages',
+  secActions:           '⚡ Actions',
+  secText:              '📝 Texte',
+  subPaid:              'Payantes',
+  subSearch:            'Moteur de recherche',
+  subSocial:            'Médias sociaux',
+  subWeb:               'Site Web',
+  subSrcOther:          'Autres',
+  subMessages:          'Messages',
+  subDelay:             'Délais',
+  subConv:              'Conversions',
+  subOther:             'Autres actions',
   // ── Page style labels ─────────────────────────────────────────────────────
-  pageAbonnement:   "Page d'abonnement",
-  pageBlog:         'Page de blog',
-  pageCalendrier:   'Page de calendrier',
-  pageCommande:     'Page de commande',
-  pageMembers:      'Page membres',
-  pageRemerciement: 'Page de remerciement',
-  pageSondage:      'Page de checklist',
-  pageTelechargement:'Page de téléchargement',
-  pageVenteVideo:   'Page de vente vidéo',
-  pageVente:        'Page de vente',
-  pageWebinaire:    'Page de webinaire live',
-  pageUpsell:       "Page d'upsell",
-
-  // ── SVG button CTAs (embedded in page thumbnails) ─────────────────────────
-  ctaSignUp:        'INSCRIPTION',
-  ctaBook:          'RENDEZ-VOUS',
-  ctaDownload:      'TÉLÉCHARGER',
-  ctaBuy:           'ACHETER',
-  ctaThanks:        'MERCI',
-
-  // ── Calendar day abbreviations (inside calendar thumbnail SVG) ────────────
-  // Order: Sun Mon Tue Wed Thu Fri Sat
-  calDays:          ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
-
-  // ── Node labels (sidebar + canvas) ───────────────────────────────────────
-  // Sources — paid
-  nodeFbAds:        'Publicité Facebook',
-  nodeIgAds:        'Publicité Instagram',
-  nodeGoogleAds:    'Publicité Google',
-  nodeTiktokAds:    'Publicité TikTok',
-  nodeLinkedinAds:  'Publicité LinkedIn',
-  nodePinterestAds: 'Publicité Pinterest',
-  nodeYoutubeAds:   'Publicité YouTube',
-  nodeTvAds:        'Publicité TV',
-  // Sources — social
-  nodeFbOrganic:    'Facebook organique',
-  nodeIgOrganic:    'Instagram organique',
-  nodeLiOrganic:    'LinkedIn organique',
-  nodeTiktokOrganic:'TikTok organique',
-  nodeRedditOrganic:'Reddit organique',
-  nodePinterestOrganic:'Pinterest organique',
-  nodeReferral:     'Référencement',
-  nodeDirect:       'Direct',
-  // Sources — search
-  nodeSeo:          'Référencement naturel',
-  nodeGoogleSearch: 'Google',
-  nodeYoutubeSearch:'YouTube',
-  nodeBingSearch:   'Bing',
-  // Actions
-  nodeFormComplete: 'Formulaire complété',
-  nodeMeetingBooked:'Meeting cédulé',
-  nodePurchase:     'Achat',
-  nodeUpsellBought: 'Upsell acheté',
-  nodeEmailOpen:    'Email ouvert',
-  nodeEmailClick:   'Clic email',
-  nodeAddList:      'Ajouter à une liste',
-  nodeDownloadPdf:  'Télécharger PDF',
+  pageAbonnement:       "Page d'abonnement",
+  pageBlog:             'Page de blog',
+  pageCalendrier:       'Page de calendrier',
+  pageCommande:         'Page de commande',
+  pageMembers:          'Page membres',
+  pageRemerciement:     'Page de remerciement',
+  pageSondage:          'Page de checklist',
+  pageTelechargement:   'Page de téléchargement',
+  pageVenteVideo:       'Page de vente vidéo',
+  pageVente:            'Page de vente',
+  pageWebinaire:        'Page de webinaire live',
+  pageUpsell:           "Page d'upsell",
+  // ── SVG button CTAs ───────────────────────────────────────────────────────
+  ctaSignUp:            'INSCRIPTION',
+  ctaBook:              'RENDEZ-VOUS',
+  ctaDownload:          'TÉLÉCHARGER',
+  ctaBuy:               'ACHETER',
+  ctaThanks:            'MERCI',
+  // ── Calendar day abbreviations (Sun→Sat) ──────────────────────────────────
+  calDays:              ['D', 'L', 'M', 'M', 'J', 'V', 'S'],
+  // ── Node labels ───────────────────────────────────────────────────────────
+  // paid sources
+  nodeFbAds:            'Publicité Facebook',
+  nodeIgAds:            'Publicité Instagram',
+  nodeGoogleAds:        'Publicité Google',
+  nodeTwitterAds:       'Publicité X',
+  nodeYoutubeAds:       'Publicité YouTube',
+  nodeLinkedinAds:      'Publicité LinkedIn',
+  nodeRedditAds:        'Publicité Reddit',
+  nodeTiktokAds:        'Publicité TikTok',
+  nodePinterestAds:     'Publicité Pinterest',
+  nodeBingAds:          'Publicité Bing',
+  // search sources
+  nodeSeo:              'Tous les moteurs',
+  nodeBingSearch:       'Bing',
+  nodeGoogleSearch:     'Google',
+  nodeYoutubeSearch:    'YouTube',
+  // organic social
+  nodeFbOrganic:        'Publication Facebook',
+  nodeIgOrganic:        'Publication Instagram',
+  nodeLiOrganic:        'Publication LinkedIn',
+  nodeXOrganic:         'Publication X',
+  nodePinterestOrganic: 'Publication Pinterest',
+  nodeTiktokOrganic:    'Publication TikTok',
+  nodeRedditOrganic:    'Publication Reddit',
+  // web sources
+  nodeWebpage:          'Page Web',
+  nodeBlogSrc:          'Blog sur le Site Web',
+  nodePopup:            'Pop-up sur le Site Web',
+  nodeFormSrc:          'Formulaire sur le Site Web',
+  // other sources
+  nodeEmail:            'Email',
+  nodeEbook:            'Ebook (PDF)',
+  nodeDirect:           'Direct',
+  // messages
+  nodeSms:              'SMS',
+  nodeChatbot:          'Chatbot',
+  // pages
+  nodeAddPage:          'Ajouter une page',
+  // actions — delays
+  nodeWait:             'Délai / Attente',
+  // actions — conversions
+  nodePurchase:         'Achat',
+  nodeFormComplete:     'Formulaire complété',
+  nodeMeetingBooked:    'Meeting cédulé',
+  nodeDeal:             'Accord conclu',
+  // actions — other
+  nodeAddList:          'Ajouter à une liste',
+  nodeDownloadPdf:      'Télécharger PDF',
+  // text
+  nodeTextbox:          'Zone de texte',
 } as const
 
-// `en` must have identical shape — TypeScript will error on any missing key
 const en: typeof fr = {
-  // ── Auth ─────────────────────────────────────────────────────────────────
-  loading:          'Loading...',
-  tagline:          'Visualize and automate your customer journeys with AI',
-  signInGoogle:     'Sign in with Google',
-
-  // ── Avatar menu ──────────────────────────────────────────────────────────
-  signOut:          'Sign out',
-  language:         'Language',
-  switchLang:       'Français',
-  switchFlag:       '🇫🇷',
-
-  // ── Topbar ───────────────────────────────────────────────────────────────
-  newCampaign:      'New campaign',
-  rename:           'Rename',
-  versions:         'Versions',
-  brief:            'Brief',
-
-  // ── Map It modal ─────────────────────────────────────────────────────────
-  mapItSubtitle:    'Click an element to add it to the canvas',
-
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  loading:              'Loading...',
+  tagline:              'Visualize and automate your customer journeys with AI',
+  signInGoogle:         'Sign in with Google',
+  // ── Avatar menu ───────────────────────────────────────────────────────────
+  signOut:              'Sign out',
+  language:             'Language',
+  switchLang:           'Français',
+  switchFlag:           '🇫🇷',
+  // ── Topbar ────────────────────────────────────────────────────────────────
+  newCampaign:          'New campaign',
+  rename:               'Rename',
+  versions:             'Versions',
+  brief:                'Brief',
+  // ── Map It modal ──────────────────────────────────────────────────────────
+  mapItSubtitle:        'Click an element to add it to the canvas',
   // ── Confirm dialogs ───────────────────────────────────────────────────────
-  confirmDelete:    'Confirm deletion',
-  cancel:           'Cancel',
-  delete:           'Delete',
-  yes:              'Yes',
-  no:               'No',
-
+  confirmDelete:        'Confirm deletion',
+  cancel:               'Cancel',
+  delete:               'Delete',
+  yes:                  'Yes',
+  no:                   'No',
   // ── Canvas hints ──────────────────────────────────────────────────────────
-  clickTarget:      'Source selected — Click the target',
-  clickStart:       'Click the starting node',
-  connSelected:     'Connection selected — Delete to remove',
-  connectionTool:   'Arrow / Connection',
-
+  clickTarget:          'Source selected — Click the target',
+  clickStart:           'Click the starting node',
+  connSelected:         'Connection selected — Delete to remove',
+  connectionTool:       'Arrow / Connection',
   // ── Layer buttons ─────────────────────────────────────────────────────────
-  bringToFront:     'Front',
-  bringForward:     'Forward',
-  sendBackward:     'Backward',
-  sendToBack:       'Back',
-
+  bringToFront:         'Front',
+  bringForward:         'Forward',
+  sendBackward:         'Backward',
+  sendToBack:           'Back',
   // ── Align / distribute ────────────────────────────────────────────────────
-  centerVert:       'Center vert.',
-  centerHoriz:      'Center horiz.',
-  spaceHoriz:       'Space horiz.',
-  spaceVert:        'Space vert.',
-
+  centerVert:           'Center vert.',
+  centerHoriz:          'Center horiz.',
+  spaceHoriz:           'Space horiz.',
+  spaceVert:            'Space vert.',
   // ── Inspector ─────────────────────────────────────────────────────────────
-  multiSelect:      '✦ Multi-selection',
-  nodesLabel:       'nodes',
-  textBox:          '📝 Text box',
-  dblClickEdit:     'Double-click to edit',
-  pageLabel:        '📄 Page',
-  connectionLabel:  '🔗 Connection',
-
+  multiSelect:          '✦ Multi-selection',
+  nodesLabel:           'nodes',
+  textBox:              '📝 Text box',
+  dblClickEdit:         'Double-click to edit',
+  pageLabel:            '📄 Page',
+  connectionLabel:      '🔗 Connection',
   // ── Versions panel ────────────────────────────────────────────────────────
-  save:             'Save',
-  confirmDelQ:      'Delete?',
-
+  save:                 'Save',
+  confirmDelQ:          'Delete?',
   // ── Brief / generate ──────────────────────────────────────────────────────
-  notSpecified:     'Not specified',
-  analyzing:        '🤖 Analyzing brief...',
-  errorPrefix:      '❌ Error: ',
-
+  notSpecified:         'Not specified',
+  analyzing:            '🤖 Analyzing brief...',
+  errorPrefix:          '❌ Error: ',
   // ── Sidebar section labels ────────────────────────────────────────────────
-  secSources:       '🌐 Sources',
-  secPages:         '📄 Pages',
-  secActions:       '⚡ Actions',
-  secText:          '📝 Text',
-  subPaid:          'Paid',
-  subSocial:        'Social media',
-  subSearch:        'Search engine',
-  subDelay:         'Delays',
-  subConv:          'Conversions',
-  subOther:         'Other actions',
-
+  secSources:           '🌐 Sources',
+  secPages:             '📄 Pages',
+  secActions:           '⚡ Actions',
+  secText:              '📝 Text',
+  subPaid:              'Paid',
+  subSearch:            'Search engine',
+  subSocial:            'Social media',
+  subWeb:               'Website',
+  subSrcOther:          'Other',
+  subMessages:          'Messages',
+  subDelay:             'Delays',
+  subConv:              'Conversions',
+  subOther:             'Other actions',
   // ── Page style labels ─────────────────────────────────────────────────────
-  pageAbonnement:   'Subscription page',
-  pageBlog:         'Blog page',
-  pageCalendrier:   'Calendar page',
-  pageCommande:     'Order page',
-  pageMembers:      'Members page',
-  pageRemerciement: 'Thank you page',
-  pageSondage:      'Checklist page',
-  pageTelechargement:'Download page',
-  pageVenteVideo:   'Video sales page',
-  pageVente:        'Sales page',
-  pageWebinaire:    'Live webinar page',
-  pageUpsell:       'Upsell page',
-
-  // ── SVG button CTAs (embedded in page thumbnails) ─────────────────────────
-  ctaSignUp:        'SIGN UP',
-  ctaBook:          'BOOK NOW',
-  ctaDownload:      'DOWNLOAD',
-  ctaBuy:           'BUY NOW',
-  ctaThanks:        'THANK YOU',
-
-  // ── Calendar day abbreviations (inside calendar thumbnail SVG) ────────────
-  calDays:          ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
-
+  pageAbonnement:       'Subscription page',
+  pageBlog:             'Blog page',
+  pageCalendrier:       'Calendar page',
+  pageCommande:         'Order page',
+  pageMembers:          'Members page',
+  pageRemerciement:     'Thank you page',
+  pageSondage:          'Checklist page',
+  pageTelechargement:   'Download page',
+  pageVenteVideo:       'Video sales page',
+  pageVente:            'Sales page',
+  pageWebinaire:        'Live webinar page',
+  pageUpsell:           'Upsell page',
+  // ── SVG button CTAs ───────────────────────────────────────────────────────
+  ctaSignUp:            'SIGN UP',
+  ctaBook:              'BOOK NOW',
+  ctaDownload:          'DOWNLOAD',
+  ctaBuy:               'BUY NOW',
+  ctaThanks:            'THANK YOU',
+  // ── Calendar day abbreviations (Sun→Sat) ──────────────────────────────────
+  calDays:              ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
   // ── Node labels ───────────────────────────────────────────────────────────
-  nodeFbAds:        'Facebook Ads',
-  nodeIgAds:        'Instagram Ads',
-  nodeGoogleAds:    'Google Ads',
-  nodeTiktokAds:    'TikTok Ads',
-  nodeLinkedinAds:  'LinkedIn Ads',
-  nodePinterestAds: 'Pinterest Ads',
-  nodeYoutubeAds:   'YouTube Ads',
-  nodeTvAds:        'TV Ads',
-  nodeFbOrganic:    'Facebook organic',
-  nodeIgOrganic:    'Instagram organic',
-  nodeLiOrganic:    'LinkedIn organic',
-  nodeTiktokOrganic:'TikTok organic',
-  nodeRedditOrganic:'Reddit organic',
-  nodePinterestOrganic:'Pinterest organic',
-  nodeReferral:     'Referral',
-  nodeDirect:       'Direct',
-  nodeSeo:          'SEO',
-  nodeGoogleSearch: 'Google',
-  nodeYoutubeSearch:'YouTube',
-  nodeBingSearch:   'Bing',
-  nodeFormComplete: 'Form completed',
-  nodeMeetingBooked:'Meeting booked',
-  nodePurchase:     'Purchase',
-  nodeUpsellBought: 'Upsell purchased',
-  nodeEmailOpen:    'Email opened',
-  nodeEmailClick:   'Email click',
-  nodeAddList:      'Add to list',
-  nodeDownloadPdf:  'Download PDF',
+  nodeFbAds:            'Facebook Ads',
+  nodeIgAds:            'Instagram Ads',
+  nodeGoogleAds:        'Google Ads',
+  nodeTwitterAds:       'X Ads',
+  nodeYoutubeAds:       'YouTube Ads',
+  nodeLinkedinAds:      'LinkedIn Ads',
+  nodeRedditAds:        'Reddit Ads',
+  nodeTiktokAds:        'TikTok Ads',
+  nodePinterestAds:     'Pinterest Ads',
+  nodeBingAds:          'Bing Ads',
+  nodeSeo:              'All search engines',
+  nodeBingSearch:       'Bing',
+  nodeGoogleSearch:     'Google',
+  nodeYoutubeSearch:    'YouTube',
+  nodeFbOrganic:        'Facebook post',
+  nodeIgOrganic:        'Instagram post',
+  nodeLiOrganic:        'LinkedIn post',
+  nodeXOrganic:         'X post',
+  nodePinterestOrganic: 'Pinterest post',
+  nodeTiktokOrganic:    'TikTok post',
+  nodeRedditOrganic:    'Reddit post',
+  nodeWebpage:          'Web page',
+  nodeBlogSrc:          'Website blog',
+  nodePopup:            'Website popup',
+  nodeFormSrc:          'Website form',
+  nodeEmail:            'Email',
+  nodeEbook:            'Ebook (PDF)',
+  nodeDirect:           'Direct',
+  nodeSms:              'SMS',
+  nodeChatbot:          'Chatbot',
+  nodeAddPage:          'Add a page',
+  nodeWait:             'Delay / Wait',
+  nodePurchase:         'Purchase',
+  nodeFormComplete:     'Form completed',
+  nodeMeetingBooked:    'Meeting booked',
+  nodeDeal:             'Deal closed',
+  nodeAddList:          'Add to list',
+  nodeDownloadPdf:      'Download PDF',
+  nodeTextbox:          'Text box',
 }
 
 export const translations = { fr, en } as const

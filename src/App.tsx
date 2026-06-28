@@ -411,85 +411,85 @@ const PAGE_STYLES: {id:string; labelKey:keyof Translations; hc:string; thumb:(t:
 
 const ND=[
   // ── SOURCES › Payantes ──
-  {type:"facebook",      label:"Publicité Facebook",    cat:"src_payant",  subcat:"Payantes",            bg:"#1877F2",fg:"#fff",sh:"circle"},
-  {type:"instagram",     label:"Publicité Instagram",   cat:"src_payant",  subcat:"Payantes",            bg:"#E1306C",fg:"#fff",sh:"circle"},
-  {type:"google",        label:"Publicité Google",      cat:"src_payant",  subcat:"Payantes",            bg:"#34A853",fg:"#fff",sh:"circle"},
-  {type:"twitter",       label:"Publicité X",           cat:"src_payant",  subcat:"Payantes",            bg:"#000",   fg:"#fff",sh:"circle"},
-  {type:"youtube",       label:"Publicité YouTube",     cat:"src_payant",  subcat:"Payantes",            bg:"#FF0000",fg:"#fff",sh:"circle"},
-  {type:"linkedin",      label:"Publicité LinkedIn",    cat:"src_payant",  subcat:"Payantes",            bg:"#0A66C2",fg:"#fff",sh:"circle"},
-  {type:"reddit",        label:"Publicité Reddit",      cat:"src_payant",  subcat:"Payantes",            bg:"#FF4500",fg:"#fff",sh:"circle"},
-  {type:"tiktok",        label:"Publicité TikTok",      cat:"src_payant",  subcat:"Payantes",            bg:"#000",   fg:"#fff",sh:"circle"},
-  {type:"pinterest",     label:"Publicité Pinterest",   cat:"src_payant",  subcat:"Payantes",            bg:"#DA162B",fg:"#fff",sh:"circle"},
-  {type:"bing",          label:"Publicité Bing",        cat:"src_payant",  subcat:"Payantes",            bg:"#FFB900",fg:"#fff",sh:"circle"},
+  {type:"facebook",      labelKey:"nodeFbAds",        label:"Publicité Facebook",    cat:"src_payant",  subcat:"Payantes",            bg:"#1877F2",fg:"#fff",sh:"circle"},
+  {type:"instagram",     labelKey:"nodeIgAds",         label:"Publicité Instagram",   cat:"src_payant",  subcat:"Payantes",            bg:"#E1306C",fg:"#fff",sh:"circle"},
+  {type:"google",        labelKey:"nodeGoogleAds",     label:"Publicité Google",      cat:"src_payant",  subcat:"Payantes",            bg:"#34A853",fg:"#fff",sh:"circle"},
+  {type:"twitter",       labelKey:"nodeTwitterAds",    label:"Publicité X",           cat:"src_payant",  subcat:"Payantes",            bg:"#000",   fg:"#fff",sh:"circle"},
+  {type:"youtube",       labelKey:"nodeYoutubeAds",    label:"Publicité YouTube",     cat:"src_payant",  subcat:"Payantes",            bg:"#FF0000",fg:"#fff",sh:"circle"},
+  {type:"linkedin",      labelKey:"nodeLinkedinAds",   label:"Publicité LinkedIn",    cat:"src_payant",  subcat:"Payantes",            bg:"#0A66C2",fg:"#fff",sh:"circle"},
+  {type:"reddit",        labelKey:"nodeRedditAds",     label:"Publicité Reddit",      cat:"src_payant",  subcat:"Payantes",            bg:"#FF4500",fg:"#fff",sh:"circle"},
+  {type:"tiktok",        labelKey:"nodeTiktokAds",     label:"Publicité TikTok",      cat:"src_payant",  subcat:"Payantes",            bg:"#000",   fg:"#fff",sh:"circle"},
+  {type:"pinterest",     labelKey:"nodePinterestAds",  label:"Publicité Pinterest",   cat:"src_payant",  subcat:"Payantes",            bg:"#DA162B",fg:"#fff",sh:"circle"},
+  {type:"bing",          labelKey:"nodeBingAds",       label:"Publicité Bing",        cat:"src_payant",  subcat:"Payantes",            bg:"#FFB900",fg:"#fff",sh:"circle"},
   // ── SOURCES › Moteur de recherche ──
-  {type:"seo",           label:"Tous les moteurs",      cat:"src_search",  subcat:"Moteur de recherche", bg:"#16A34A",fg:"#fff",sh:"circle"},
-  {type:"bing_search",   label:"Bing",                  cat:"src_search",  subcat:"Moteur de recherche", bg:"#008373",fg:"#fff",sh:"circle"},
-  {type:"google_search", label:"Google",                cat:"src_search",  subcat:"Moteur de recherche", bg:"#4285F4",fg:"#fff",sh:"circle"},
-  {type:"youtube_search",label:"YouTube",               cat:"src_search",  subcat:"Moteur de recherche", bg:"#FF0000",fg:"#fff",sh:"circle"},
+  {type:"seo",           labelKey:"nodeSeo",           label:"Tous les moteurs",      cat:"src_search",  subcat:"Moteur de recherche", bg:"#16A34A",fg:"#fff",sh:"circle"},
+  {type:"bing_search",   labelKey:"nodeBingSearch",    label:"Bing",                  cat:"src_search",  subcat:"Moteur de recherche", bg:"#008373",fg:"#fff",sh:"circle"},
+  {type:"google_search", labelKey:"nodeGoogleSearch",  label:"Google",                cat:"src_search",  subcat:"Moteur de recherche", bg:"#4285F4",fg:"#fff",sh:"circle"},
+  {type:"youtube_search",labelKey:"nodeYoutubeSearch", label:"YouTube",               cat:"src_search",  subcat:"Moteur de recherche", bg:"#FF0000",fg:"#fff",sh:"circle"},
   // ── SOURCES › Média sociaux ──
-  {type:"fb_organic",        label:"Publication Facebook",    cat:"src_social",  subcat:"Média sociaux",       bg:"#0076FB",fg:"#fff",sh:"circle"},
-  {type:"ig_organic",        label:"Publication Instagram",   cat:"src_social",  subcat:"Média sociaux",       bg:"#F00075",fg:"#fff",sh:"circle"},
-  {type:"li_organic",        label:"Publication LinkedIn",    cat:"src_social",  subcat:"Média sociaux",       bg:"#0077B5",fg:"#fff",sh:"circle"},
-  {type:"x_organic",         label:"Publication X",           cat:"src_social",  subcat:"Média sociaux",       bg:"#000",   fg:"#fff",sh:"circle"},
-  {type:"pinterest_organic", label:"Publication Pinterest",   cat:"src_social",  subcat:"Média sociaux",       bg:"#DA162B",fg:"#fff",sh:"circle"},
-  {type:"tiktok_organic",    label:"Publication TikTok",      cat:"src_social",  subcat:"Média sociaux",       bg:"#000",   fg:"#fff",sh:"circle"},
-  {type:"reddit_organic",    label:"Publication Reddit",      cat:"src_social",  subcat:"Média sociaux",       bg:"#FF4500",fg:"#fff",sh:"circle"},
+  {type:"fb_organic",        labelKey:"nodeFbOrganic",        label:"Publication Facebook",    cat:"src_social",  subcat:"Média sociaux",       bg:"#0076FB",fg:"#fff",sh:"circle"},
+  {type:"ig_organic",        labelKey:"nodeIgOrganic",        label:"Publication Instagram",   cat:"src_social",  subcat:"Média sociaux",       bg:"#F00075",fg:"#fff",sh:"circle"},
+  {type:"li_organic",        labelKey:"nodeLiOrganic",        label:"Publication LinkedIn",    cat:"src_social",  subcat:"Média sociaux",       bg:"#0077B5",fg:"#fff",sh:"circle"},
+  {type:"x_organic",         labelKey:"nodeXOrganic",         label:"Publication X",           cat:"src_social",  subcat:"Média sociaux",       bg:"#000",   fg:"#fff",sh:"circle"},
+  {type:"pinterest_organic", labelKey:"nodePinterestOrganic", label:"Publication Pinterest",   cat:"src_social",  subcat:"Média sociaux",       bg:"#DA162B",fg:"#fff",sh:"circle"},
+  {type:"tiktok_organic",    labelKey:"nodeTiktokOrganic",    label:"Publication TikTok",      cat:"src_social",  subcat:"Média sociaux",       bg:"#000",   fg:"#fff",sh:"circle"},
+  {type:"reddit_organic",    labelKey:"nodeRedditOrganic",    label:"Publication Reddit",      cat:"src_social",  subcat:"Média sociaux",       bg:"#FF4500",fg:"#fff",sh:"circle"},
   // ── SOURCES › Site Web ──
-  {type:"webpage",       label:"Page Web",              cat:"src_web",     subcat:"Site Web",            bg:"#054547",fg:"#fff",sh:"circle"},
-  {type:"blog_src",      label:"Blog sur le Site Web",      cat:"src_web",     subcat:"Site Web",            bg:"#0EA5E9",fg:"#fff",sh:"circle"},
-  {type:"popup",         label:"Pop-up sur le Site Web",    cat:"src_web",     subcat:"Site Web",            bg:"#EC4899",fg:"#fff",sh:"circle"},
-  {type:"form",          label:"Formulaire sur le Site Web",cat:"src_web",     subcat:"Site Web",            bg:"#7C3AED",fg:"#fff",sh:"circle"},
+  {type:"webpage",       labelKey:"nodeWebpage",       label:"Page Web",              cat:"src_web",     subcat:"Site Web",            bg:"#054547",fg:"#fff",sh:"circle"},
+  {type:"blog_src",      labelKey:"nodeBlogSrc",       label:"Blog sur le Site Web",  cat:"src_web",     subcat:"Site Web",            bg:"#0EA5E9",fg:"#fff",sh:"circle"},
+  {type:"popup",         labelKey:"nodePopup",         label:"Pop-up sur le Site Web",cat:"src_web",     subcat:"Site Web",            bg:"#EC4899",fg:"#fff",sh:"circle"},
+  {type:"form",          labelKey:"nodeFormSrc",       label:"Formulaire sur le Site Web",cat:"src_web", subcat:"Site Web",            bg:"#7C3AED",fg:"#fff",sh:"circle"},
   // ── SOURCES › Autres ──
-  {type:"email",         label:"Email",                 cat:"src_autres",  subcat:"Autres",              bg:"#2563EB",fg:"#fff",sh:"circle"},
-  {type:"ebook",         label:"Ebook (PDF)",           cat:"src_autres",  subcat:"Autres",              bg:"#D97706",fg:"#fff",sh:"circle"},
-  {type:"direct",        label:"Direct",                cat:"src_autres",  subcat:"Autres",              bg:"#64748B",fg:"#fff",sh:"circle"},
+  {type:"email",         labelKey:"nodeEmail",         label:"Email",                 cat:"src_autres",  subcat:"Autres",              bg:"#2563EB",fg:"#fff",sh:"circle"},
+  {type:"ebook",         labelKey:"nodeEbook",         label:"Ebook (PDF)",           cat:"src_autres",  subcat:"Autres",              bg:"#D97706",fg:"#fff",sh:"circle"},
+  {type:"direct",        labelKey:"nodeDirect",        label:"Direct",                cat:"src_autres",  subcat:"Autres",              bg:"#64748B",fg:"#fff",sh:"circle"},
   // ── SOURCES › Messages ──
-  {type:"sms",           label:"SMS",                   cat:"src_msg",     subcat:"Messages",            bg:"#22C55E",fg:"#fff",sh:"circle"},
-  {type:"chatbot",       label:"Chatbot",               cat:"src_msg",     subcat:"Messages",            bg:"#06B6D4",fg:"#fff",sh:"circle"},
+  {type:"sms",           labelKey:"nodeSms",           label:"SMS",                   cat:"src_msg",     subcat:"Messages",            bg:"#22C55E",fg:"#fff",sh:"circle"},
+  {type:"chatbot",       labelKey:"nodeChatbot",       label:"Chatbot",               cat:"src_msg",     subcat:"Messages",            bg:"#06B6D4",fg:"#fff",sh:"circle"},
   // ── PAGES ──
-  {type:"page",          label:"Ajouter une page",      cat:"page",        hc:"#054547",sh:"browser"},
+  {type:"page",          labelKey:"nodeAddPage",       label:"Ajouter une page",      cat:"page",        hc:"#054547",sh:"browser"},
   // ── ACTIONS › Délais ──
-  {type:"wait",          label:"Délai / Attente",       cat:"act_delai",   subcat:"Délais",              bg:"#374151",fg:"#fff",icon:"⏰",sh:"circle"},
+  {type:"wait",          labelKey:"nodeWait",          label:"Délai / Attente",       cat:"act_delai",   subcat:"Délais",              bg:"#374151",fg:"#fff",icon:"⏰",sh:"circle"},
   // ── ACTIONS › Conversions ──
-  {type:"achat",         label:"Achat",                 cat:"act_conv",    subcat:"Conversions",         bg:"#16A34A",fg:"#fff",sh:"diamond"},
-  {type:"form_complete", label:"Formulaire complété",   cat:"act_conv",    subcat:"Conversions",         bg:"#0EA5E9",fg:"#fff",sh:"diamond"},
-  {type:"meeting_booked",label:"Meeting cédulé",        cat:"act_conv",    subcat:"Conversions",         bg:"#7C3AED",fg:"#fff",sh:"diamond"},
-  {type:"deal",          label:"Accord conclu",         cat:"act_conv",    subcat:"Conversions",         bg:"#054547",fg:"#fff",sh:"diamond"},
+  {type:"achat",         labelKey:"nodePurchase",      label:"Achat",                 cat:"act_conv",    subcat:"Conversions",         bg:"#16A34A",fg:"#fff",sh:"diamond"},
+  {type:"form_complete", labelKey:"nodeFormComplete",  label:"Formulaire complété",   cat:"act_conv",    subcat:"Conversions",         bg:"#0EA5E9",fg:"#fff",sh:"diamond"},
+  {type:"meeting_booked",labelKey:"nodeMeetingBooked", label:"Meeting cédulé",        cat:"act_conv",    subcat:"Conversions",         bg:"#7C3AED",fg:"#fff",sh:"diamond"},
+  {type:"deal",          labelKey:"nodeDeal",          label:"Accord conclu",         cat:"act_conv",    subcat:"Conversions",         bg:"#054547",fg:"#fff",sh:"diamond"},
   // ── ACTIONS › Autres ──
-  {type:"add_list_new",  label:"Ajouter à une liste",   cat:"act_autres",  subcat:"Autres actions",      bg:"#1E293B",fg:"#fff",sh:"diamond"},
-  {type:"dl_pdf",        label:"Télécharger PDF",       cat:"act_autres",  subcat:"Autres actions",      bg:"#fff",fg:"#EB5757",borderColor:"#EB5757",sh:"diamond"},
+  {type:"add_list_new",  labelKey:"nodeAddList",       label:"Ajouter à une liste",   cat:"act_autres",  subcat:"Autres actions",      bg:"#1E293B",fg:"#fff",sh:"diamond"},
+  {type:"dl_pdf",        labelKey:"nodeDownloadPdf",   label:"Télécharger PDF",       cat:"act_autres",  subcat:"Autres actions",      bg:"#fff",fg:"#EB5757",borderColor:"#EB5757",sh:"diamond"},
   // ── TEXTE ──
-  {type:"textbox",       label:"Zone de texte",         cat:"text",        sh:"textbox"},
+  {type:"textbox",       labelKey:"nodeTextbox",       label:"Zone de texte",         cat:"text",        sh:"textbox"},
 ];
 
 // Sidebar structure: 3 main sections with flat subcategory separators
 const SIDEBAR_SECTIONS=[
   {
-    key:"sources", label:"🌐 Sources", icon:"🌐",
+    key:"sources", sectionKey:"secSources", label:"🌐 Sources", icon:"🌐",
     cats:[
-      {k:"src_payant",  sub:"Payantes"},
-      {k:"src_search",  sub:"Moteur de recherche"},
-      {k:"src_social",  sub:"Média sociaux"},
-      {k:"src_web",     sub:"Site Web"},
-      {k:"src_autres",  sub:"Autres"},
-      {k:"src_msg",     sub:"Messages"},
+      {k:"src_payant",  subKey:"subPaid",     sub:"Payantes"},
+      {k:"src_search",  subKey:"subSearch",   sub:"Moteur de recherche"},
+      {k:"src_social",  subKey:"subSocial",   sub:"Médias sociaux"},
+      {k:"src_web",     subKey:"subWeb",      sub:"Site Web"},
+      {k:"src_autres",  subKey:"subSrcOther", sub:"Autres"},
+      {k:"src_msg",     subKey:"subMessages", sub:"Messages"},
     ]
   },
   {
-    key:"pages", label:"📄 Pages", icon:"📄",
-    cats:[{k:"page", sub:null}]
+    key:"pages", sectionKey:"secPages", label:"📄 Pages", icon:"📄",
+    cats:[{k:"page", subKey:null, sub:null}]
   },
   {
-    key:"actions", label:"⚡ Actions", icon:"⚡",
+    key:"actions", sectionKey:"secActions", label:"⚡ Actions", icon:"⚡",
     cats:[
-      {k:"act_delai",  sub:"Délais"},
-      {k:"act_conv",   sub:"Conversions"},
-      {k:"act_autres", sub:"Autres"},
+      {k:"act_delai",  subKey:"subDelay", sub:"Délais"},
+      {k:"act_conv",   subKey:"subConv",  sub:"Conversions"},
+      {k:"act_autres", subKey:"subOther", sub:"Autres actions"},
     ]
   },
   {
-    key:"text", label:"📝 Texte", icon:"📝",
-    cats:[{k:"text", sub:null}]
+    key:"text", sectionKey:"secText", label:"📝 Texte", icon:"📝",
+    cats:[{k:"text", subKey:null, sub:null}]
   },
 ];
 
@@ -516,7 +516,7 @@ const gs=(d,n)=>{
   if(d.sh==="diamond")return{w:n?.nodeW||72,h:n?.nodeH||72};
   return{w:n?.nodeW||70,h:n?.nodeH||70};
 };
-const getDL=(type,cl)=>cl[type]||gd(type)?.label||type;
+const getDL_unused=null; // moved inside App component
 const fmtDate=iso=>{try{return new Date(iso).toLocaleString("fr-CA",{year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"});}catch{return iso;}};
 
 function edgePt(node,angle){
@@ -606,6 +606,9 @@ const LayerBtn=({onClick,icon,label,kbd})=>(<button onClick={onClick} title={`${
 export default function App(){
   const { user, loading: authLoading, signInWithGoogle, signOut } = useAuth();
   const { t, lang, setLang } = useLanguage();
+
+  // getDL inside component so it can access t for translated node labels
+  const getDL=(type:string,cl:Record<string,string>)=>cl[type]||(t as any)[gd(type)?.labelKey]||gd(type)?.label||type;
 
   const [nodes,setNodes]=useState([]);
   const [conns,setConns]=useState([]);
@@ -1258,7 +1261,7 @@ Génère le customer journey mapping complet en JSON.`}]
               <div style={{fontSize:11,fontWeight:700,color:"#94A3B8",textTransform:"uppercase",letterSpacing:.8,marginBottom:12,paddingBottom:6,borderBottom:"1px solid #E2E8F0"}}>{section.title}</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:16}}>
                 {section.items.map(d=>{
-                  const dl=d.label||getDL(d.type,customLabels);
+                  const dl=getDL(d.type,customLabels);
                   const isPage=d.sh==="browser";
                   const isDiamond=d.sh==="diamond";
                   const hasBadge=d.cat==="src_payant";
@@ -1513,7 +1516,7 @@ Génère le customer journey mapping complet en JSON.`}]
                     style={{padding:"9px 10px 6px",fontSize:10,fontWeight:700,color:"#94A3B8",textTransform:"uppercase",letterSpacing:.9,display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",userSelect:"none",background:"#172133"}}
                     onMouseEnter={e=>e.currentTarget.style.background="#1E293B"}
                     onMouseLeave={e=>e.currentTarget.style.background="#172133"}>
-                    <span>{section.label}</span>
+                    <span>{(t as any)[section.sectionKey]||section.label}</span>
                     <span style={{fontSize:9,color:"#475569",transition:"transform .2s",display:"inline-block",transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}>▼</span>
                   </div>
                   {!collapsed&&section.cats.map(catDef=>{
@@ -1522,10 +1525,10 @@ Génère le customer journey mapping complet en JSON.`}]
                     return(
                       <div key={catDef.k}>
                         {/* Subcategory separator — flat, non-clickable */}
-                        {catDef.sub&&(
+                        {catDef.subKey&&(
                           <div style={{padding:"5px 10px 3px",display:"flex",alignItems:"center",gap:6}}>
                             <div style={{flex:1,height:1,background:"#2D3F55"}}/>
-                            <span style={{fontSize:8.5,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:.7,whiteSpace:"nowrap"}}>{catDef.sub}</span>
+                            <span style={{fontSize:8.5,fontWeight:600,color:"#475569",textTransform:"uppercase",letterSpacing:.7,whiteSpace:"nowrap"}}>{(t as any)[catDef.subKey]||catDef.sub}</span>
                             <div style={{flex:1,height:1,background:"#2D3F55"}}/>
                           </div>
                         )}
@@ -1836,7 +1839,7 @@ Génère le customer journey mapping complet en JSON.`}]
             {sn&&!isTB&&!isPage&&(
               <div style={{padding:14}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>{snD?.label||"Noeud"}</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>Noeud selectionne</div></div>
+                  <div><div style={{color:"#F1F5F9",fontWeight:700,fontSize:13}}>{(t as any)[snD?.labelKey]||snD?.label||"Node"}</div><div style={{color:"#94A3B8",fontSize:11,marginTop:2}}>Noeud selectionne</div></div>
                   <button onClick={()=>setSelN([])} style={{background:"#334155",border:"none",color:"#94A3B8",cursor:"pointer",width:28,height:28,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
                 <div style={{marginTop:0}}>
