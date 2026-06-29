@@ -646,6 +646,7 @@ export default function App(){
   const [hoveredType,setHoveredType]=useState(null);
   const [collapsedCats,setCollapsedCats]=useState({sources:true,pages:true,actions:true,text:true});
   const [showMapIt,setShowMapIt]=useState(false);
+  const [isExporting,setIsExporting]=useState(false);
   const [sidebarOpen,setSidebarOpen]=useState(false); // collapsed by default
   const [isMobile,setIsMobile]=useState(()=>typeof window!=='undefined'?window.innerWidth<768:false);
   useEffect(()=>{
@@ -765,8 +766,64 @@ export default function App(){
     if(!nodes.length)return;
     saveH(nodes,conns);
     setNodes(applyDagreLayout([...nodes],conns));
-    // Re-center view
     setPan({x:80,y:50});
+  };
+
+  // ── Export to PDF ─────────────────────────────────────────────────────────
+  const exportPDF=async()=>{
+    if(isExporting||!cvRef.current)return;
+    setIsExporting(true);
+    flash("info",t.pdfExporting);
+
+    // Save current view state
+    const savedZoom=zoom, savedPan={...pan};
+
+    try{
+      // Fit all nodes to canvas so nothing gets cropped
+      if(nodes.length){
+        const rect=cvRef.current.getBoundingClientRect();
+        const pad=56;
+        let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+        nodes.forEach(n=>{const{w,h}=gs(gd(n.type),n);x0=Math.min(x0,n.x);y0=Math.min(y0,n.y);x1=Math.max(x1,n.x+w);y1=Math.max(y1,n.y+h);});
+        const bw=x1-x0+pad*2, bh=y1-y0+pad*2;
+        const z=Math.min(Math.max(rect.width/bw,0.15),Math.min(rect.height/bh,1.5));
+        setZoom(z);
+        setPan({x:rect.width/2-(x0-pad+bw/2)*z, y:rect.height/2-(y0-pad+bh/2)*z});
+        // Wait for React to re-render the new zoom/pan
+        await new Promise(r=>setTimeout(r,350));
+      }
+
+      // Capture the canvas element (excludes topbar, sidebar, fixed widgets)
+      const html2canvas=(await import('html2canvas')).default;
+      const captured=await html2canvas(cvRef.current,{
+        scale:2,                  // 2× for retina quality
+        useCORS:true,
+        backgroundColor:'#FFFFFF',
+        logging:false,
+        imageTimeout:0,
+      });
+
+      // Generate PDF sized to the captured content
+      const {jsPDF}=await import('jspdf');
+      const imgW=captured.width/2, imgH=captured.height/2;
+      const pdf=new jsPDF({
+        orientation: imgW>=imgH?'landscape':'portrait',
+        unit:'px',
+        format:[imgW,imgH],
+        compress:true,
+      });
+      pdf.addImage(captured.toDataURL('image/png'),'PNG',0,0,imgW,imgH);
+      pdf.save(`${campName||'customer-journey'}.pdf`);
+      flash("ok",t.pdfSuccess);
+    }catch(err){
+      console.error('PDF export error:',err);
+      flash("err",t.pdfError);
+    }finally{
+      // Restore original view
+      setZoom(savedZoom);
+      setPan(savedPan);
+      setIsExporting(false);
+    }
   };
 
   const generateMapping=async()=>{
@@ -1720,18 +1777,19 @@ Génère le customer journey mapping complet en JSON.`}]
           <div style={{width:1,height:18,background:"#E5E7EB",margin:"0 2px",flexShrink:0}}/>
 
           {/* PDF */}
-          <button onClick={()=>window.print()} title="Exporter PDF"
-            style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:7,border:"none",background:"transparent",color:"#374151",cursor:"pointer",fontSize:12,fontWeight:500,whiteSpace:"nowrap"}}
-            onPointerEnter={e=>{(e.currentTarget as HTMLElement).style.background="#FEF2F2";(e.currentTarget as HTMLElement).style.color="#DC2626";}}
-            onPointerLeave={e=>{(e.currentTarget as HTMLElement).style.background="transparent";(e.currentTarget as HTMLElement).style.color="#374151";}}>
-            {/* PDF icon — document shape with red badge */}
-            <svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2 1h8l4 4v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#E5E7EB" stroke="#D1D5DB" strokeWidth="0.75"/>
-              <path d="M9 1l4 4H9.5a.5.5 0 0 1-.5-.5V1z" fill="#D1D5DB"/>
-              <rect x="1" y="8" width="14" height="6.5" rx="1" fill="#DC2626"/>
-              <text x="8" y="12.6" fontSize="4.5" fontWeight="800" fill="white" textAnchor="middle" fontFamily="Arial,sans-serif" letterSpacing="0.3">PDF</text>
-            </svg>
-            <span>PDF</span>
+          <button onClick={exportPDF} disabled={isExporting} title="Exporter PDF"
+            style={{display:"flex",alignItems:"center",gap:5,padding:"5px 10px",borderRadius:7,border:"none",background:isExporting?"#FEF2F2":"transparent",color:isExporting?"#DC2626":"#374151",cursor:isExporting?"wait":"pointer",fontSize:12,fontWeight:500,whiteSpace:"nowrap",opacity:isExporting?0.7:1}}
+            onPointerEnter={e=>{if(!isExporting){(e.currentTarget as HTMLElement).style.background="#FEF2F2";(e.currentTarget as HTMLElement).style.color="#DC2626";} }}
+            onPointerLeave={e=>{if(!isExporting){(e.currentTarget as HTMLElement).style.background="transparent";(e.currentTarget as HTMLElement).style.color="#374151";}}}>
+            {isExporting
+              ?<><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round"><circle cx="7" cy="7" r="5" strokeDasharray="20" strokeDashoffset="10" style={{animation:"spin 1s linear infinite",transformOrigin:"50% 50%"}}/></svg><span>PDF…</span></>
+              :<><svg width="16" height="18" viewBox="0 0 16 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 1h8l4 4v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" fill="#E5E7EB" stroke="#D1D5DB" strokeWidth="0.75"/>
+                  <path d="M9 1l4 4H9.5a.5.5 0 0 1-.5-.5V1z" fill="#D1D5DB"/>
+                  <rect x="1" y="8" width="14" height="6.5" rx="1" fill="#DC2626"/>
+                  <text x="8" y="12.6" fontSize="4.5" fontWeight="800" fill="white" textAnchor="middle" fontFamily="Arial,sans-serif" letterSpacing="0.3">PDF</text>
+                </svg><span>PDF</span></>
+            }
           </button>
 
           {/* Versions */}
@@ -1758,7 +1816,7 @@ Génère le customer journey mapping complet en JSON.`}]
         </div>
       </div>
 
-      {vMsg&&<div style={{position:"fixed",top:58,left:"50%",transform:"translateX(-50%)",background:vMsg.type==="ok"?"#14532D":"#7F1D1D",color:vMsg.type==="ok"?"#4ADE80":"#FCA5A5",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,zIndex:200,pointerEvents:"none"}}>{vMsg.text}</div>}
+      {vMsg&&<div style={{position:"fixed",top:58,left:"50%",transform:"translateX(-50%)",background:vMsg.type==="ok"?"#D1FAE5":vMsg.type==="err"?"#FEE2E2":"#DBEAFE",color:vMsg.type==="ok"?"#065F46":vMsg.type==="err"?"#991B1B":"#1E40AF",padding:"8px 18px",borderRadius:20,fontSize:12,fontWeight:600,zIndex:9998,pointerEvents:"none",border:`1px solid ${vMsg.type==="ok"?"#A7F3D0":vMsg.type==="err"?"#FECACA":"#BFDBFE"}`,boxShadow:"0 2px 8px rgba(0,0,0,.1)"}}>{vMsg.text}</div>}
 
       <div style={{display:"flex",flex:1,overflow:"hidden",position:"relative"}}>
 
