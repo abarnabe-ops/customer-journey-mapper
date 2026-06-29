@@ -33,7 +33,38 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: npm run build
 
-      # Deploy main branch → production GitHub Pages (gh-pages branch)
+      # -- Pre-deploy verification ------------------------------------------------
+      # Sanity-check the built dist/ BEFORE publishing. Catches a broken build
+      # output (e.g. an index.html that still points at /src/main.tsx, a missing
+      # bundle, or a missing favicon) so we never publish a dead site.
+      - name: Verify build output
+        run: |
+          set -e
+          echo "Checking dist/ output before deploy..."
+
+          test -f dist/index.html || { echo "::error::dist/index.html is missing"; exit 1; }
+
+          if grep -q "main.tsx" dist/index.html; then
+            echo "::error::dist/index.html references main.tsx - build did not transform the entry"
+            exit 1
+          fi
+
+          if ! grep -qE 'assets/index-[A-Za-z0-9_-]+\.js' dist/index.html; then
+            echo "::error::dist/index.html does not reference a hashed JS bundle"
+            exit 1
+          fi
+
+          BUNDLE=$(grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1)
+          test -f "dist/$BUNDLE" || { echo "::error::referenced bundle dist/$BUNDLE not found"; exit 1; }
+          SIZE=$(wc -c < "dist/$BUNDLE")
+          echo "Bundle: $BUNDLE ($SIZE bytes)"
+          test "$SIZE" -gt 50000 || { echo "::error::bundle suspiciously small ($SIZE bytes)"; exit 1; }
+
+          test -f dist/favicon.svg || { echo "::error::dist/favicon.svg is missing"; exit 1; }
+
+          echo "Build output looks good."
+
+      # Deploy main branch -> production GitHub Pages (gh-pages branch)
       - name: Deploy to GitHub Pages (production)
         if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
@@ -43,7 +74,7 @@ jobs:
           publish_branch: gh-pages
           force_orphan: false
 
-      # Deploy v2-react branch → preview (gh-pages-v2 branch)
+      # Deploy v2-react branch -> preview (gh-pages-v2 branch)
       - name: Deploy preview (v2-react branch)
         if: github.ref == 'refs/heads/v2-react'
         uses: peaceiris/actions-gh-pages@v4
@@ -52,3 +83,55 @@ jobs:
           publish_dir: ./dist
           publish_branch: gh-pages-v2
           force_orphan: false
+
+      # -- Post-deploy smoke test (production only) -------------------------------
+      # Actually fetch the LIVE site after GitHub Pages rebuilds and assert it
+      # works. This is the check that catches "deploy succeeded but the site is
+      # broken" - e.g. Pages serving the wrong branch, a 404 on the page, or the
+      # served HTML pointing at a file that does not exist.
+      - name: Smoke test live site
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -e
+          URL="https://abarnabe-ops.github.io/customer-journey-mapper/"
+          echo "Waiting for GitHub Pages to serve the new build..."
+
+          EXPECTED_BUNDLE=$(grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1)
+          echo "Expecting live site to serve: $EXPECTED_BUNDLE"
+
+          OK=0
+          for i in $(seq 1 20); do
+            HTML=$(curl -fsSL "${URL}?cb=$(date +%s)" || true)
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}?cb=$(date +%s)" || echo "000")
+
+            if [ "$CODE" = "200" ] && echo "$HTML" | grep -q "$EXPECTED_BUNDLE"; then
+              echo "Live HTML is up to date (attempt $i): serves $EXPECTED_BUNDLE"
+
+              if echo "$HTML" | grep -q "main.tsx"; then
+                echo "::error::Live site references main.tsx - wrong index.html is being served"
+                exit 1
+              fi
+
+              JS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}${EXPECTED_BUNDLE}" || echo "000")
+              test "$JS_CODE" = "200" || { echo "::error::bundle $EXPECTED_BUNDLE returned HTTP $JS_CODE"; exit 1; }
+              echo "Bundle loads (HTTP $JS_CODE)"
+
+              FAV_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}favicon.svg" || echo "000")
+              test "$FAV_CODE" = "200" || { echo "::error::favicon.svg returned HTTP $FAV_CODE"; exit 1; }
+              echo "Favicon loads (HTTP $FAV_CODE)"
+
+              OK=1
+              break
+            fi
+
+            echo "Attempt $i: live site not ready yet (HTTP $CODE), retrying in 15s..."
+            sleep 15
+          done
+
+          if [ "$OK" != "1" ]; then
+            echo "::error::Live site did not serve the new build ($EXPECTED_BUNDLE) after ~5 minutes."
+            echo "::error::Check that GitHub Pages is configured to serve from the gh-pages branch."
+            exit 1
+          fi
+
+          echo "Smoke test passed - live site is healthy."
