@@ -3,7 +3,7 @@
 // type: feat | fix | perf | style | refactor | remove
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type ChangeType = 'feat' | 'fix' | 'perf' | 'style' | 'refactor' | 'remove'
+export type ChangeType = 'feat' | 'fix' | 'perf' | 'style' | 'refactor' | 'remove' | 'test' | 'ci'
 
 export interface Change {
   type: ChangeType
@@ -20,6 +20,19 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.4.0',
+    date: '2026-06-29',
+    changes: [
+      { type:'feat',  scope:'history', fr:'Nouvel historique style Bee (bas-gauche) : flèches Annuler/Rétablir + horloge qui ouvre une frise cliquable des 15 dernières modifications ; cliquer une entrée saute directement à cet état', en:'New Bee-style history (bottom-left): Undo/Redo arrows + a clock that opens a clickable timeline of the 15 most recent changes; clicking an entry jumps straight to that state' },
+      { type:'feat',  scope:'history', fr:'Chaque action est étiquetée (ajout, suppression, déplacement, connexion, alignement, distribution, calques, disposition auto, style de page, lien, redimensionnement, texte, duplication, collage, mapping généré, version restaurée) avec icône et heure', en:'Each action is labelled (add, delete, move, connect, align, distribute, layers, auto-layout, page style, link, resize, text, duplicate, paste, map generated, version restored) with an icon and time' },
+      { type:'feat',  scope:'history', fr:'Comportement type Bee : une nouvelle modification après un retour en arrière abandonne la branche « refaire » ; historique plafonné à 15 entrées', en:'Bee-style behavior: a new edit after jumping back discards the redo branch; history capped at 15 entries' },
+      { type:'refactor', scope:'history', fr:'Instantanés d\'historique en copies profondes (structuredClone) à la sauvegarde et à la restauration — une modification en direct ne peut plus corrompre l\'historique', en:'History snapshots are deep copies (structuredClone) on save and restore — a live edit can no longer corrupt history' },
+      { type:'test',  scope:'ci',      fr:'Tests E2E navigateur (Playwright) ajoutés et exécutés en CI comme barrière avant tout déploiement : ajout de nœud, annuler/rétablir, raccourcis clavier, frise cliquable, et absence d\'erreurs console', en:'Browser E2E tests (Playwright) added and run in CI as a gate before any deploy: add node, undo/redo, keyboard shortcuts, clickable timeline, and no console errors' },
+      { type:'feat',  scope:'ci',      fr:'Environnement de staging séparé (dépôt + projet Supabase isolés) : la branche staging déploie vers une URL de test ; promotion en production par fusion vers main', en:'Separate staging environment (isolated repo + Supabase project): the staging branch deploys to a test URL; promotion to production by merging into main' },
+      { type:'feat',  scope:'ui',      fr:'Bannière « STAGING » affichée uniquement sur le déploiement de test', en:'"STAGING" banner shown only on the test deployment' },
+    ],
+  },
   {
     version: '1.3.3',
     date: '2026-06-29',
