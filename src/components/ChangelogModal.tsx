@@ -8,6 +8,8 @@ const TYPE_META: Record<ChangeType, { label: { fr: string; en: string }; color: 
   style:    { label: { fr: 'Interface',    en: 'UI / Style'  }, color: '#6D28D9', bg: '#EDE9FE' },
   refactor: { label: { fr: 'Refactor',     en: 'Refactor'    }, color: '#475569', bg: '#F1F5F9' },
   remove:   { label: { fr: 'Supprimé',     en: 'Removed'     }, color: '#9F1239', bg: '#FFE4E6' },
+  test:     { label: { fr: 'Tests',        en: 'Tests'       }, color: '#0F766E', bg: '#CCFBF1' },
+  ci:       { label: { fr: 'CI / Déploi.', en: 'CI / Deploy' }, color: '#3730A3', bg: '#E0E7FF' },
 }
 
 interface Props {

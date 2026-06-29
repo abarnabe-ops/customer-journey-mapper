@@ -606,6 +606,11 @@ export default function App(){
 
   const [nodes,setNodes]=useState([]);
   const [conns,setConns]=useState([]);
+  // ── Undo/redo history (dual-stack: past = states we can undo TO, future =
+  //    states we can redo TO). Live {nodes,conns} is the current state, sitting
+  //    between the two stacks. Each snapshot is a deep clone tagged with the
+  //    action that produced the transition, so the timeline can label + jump.
+  //    Capped at HIST_MAX entries per stack. ───────────────────────────────────
   const [past,setPast]=useState([]);
   const [future,setFuture]=useState([]);
   const [selN,setSelN]=useState([]);
@@ -635,6 +640,7 @@ export default function App(){
   const [renamingCampId,setRenamingCampId]=useState(null);
   const [renameVal,setRenameVal]=useState("");
   const [showVersions,setShowVersions]=useState(false);
+  const [showHistory,setShowHistory]=useState(false);
   const [versions,setVersions]=useState<{id:string,name:string,ts:string}[]>([]);
   const [vName,setVName]=useState("");
   const [vLoading,setVLoading]=useState(false);
@@ -682,8 +688,51 @@ export default function App(){
   const setShowMapItRef=useRef<any>(null);   // must be here — before early auth returns
   const setSidebarOpenRef=useRef<any>(null); // same — hooks must be unconditional
 
-  undoRef.current=()=>{if(!past.length)return;const prev=past[past.length-1];setFuture(f=>[{nodes,conns},...f.slice(0,49)]);setNodes(prev.nodes);setConns(prev.conns);setPast(p=>p.slice(0,-1));setSelN([]);setSelC(null);};
-  redoRef.current=()=>{if(!future.length)return;const next=future[0];setPast(p=>[...p.slice(-49),{nodes,conns}]);setNodes(next.nodes);setConns(next.conns);setFuture(f=>f.slice(1));setSelN([]);setSelC(null);};
+  // ── History constants & derived flags ──────────────────────────────────────
+  const HIST_MAX=15;
+  const canUndo=past.length>0;
+  const canRedo=future.length>0;
+  // Undo: live → future (tagged with the action being undone), past tip → live.
+  // Deep-clone on restore so the user's next edit can't mutate stored history.
+  undoRef.current=()=>{
+    if(!past.length)return;
+    const prev=past[past.length-1];
+    setFuture(f=>[{nodes:structuredClone(nodes),conns:structuredClone(conns),label:prev.label,icon:prev.icon,item:prev.item,detail:prev.detail,count:prev.count,ts:prev.ts},...f.slice(0,HIST_MAX-1)]);
+    setNodes(structuredClone(prev.nodes));setConns(structuredClone(prev.conns));
+    setPast(p=>p.slice(0,-1));setSelN([]);setSelC(null);
+  };
+  redoRef.current=()=>{
+    if(!future.length)return;
+    const next=future[0];
+    setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(nodes),conns:structuredClone(conns),label:next.label,icon:next.icon,item:next.item,detail:next.detail,count:next.count,ts:next.ts}]);
+    setNodes(structuredClone(next.nodes));setConns(structuredClone(next.conns));
+    setFuture(f=>f.slice(1));setSelN([]);setSelC(null);
+  };
+  // Jump to any timeline row. `delta` = signed steps from the current (live)
+  // state: negative = undo that many, positive = redo that many. One batched
+  // update; correct by construction (composed undo/redo, no manual re-tagging).
+  const jumpToHistory=(delta)=>{
+    if(!delta)return;
+    let p=[...past], f=[...future];
+    let curN=structuredClone(nodes), curC=structuredClone(conns);
+    if(delta<0){
+      for(let i=0;i<-delta && p.length;i++){
+        const prev=p[p.length-1];
+        f=[{nodes:curN,conns:curC,label:prev.label,icon:prev.icon,item:prev.item,detail:prev.detail,count:prev.count,ts:prev.ts},...f].slice(0,HIST_MAX);
+        curN=structuredClone(prev.nodes);curC=structuredClone(prev.conns);
+        p=p.slice(0,-1);
+      }
+    }else{
+      for(let i=0;i<delta && f.length;i++){
+        const next=f[0];
+        p=[...p,{nodes:curN,conns:curC,label:next.label,icon:next.icon,item:next.item,detail:next.detail,count:next.count,ts:next.ts}].slice(-HIST_MAX);
+        curN=structuredClone(next.nodes);curC=structuredClone(next.conns);
+        f=f.slice(1);
+      }
+    }
+    setPast(p);setFuture(f);setNodes(curN);setConns(curC);setSelN([]);setSelC(null);
+  };
+  const jumpRef=useRef(null);jumpRef.current=jumpToHistory;
   // ── Dagre-style hierarchical layout ──────────────────────────────────────────
   const applyDagreLayout=(inputNodes,inputConns)=>{
     if(!inputNodes.length)return inputNodes;
@@ -769,7 +818,7 @@ export default function App(){
   // Auto-layout button handler (applies to all current nodes)
   const autoLayout=()=>{
     if(!nodes.length)return;
-    saveH(nodes,conns);
+    saveH(nodes,conns,"histAutoLayout","⊞");
     setNodes(applyDagreLayout([...nodes],conns));
     setPan({x:80,y:50});
   };
@@ -929,7 +978,7 @@ Génère le customer journey mapping complet en JSON.`}]
       const newConns=mapping.connections.map(c=>({id:cuid(),from:idMap[c.from],to:idMap[c.to],dashed:false,color:"#6B7280",curved:true})).filter(c=>c.from&&c.to);
       // Apply dagre layout to new nodes
       const laidOut=applyDagreLayout(newNodes,newConns);
-      saveH(nodes,conns);
+      saveH(nodes,conns,"histGenerate","✦");
       setNodes(p=>[...p,...laidOut]);
       setConns(p=>[...p,...newConns]);
       // Center view on generated content
@@ -944,7 +993,25 @@ Génère le customer journey mapping complet en JSON.`}]
     setGenerating(false);
   };
 
-  const saveH=(ns,cs)=>{setPast(p=>[...p.slice(-49),{nodes:ns,conns:cs}]);setFuture([]);};
+  // Build a human detail for a set of affected node ids: the single node's name,
+  // or a count for multi-select. Used to make history entries specific
+  // (e.g. "Déplacement de Publicité Facebook" vs "Déplacement de 3 éléments").
+  const detailFor=(ids:string[]):{detail?:string;count?:number}=>{
+    const valid=(ids||[]).filter(Boolean);
+    if(valid.length===1){
+      const n=gn(valid[0]);
+      const name=n?(n.label||(t as any)[gd(n.type)?.labelKey]||gd(n.type)?.label||""):"";
+      return name?{detail:name}:{};
+    }
+    if(valid.length>1)return{count:valid.length};
+    return {};
+  };
+  // Record an edit: push a DEEP CLONE of the pre-edit state onto past (tagged
+  // with the action about to happen + optional element detail), clear redo.
+  const saveH=(ns:any,cs:any,label?:string,icon?:string,item?:string,extra?:{detail?:string;count?:number})=>{
+    setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(ns),conns:structuredClone(cs),label:label||"histEdit",icon:icon||"✎",item:item||null,detail:extra?.detail||null,count:extra?.count||null,ts:Date.now()}]);
+    setFuture([]);
+  };
 
   // Campaign helpers
   const switchCampaign=(camp)=>{
@@ -992,25 +1059,25 @@ Génère le customer journey mapping complet en JSON.`}]
   const upC=(id,p)=>setConns(cs=>cs.map(c=>c.id===id?{...c,...p}:c));
   const toggleCat=k=>setCollapsedCats(p=>({...p,[k]:!p[k]}));
 
-  const bringToFront=()=>{if(!selN.length)return;saveH(nodes,conns);setNodes(p=>[...p.filter(n=>!selN.includes(n.id)),...p.filter(n=>selN.includes(n.id))]);};
-  const bringForward=()=>{if(!selN.length)return;saveH(nodes,conns);setNodes(p=>{const a=[...p];[...selN].reverse().forEach(id=>{const i=a.findIndex(n=>n.id===id);if(i<a.length-1&&!selN.includes(a[i+1].id)){[a[i],a[i+1]]=[a[i+1],a[i]];}});return a;});};
-  const sendToBack=()=>{if(!selN.length)return;saveH(nodes,conns);setNodes(p=>[...p.filter(n=>selN.includes(n.id)),...p.filter(n=>!selN.includes(n.id))]);};
-  const sendBackward=()=>{if(!selN.length)return;saveH(nodes,conns);setNodes(p=>{const a=[...p];selN.forEach(id=>{const i=a.findIndex(n=>n.id===id);if(i>0&&!selN.includes(a[i-1].id)){[a[i],a[i-1]]=[a[i-1],a[i]];}});return a;});};
+  const bringToFront=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬆",undefined,detailFor(selN));setNodes(p=>[...p.filter(n=>!selN.includes(n.id)),...p.filter(n=>selN.includes(n.id))]);};
+  const bringForward=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬆",undefined,detailFor(selN));setNodes(p=>{const a=[...p];[...selN].reverse().forEach(id=>{const i=a.findIndex(n=>n.id===id);if(i<a.length-1&&!selN.includes(a[i+1].id)){[a[i],a[i+1]]=[a[i+1],a[i]];}});return a;});};
+  const sendToBack=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬇",undefined,detailFor(selN));setNodes(p=>[...p.filter(n=>selN.includes(n.id)),...p.filter(n=>!selN.includes(n.id))]);};
+  const sendBackward=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬇",undefined,detailFor(selN));setNodes(p=>{const a=[...p];selN.forEach(id=>{const i=a.findIndex(n=>n.id===id);if(i>0&&!selN.includes(a[i-1].id)){[a[i],a[i-1]]=[a[i-1],a[i]];}});return a;});};
   const copySelected=()=>{if(!selN.length)return;setClipboard(selN.map(id=>gn(id)).filter(Boolean));};
-  const pasteClipboard=()=>{if(!clipboard.length)return;saveH(nodes,conns);const nn=clipboard.map(n=>({...n,id:uid(),x:n.x+30,y:n.y+30}));setNodes(p=>[...p,...nn]);setSelN(nn.map(n=>n.id));};
-  const duplicateSelected=()=>{if(!selN.length)return;saveH(nodes,conns);const nn=selN.map(id=>{const n=gn(id);return n?{...n,id:uid(),x:n.x+20,y:n.y+20}:null;}).filter(Boolean);setNodes(p=>[...p,...nn]);setSelN(nn.map(n=>n.id));};
-  const deleteSel=()=>{saveH(nodes,conns);setNodes(p=>p.filter(n=>!selN.includes(n.id)));setConns(p=>p.filter(c=>!selN.includes(c.from)&&!selN.includes(c.to)));setSelN([]);};
+  const pasteClipboard=()=>{if(!clipboard.length)return;saveH(nodes,conns,"histPaste","⎘",undefined,clipboard.length>1?{count:clipboard.length}:{detail:(clipboard[0]?.label||"")});const nn=clipboard.map(n=>({...n,id:uid(),x:n.x+30,y:n.y+30}));setNodes(p=>[...p,...nn]);setSelN(nn.map(n=>n.id));};
+  const duplicateSelected=()=>{if(!selN.length)return;saveH(nodes,conns,"histDuplicate","⧉",undefined,detailFor(selN));const nn=selN.map(id=>{const n=gn(id);return n?{...n,id:uid(),x:n.x+20,y:n.y+20}:null;}).filter(Boolean);setNodes(p=>[...p,...nn]);setSelN(nn.map(n=>n.id));};
+  const deleteSel=()=>{saveH(nodes,conns,"histDelete","🗑",undefined,detailFor(selN));setNodes(p=>p.filter(n=>!selN.includes(n.id)));setConns(p=>p.filter(c=>!selN.includes(c.from)&&!selN.includes(c.to)));setSelN([]);};
 
   const getSD=()=>selN.map(id=>{const n=gn(id);const d=gd(n?.type);const s=gs(d,n);return n?{id,n,w:s.w,h:s.h,cx:n.x+s.w/2,cy:n.y+s.h/2}:null;}).filter(Boolean);
-  const alignV=()=>{const data=getSD();if(!data.length)return;const avg=data.reduce((s,d)=>s+d.cx,0)/data.length;saveH(nodes,conns);setNodes(p=>p.map(n=>{const d=data.find(x=>x.id===n.id);return d?{...n,x:avg-d.w/2}:n;}));};
-  const alignH=()=>{const data=getSD();if(!data.length)return;const avg=data.reduce((s,d)=>s+d.cy,0)/data.length;saveH(nodes,conns);setNodes(p=>p.map(n=>{const d=data.find(x=>x.id===n.id);return d?{...n,y:avg-d.h/2}:n;}));};
-  const distH=()=>{const data=getSD();if(data.length<3)return;const s=[...data].sort((a,b)=>a.cx-b.cx);const mn=s[0].cx,mx=s[s.length-1].cx,step=(mx-mn)/(s.length-1);saveH(nodes,conns);setNodes(p=>p.map(n=>{const i=s.findIndex(x=>x.id===n.id);if(i<0)return n;return{...n,x:mn+i*step-s[i].w/2};}));};
-  const distV=()=>{const data=getSD();if(data.length<3)return;const s=[...data].sort((a,b)=>a.cy-b.cy);const mn=s[0].cy,mx=s[s.length-1].cy,step=(mx-mn)/(s.length-1);saveH(nodes,conns);setNodes(p=>p.map(n=>{const i=s.findIndex(x=>x.id===n.id);if(i<0)return n;return{...n,y:mn+i*step-s[i].h/2};}));};
+  const alignV=()=>{const data=getSD();if(!data.length)return;const avg=data.reduce((s,d)=>s+d.cx,0)/data.length;saveH(nodes,conns,"histAlign","▤");setNodes(p=>p.map(n=>{const d=data.find(x=>x.id===n.id);return d?{...n,x:avg-d.w/2}:n;}));};
+  const alignH=()=>{const data=getSD();if(!data.length)return;const avg=data.reduce((s,d)=>s+d.cy,0)/data.length;saveH(nodes,conns,"histAlign","▤");setNodes(p=>p.map(n=>{const d=data.find(x=>x.id===n.id);return d?{...n,y:avg-d.h/2}:n;}));};
+  const distH=()=>{const data=getSD();if(data.length<3)return;const s=[...data].sort((a,b)=>a.cx-b.cx);const mn=s[0].cx,mx=s[s.length-1].cx,step=(mx-mn)/(s.length-1);saveH(nodes,conns,"histDistribute","▦");setNodes(p=>p.map(n=>{const i=s.findIndex(x=>x.id===n.id);if(i<0)return n;return{...n,x:mn+i*step-s[i].w/2};}));};
+  const distV=()=>{const data=getSD();if(data.length<3)return;const s=[...data].sort((a,b)=>a.cy-b.cy);const mn=s[0].cy,mx=s[s.length-1].cy,step=(mx-mn)/(s.length-1);saveH(nodes,conns,"histDistribute","▦");setNodes(p=>p.map(n=>{const i=s.findIndex(x=>x.id===n.id);if(i<0)return n;return{...n,y:mn+i*step-s[i].h/2};}));};
 
   useEffect(()=>{(async()=>{try{const r=await storageGet("jm_versions");if(r)setVersions(JSON.parse(r.value));}catch(e){}})();},[]);
   const flash=(t,text)=>{setVMsg({type:t,text});setTimeout(()=>setVMsg(null),3000);};
   const saveVer=async()=>{setVLoading(true);try{const id=`v${Date.now()}`;const name=vName.trim()||`Version ${versions.length+1}`;const ts=new Date().toISOString();const nl=[...versions,{id,name,ts}];await storageSet(`jm_v_${id}`,JSON.stringify({nodes,conns,campName}));await storageSet("jm_versions",JSON.stringify(nl));setVersions(nl);setActiveVid(id);setVName("");flash("ok",t.flashSaved);}catch(e){flash("err",t.flashError);}setVLoading(false);};
-  const restoreVer=async(v: {id:string,name:string,ts:string})=>{setVLoading(true);try{const r=await storageGet(`jm_v_${v.id}`);if(!r)throw new Error();const data=JSON.parse(r.value);saveH(nodes,conns);setNodes(data.nodes);setConns(data.conns);if(data.campName)setCampName(data.campName);setActiveVid(v.id);setShowVersions(false);flash("ok","Restauree");}catch(e){flash("err",t.flashError);}setVLoading(false);};
+  const restoreVer=async(v: {id:string,name:string,ts:string})=>{setVLoading(true);try{const r=await storageGet(`jm_v_${v.id}`);if(!r)throw new Error();const data=JSON.parse(r.value);saveH(nodes,conns,"histRestore","↺");setNodes(data.nodes);setConns(data.conns);if(data.campName)setCampName(data.campName);setActiveVid(v.id);setShowVersions(false);flash("ok","Restauree");}catch(e){flash("err",t.flashError);}setVLoading(false);};
   const deleteVer=async(id: string)=>{setVLoading(true);try{const nl=versions.filter(v=>v.id!==id);await storageSet("jm_versions",JSON.stringify(nl));try{await storageDelete(`jm_v_${id}`);}catch(e){}setVersions(nl);if(activeVid===id)setActiveVid(null);setConfirmDel(null);}catch(e){flash("err",t.flashError);}setVLoading(false);};
 
   const onCvMD=e=>{
@@ -1035,13 +1102,13 @@ Génère le customer journey mapping complet en JSON.`}]
     e.stopPropagation();if(didDrag.current){didDrag.current=false;return;}setSelC(null);
     if(connectAllMode){
       if(!selN.includes(id)){
-        saveH(nodes,conns);
+        saveH(nodes,conns,"histConnectMulti","↬");
         const nc=selN.filter(sid=>!conns.some(c=>c.from===sid&&c.to===id)).map(sid=>({id:cuid(),from:sid,to:id,dashed:connDash,color:newConnColor,curved:connCurved}));
         setConns(p=>[...p,...nc]);setConnectAllMode(false);flash("ok",`${nc.length} connexion${nc.length>1?"s":""} creee${nc.length>1?"s":""}`);
       }
       return;
     }
-    if(connMode){if(!connFrom){setConnFrom(id);return;}if(connFrom!==id&&!conns.some(c=>c.from===connFrom&&c.to===id)){saveH(nodes,conns);setConns(p=>[...p,{id:cuid(),from:connFrom,to:id,dashed:connDash,color:newConnColor,curved:connCurved}]);}setConnFrom(null);return;}
+    if(connMode){if(!connFrom){setConnFrom(id);return;}if(connFrom!==id&&!conns.some(c=>c.from===connFrom&&c.to===id)){const _fn=gn(connFrom),_tn=gn(id);saveH(nodes,conns,"histConnect","↬",undefined,{detail:`${_fn?.label||""} → ${_tn?.label||""}`});setConns(p=>[...p,{id:cuid(),from:connFrom,to:id,dashed:connDash,color:newConnColor,curved:connCurved}]);}setConnFrom(null);return;}
     if(e.ctrlKey||e.metaKey){setSelN(prev=>prev.includes(id)?prev.filter(s=>s!==id):[...prev,id]);}
     else{if(editingTextId&&editingTextId!==id)setEditingTextId(null);setSelN([id]);}
   };
@@ -1098,8 +1165,8 @@ Génère le customer journey mapping complet en JSON.`}]
     const mu=()=>{
       if(dragMidConn){setDragMidConn(null);return;}
       if(sidebarDrag.current){sidebarDrag.current=false;document.body.style.cursor="";document.body.style.userSelect="";}
-      if(tbResize.current){const{pNodes,pConns}=tbResize.current;setPast(p=>[...p.slice(-49),{nodes:pNodes,conns:pConns}]);setFuture([]);tbResize.current=null;}
-      if(drag_.current&&didDrag.current){const{pNodes,pConns}=drag_.current;setPast(p=>[...p.slice(-49),{nodes:pNodes,conns:pConns}]);setFuture([]);}
+      if(tbResize.current){const{pNodes,pConns}=tbResize.current;const _d=detailFor(selN);setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(pNodes),conns:structuredClone(pConns),label:"histResize",icon:"⤡",item:null,detail:_d.detail||null,count:_d.count||null,ts:Date.now()}]);setFuture([]);tbResize.current=null;}
+      if(drag_.current&&didDrag.current){const{pNodes,pConns}=drag_.current;const _d=detailFor(selN);setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(pNodes),conns:structuredClone(pConns),label:"histMove",icon:"✥",item:null,detail:_d.detail||null,count:_d.count||null,ts:Date.now()}]);setFuture([]);}
       pan_.current=null;drag_.current=null;
     };
     window.addEventListener("mousemove",mm);window.addEventListener("mouseup",mu);
@@ -1207,7 +1274,8 @@ Génère le customer journey mapping complet en JSON.`}]
           setSelN([tc.id]);setSelC(null);
         } else {
           // Drag finished → save to undo history
-          setPast((p:any[])=>[...p.slice(-49),{nodes:tc.pNodes,conns:tc.pConns}]);
+          {const _d=detailFor([tc.id]);
+          setPast((p:any[])=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(tc.pNodes),conns:structuredClone(tc.pConns),label:"histMove",icon:"✥",item:null,detail:_d.detail||null,count:_d.count||null,ts:Date.now()}]);}
           setFuture([]);
         }
       } else if(tc.type==='pinch'&&e.touches.length===1){
@@ -1256,8 +1324,8 @@ Génère le customer journey mapping complet en JSON.`}]
       if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==="["){e.preventDefault();sendToBack();return;}
       if(inTxt)return;
       if(e.key==="Delete"||e.key==="Backspace"){
-        if(selN.length>0){saveH(nodes,conns);setNodes(p=>p.filter(n=>!selN.includes(n.id)));setConns(p=>p.filter(c=>!selN.includes(c.from)&&!selN.includes(c.to)));setSelN([]);}
-        else if(selC){saveH(nodes,conns);setConns(p=>p.filter(c=>c.id!==selC));setSelC(null);}
+        if(selN.length>0){saveH(nodes,conns,"histDelete","🗑",undefined,detailFor(selN));setNodes(p=>p.filter(n=>!selN.includes(n.id)));setConns(p=>p.filter(c=>!selN.includes(c.from)&&!selN.includes(c.to)));setSelN([]);}
+        else if(selC){saveH(nodes,conns,"histDisconnect","✂");setConns(p=>p.filter(c=>c.id!==selC));setSelC(null);}
       }
       if(e.key==="Escape"){setConnMode(false);setConnFrom(null);setConnectAllMode(false);setSelN([]);setSelC(null);setShowVersions(false);setEditingType(null);setDeleteConfirm(null);setEditingTextId(null);}
     };
@@ -1269,7 +1337,7 @@ Génère le customer journey mapping complet en JSON.`}]
     e.preventDefault();const type=dtRef.current;if(!type)return;
     const rect=cvRef.current.getBoundingClientRect();const d=gd(type);const{w,h}=gs(d,null);
     const x=(e.clientX-rect.left-pan.x)/zoom-w/2,y=(e.clientY-rect.top-pan.y)/zoom-h/2;
-    saveH(nodes,conns);
+    saveH(nodes,conns,"histAdd","✚",type);
     const isPageStyle=type.startsWith("page_");
     const pageStyleId=isPageStyle?type.replace("page_",""):"abonnement";
     const pageStyleDef=PAGE_STYLES.find(s=>s.id===pageStyleId)||PAGE_STYLES[0];
@@ -1323,7 +1391,6 @@ Génère le customer journey mapping complet en JSON.`}]
   const isTB=sn?.type==="textbox";
   const isPage=sn?.type==="page";
   const selConn=selC?conns.find(c=>c.id===selC):null;
-  const canUndo=past.length>0,canRedo=future.length>0;
   const showRP=selN.length>0||!!selConn;
   const can3=selN.length>=3;
   const hasNodes=nodes.length>0;
@@ -1333,7 +1400,7 @@ Génère le customer journey mapping complet en JSON.`}]
   const inS:React.CSSProperties={width:"100%",background:"#F9FAFB",border:"1px solid #E5E7EB",color:"#111827",padding:"6px 8px",borderRadius:6,fontSize:12,outline:"none",boxSizing:"border-box",fontFamily:"inherit"};
   const togBtnS=(act:boolean):React.CSSProperties=>({background:act?"#2563EB":"#0F172A",border:`1px solid ${act?"#2563EB":"#E5E7EB"}`,color:"#fff",borderRadius:5,width:30,height:28,cursor:"pointer",fontWeight:700,fontSize:13,display:"flex",alignItems:"center",justifyContent:"center"});
   const onEF=()=>{editSnap.current={nodes:[...nodes],conns:[...conns]};};
-  const onEB=()=>{if(editSnap.current){saveH(editSnap.current.nodes,editSnap.current.conns);editSnap.current=null;}};
+  const onEB=()=>{if(editSnap.current){saveH(editSnap.current.nodes,editSnap.current.conns,"histEditText","T");editSnap.current=null;}};
   const cursorMap={n:"ns-resize",s:"ns-resize",e:"ew-resize",w:"ew-resize",ne:"nesw-resize",sw:"nesw-resize",nw:"nwse-resize",se:"nwse-resize",both:"nwse-resize",h:"ew-resize"};
   const mkH=(id,mode,w,h,ox,oy)=>({onMouseDown:e=>{e.stopPropagation();document.body.style.cursor=cursorMap[mode]||"nwse-resize";document.body.style.userSelect="none";tbResize.current={id,ow:w,oh:h,ox:ox||0,oy:oy||0,mx:e.clientX,my:e.clientY,pNodes:nodes,pConns:conns,mode};}});
   const btnDup={background:"#EFF6FF",border:"1px solid #BFDBFE",color:"#fff",padding:"7px",borderRadius:6,cursor:"pointer",fontSize:11,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center",gap:4,flex:1};
@@ -1366,7 +1433,7 @@ Génère le customer journey mapping complet en JSON.`}]
               <span style={{width:8,height:8,borderRadius:"50%",background:c.color||"#94A3B8",flexShrink:0,display:"inline-block"}}/>
               {fn.label}  →
             </span>
-            <button onClick={()=>{saveH(nodes,conns);setConns(p=>p.filter(x=>x.id!==c.id));}} style={{background:"none",border:"none",color:"#9CA3AF",cursor:"pointer",fontSize:11,flexShrink:0}}>✕</button>
+            <button onClick={()=>{saveH(nodes,conns,"histDisconnect","✂");setConns(p=>p.filter(x=>x.id!==c.id));}} style={{background:"none",border:"none",color:"#9CA3AF",cursor:"pointer",fontSize:11,flexShrink:0}}>✕</button>
           </div>):null;})}
         <SH>Connexions sortantes</SH>
         {outConns.length===0
@@ -1376,7 +1443,7 @@ Génère le customer journey mapping complet en JSON.`}]
               <span style={{width:8,height:8,borderRadius:"50%",background:c.color||"#94A3B8",flexShrink:0,display:"inline-block"}}/>
               → {tn.label}
             </span>
-            <button onClick={()=>{saveH(nodes,conns);setConns(p=>p.filter(x=>x.id!==c.id));}} style={{background:"none",border:"none",color:"#9CA3AF",cursor:"pointer",fontSize:11,flexShrink:0}}>✕</button>
+            <button onClick={()=>{saveH(nodes,conns,"histDisconnect","✂");setConns(p=>p.filter(x=>x.id!==c.id));}} style={{background:"none",border:"none",color:"#9CA3AF",cursor:"pointer",fontSize:11,flexShrink:0}}>✕</button>
           </div>):null;})}
       </div>
     );
@@ -1393,7 +1460,7 @@ Génère le customer journey mapping complet en JSON.`}]
             const isSel=currentStyle===ps.id;
             return(
               <div key={ps.id}
-                onClick={()=>{saveH(nodes,conns);upN(node.id,{pageStyle:ps.id,label:t[ps.labelKey]});}}
+                onClick={()=>{saveH(nodes,conns,"histPageStyle","▢",undefined,detailFor([node.id]));upN(node.id,{pageStyle:ps.id,label:t[ps.labelKey]});}}
                 style={{cursor:"pointer",borderRadius:6,border:`2px solid ${isSel?"#2563EB":"#E5E7EB"}`,background:isSel?"rgba(59,130,246,.08)":"#0F172A",padding:"5px 4px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,transition:"border-color .15s",boxShadow:isSel?"0 0 0 1px #1D4ED8":""}}
                 onMouseEnter={e=>{if(!isSel)e.currentTarget.style.borderColor="#475569";}}
                 onMouseLeave={e=>{if(!isSel)e.currentTarget.style.borderColor="#E5E7EB";}}>
@@ -1418,7 +1485,7 @@ Génère le customer journey mapping complet en JSON.`}]
     const cx=(rect.width/2-pan.x)/zoom;
     const cy=(rect.height/2-pan.y)/zoom;
     const x=cx-w/2, y=cy-h/2;
-    saveH(nodes,conns);
+    saveH(nodes,conns,"histAdd","✚",type);
     const isPageStyle=type.startsWith("page_");
     const pageStyleId=isPageStyle?type.replace("page_",""):"abonnement";
     const pageStyleDef=PAGE_STYLES.find(s=>s.id===pageStyleId)||PAGE_STYLES[0];
@@ -1436,13 +1503,37 @@ Génère le customer journey mapping complet en JSON.`}]
   addCenteredRef.current=addNodeCentered;
   setShowMapItRef.current=setShowMapIt;
   setSidebarOpenRef.current=setSidebarOpen;
+
+  // ── E2E test hooks ──────────────────────────────────────────────────────────
+  // Exposed ONLY in the automated-browser test bypass (navigator.webdriver +
+  // ?e2e=1). Lets Playwright drive the real app logic (add node, read counts,
+  // undo/redo) without fighting canvas overlay hit-testing. Unreachable for real
+  // users. Kept in sync on every render so it always calls the latest closures.
+  useEffect(()=>{
+    try{
+      const e2e = typeof navigator!=='undefined' && (navigator as any).webdriver===true
+        && new URLSearchParams(window.location.search).get('e2e')==='1';
+      if(!e2e){return;}
+      (window as any).__e2e = {
+        addNode:(type?:string)=>addCenteredRef.current?.(type||"abonnement"),
+        undo:()=>undoRef.current?.(),
+        redo:()=>redoRef.current?.(),
+        jump:(delta:number)=>jumpRef.current?.(delta),
+        nodeCount:()=>nodes.length,
+        canUndo:()=>past.length>0,
+        canRedo:()=>future.length>0,
+        pastLen:()=>past.length,
+        futureLen:()=>future.length,
+      };
+    }catch{/* ignore */}
+  });
   dropOnCvRef.current=(type:string,clientX:number,clientY:number)=>{
     const cvEl=cvRef.current;if(!cvEl)return;
     const rect=cvEl.getBoundingClientRect();
     const d=gd(type);const{w,h}=gs(d,null);
     const x=(clientX-rect.left-panR.current.x)/zoomR.current-w/2;
     const y=(clientY-rect.top-panR.current.y)/zoomR.current-h/2;
-    saveH(nodesR.current,connsR.current);
+    saveH(nodesR.current,connsR.current,"histAdd","✚",type);
     const isPageStyle=type.startsWith("page_");
     const pageStyleId=isPageStyle?type.replace("page_",""):"abonnement";
     const pageStyleDef=PAGE_STYLES.find(s=>s.id===pageStyleId)||PAGE_STYLES[0];
@@ -1573,7 +1664,7 @@ Génère le customer journey mapping complet en JSON.`}]
                   const thumbStyle=d._thumb||(PAGE_STYLES.find(s=>s.id==="abonnement")||PAGE_STYLES[0]).thumb;
                   const itemW=isPage?110:72;
                   return(
-                    <div key={d.type} onClick={()=>addNodeCentered(d.type)}
+                    <div key={d.type} data-testid="mapit-tile" data-type={d.type} onClick={()=>addNodeCentered(d.type)}
                       onTouchStart={e=>{
                         const t0=e.touches[0];
                         sideDrag_.current={type:d.type,label:dl,startX:t0.clientX,startY:t0.clientY,clientX:t0.clientX,clientY:t0.clientY,started:false,ghost:null,fromMapIt:true};
@@ -1686,6 +1777,13 @@ Génère le customer journey mapping complet en JSON.`}]
 
   return(
     <div style={{display:"flex",flexDirection:"column",height:"100vh",background:"#F8FAFC",fontFamily:"'Inter',system-ui,sans-serif",overflow:"hidden"}}>
+
+      {/* ── STAGING banner — only shows on the staging deploy (VITE_APP_ENV) ── */}
+      {(import.meta as any).env?.VITE_APP_ENV==='staging' && (
+        <div style={{height:24,flexShrink:0,background:"repeating-linear-gradient(45deg,#F59E0B,#F59E0B 12px,#D97706 12px,#D97706 24px)",color:"#111827",fontSize:11.5,fontWeight:800,letterSpacing:1.2,display:"flex",alignItems:"center",justifyContent:"center",textTransform:"uppercase"}}>
+          ⚠ Staging — Test environment (not production)
+        </div>
+      )}
 
       {/* ── MAP IT MODAL ─────────────────────────────────────────────────── */}
       {showMapIt&&(
@@ -1914,7 +2012,7 @@ Génère le customer journey mapping complet en JSON.`}]
           }}>
             {/* Header: MAP IT button + collapse button */}
             <div style={{padding:"10px 10px 8px",borderBottom:"1px solid #2D3F55",display:'flex',gap:6,alignItems:'center'}}>
-              <button onClick={()=>setShowMapIt(s=>!s)} style={{flex:1,background:showMapIt?"#2563EB":"linear-gradient(135deg,#1E3A5F,#1E4080)",border:`1px solid ${showMapIt?"#2563EB":"#2D4F80"}`,color:"#fff",borderRadius:8,padding:"9px 12px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontSize:12,fontWeight:700,boxShadow:showMapIt?"0 0 0 2px rgba(59,130,246,.4)":"0 2px 8px rgba(0,0,0,.3)",transition:"all .15s"}}>
+              <button data-testid="open-mapit" onClick={()=>setShowMapIt(s=>!s)} style={{flex:1,background:showMapIt?"#2563EB":"linear-gradient(135deg,#1E3A5F,#1E4080)",border:`1px solid ${showMapIt?"#2563EB":"#2D4F80"}`,color:"#fff",borderRadius:8,padding:"9px 12px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,fontSize:12,fontWeight:700,boxShadow:showMapIt?"0 0 0 2px rgba(59,130,246,.4)":"0 2px 8px rgba(0,0,0,.3)",transition:"all .15s"}}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3-6-3z" stroke="white" strokeWidth="1.8" strokeLinejoin="round"/><line x1="9" y1="3" x2="9" y2="18" stroke="white" strokeWidth="1.8"/><line x1="15" y1="6" x2="15" y2="21" stroke="white" strokeWidth="1.8"/><circle cx="20" cy="4" r="4" fill="#22C55E"/><line x1="20" y1="2" x2="20" y2="6" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><line x1="18" y1="4" x2="22" y2="4" stroke="white" strokeWidth="1.5" strokeLinecap="round"/></svg>
                 <span>MAP IT</span>
               </button>
@@ -2050,7 +2148,7 @@ Génère le customer journey mapping complet en JSON.`}]
         </div>
 
         {/* ── CANVAS ───────────────────────────────────────────────────────── */}
-        <div ref={cvRef} className="cvbg" onMouseDown={onCvMD} onDragOver={e=>e.preventDefault()} onDrop={onCvDrop}
+        <div ref={cvRef} data-testid="canvas" className="cvbg" onMouseDown={onCvMD} onDragOver={e=>e.preventDefault()} onDrop={onCvDrop}
           style={{flex:1,position:"relative",overflow:"hidden",background:"#FFFFFF",cursor:connMode||connectAllMode?"crosshair":"grab",
             touchAction:"none",
             backgroundImage:`linear-gradient(to right,#D8DCE8 1px,transparent 1px),linear-gradient(to bottom,#D8DCE8 1px,transparent 1px)`,
@@ -2214,7 +2312,7 @@ Génère le customer journey mapping complet en JSON.`}]
                   <div style={{display:"flex",gap:4}}>
                     <button onClick={copySelected} style={btnCopy} onMouseEnter={e=>{e.currentTarget.style.background="#E5E7EB";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#E5E7EB";}}>📋 Copier</button>
                     <button onClick={duplicateSelected} onMouseEnter={e=>e.currentTarget.style.background="#2563EB"} onMouseLeave={e=>e.currentTarget.style.background="#1E3A5F"} style={btnDup}>⎘ Dupliquer</button>
-                    <button onClick={()=>askDelete("Supprimer cette zone de texte ?",()=>{saveH(nodes,conns);setNodes(p=>p.filter(n=>n.id!==sn.id));setConns(p=>p.filter(c=>c.from!==sn.id&&c.to!==sn.id));setSelN([]);})}
+                    <button onClick={()=>askDelete("Supprimer cette zone de texte ?",()=>{saveH(nodes,conns,"histDelete","🗑");setNodes(p=>p.filter(n=>n.id!==sn.id));setConns(p=>p.filter(c=>c.from!==sn.id&&c.to!==sn.id));setSelN([]);})}
                       style={btnDel} onMouseEnter={e=>{e.currentTarget.style.background="#FEE2E2";}} onMouseLeave={e=>{e.currentTarget.style.background="#fff";}}>🗑</button>
                   </div>
                 </div>
@@ -2264,7 +2362,7 @@ Génère le customer journey mapping complet en JSON.`}]
                   <div style={{display:"flex",gap:4}}>
                     <button onClick={copySelected} style={btnCopy} onMouseEnter={e=>{e.currentTarget.style.background="#E5E7EB";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#E5E7EB";}}>📋 Copier</button>
                     <button onClick={duplicateSelected} onMouseEnter={e=>e.currentTarget.style.background="#2563EB"} onMouseLeave={e=>e.currentTarget.style.background="#1E3A5F"} style={btnDup}>⎘ Dupliquer</button>
-                    <button onClick={()=>askDelete("Supprimer cette page et ses connexions ?",()=>{saveH(nodes,conns);setNodes(p=>p.filter(n=>n.id!==sn.id));setConns(p=>p.filter(c=>c.from!==sn.id&&c.to!==sn.id));setSelN([]);})}
+                    <button onClick={()=>askDelete("Supprimer cette page et ses connexions ?",()=>{saveH(nodes,conns,"histDelete","🗑");setNodes(p=>p.filter(n=>n.id!==sn.id));setConns(p=>p.filter(c=>c.from!==sn.id&&c.to!==sn.id));setSelN([]);})}
                       style={btnDel} onMouseEnter={e=>{e.currentTarget.style.background="#FEE2E2";}} onMouseLeave={e=>{e.currentTarget.style.background="#fff";}}>🗑</button>
                   </div>
                 </div>
@@ -2292,7 +2390,7 @@ Génère le customer journey mapping complet en JSON.`}]
                   <div style={{display:"flex",gap:4}}>
                     <button onClick={copySelected} style={btnCopy} onMouseEnter={e=>{e.currentTarget.style.background="#E5E7EB";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#E5E7EB";}}>📋 Copier</button>
                     <button onClick={duplicateSelected} onMouseEnter={e=>e.currentTarget.style.background="#2563EB"} onMouseLeave={e=>e.currentTarget.style.background="#1E3A5F"} style={btnDup}>⎘ Dupliquer</button>
-                    <button onClick={()=>askDelete(`Supprimer "${sn.label}" et ses connexions ?`,()=>{saveH(nodes,conns);setNodes(p=>p.filter(n=>n.id!==sn.id));setConns(p=>p.filter(c=>c.from!==sn.id&&c.to!==sn.id));setSelN([]);})}
+                    <button onClick={()=>askDelete(`Supprimer "${sn.label}" et ses connexions ?`,()=>{saveH(nodes,conns,"histDelete","🗑");setNodes(p=>p.filter(n=>n.id!==sn.id));setConns(p=>p.filter(c=>c.from!==sn.id&&c.to!==sn.id));setSelN([]);})}
                       style={btnDel} onMouseEnter={e=>{e.currentTarget.style.background="#FEE2E2";}} onMouseLeave={e=>{e.currentTarget.style.background="#fff";}}>🗑</button>
                   </div>
                 </div>
@@ -2308,29 +2406,29 @@ Génère le customer journey mapping complet en JSON.`}]
                 </div>
                 <SH>Actions</SH>
                 <div style={{display:"flex",gap:4,marginBottom:10}}>
-                  <button onClick={()=>{const c=conns.find(x=>x.id===selC);if(!c)return;saveH(nodes,conns);const nc={...c,id:cuid()};setConns(p=>[...p,nc]);setSelC(nc.id);}} style={{...btnCopy}} onMouseEnter={e=>{e.currentTarget.style.background="#E5E7EB";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#E5E7EB";}}>📋 Copier</button>
-                  <button onClick={()=>{const c=conns.find(x=>x.id===selC);if(!c)return;saveH(nodes,conns);const nc={...c,id:cuid()};setConns(p=>[...p,nc]);setSelC(nc.id);}} style={{...btnDup}} onMouseEnter={e=>e.currentTarget.style.background="#2563EB"} onMouseLeave={e=>e.currentTarget.style.background="#1E3A5F"}>⎘ Dupliquer</button>
+                  <button onClick={()=>{const c=conns.find(x=>x.id===selC);if(!c)return;saveH(nodes,conns,"histDuplicate","⧉");const nc={...c,id:cuid()};setConns(p=>[...p,nc]);setSelC(nc.id);}} style={{...btnCopy}} onMouseEnter={e=>{e.currentTarget.style.background="#E5E7EB";e.currentTarget.style.borderColor="#475569";}} onMouseLeave={e=>{e.currentTarget.style.background="#0F172A";e.currentTarget.style.borderColor="#E5E7EB";}}>📋 Copier</button>
+                  <button onClick={()=>{const c=conns.find(x=>x.id===selC);if(!c)return;saveH(nodes,conns,"histDuplicate","⧉");const nc={...c,id:cuid()};setConns(p=>[...p,nc]);setSelC(nc.id);}} style={{...btnDup}} onMouseEnter={e=>e.currentTarget.style.background="#2563EB"} onMouseLeave={e=>e.currentTarget.style.background="#1E3A5F"}>⎘ Dupliquer</button>
                 </div>
                 <label style={lbS}>Style</label>
                 <div style={{display:"flex",gap:5,marginBottom:8}}>
-                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{curved:true,midX:null,midY:null});}} style={{flex:1,height:30,background:selConn.curved!==false?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.curved!==false?"#2563EB":"#E5E7EB"}`,color:selConn.curved!==false?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14}} title="Courbe">⌒</button>
-                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{curved:false,midX:null,midY:null});}} style={{flex:1,height:30,background:selConn.curved===false?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.curved===false?"#2563EB":"#E5E7EB"}`,color:selConn.curved===false?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14,fontWeight:700}} title="Droite">—</button>
+                  <button onClick={()=>{saveH(nodes,conns,"histConnStyle","⌒");upC(selC,{curved:true,midX:null,midY:null});}} style={{flex:1,height:30,background:selConn.curved!==false?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.curved!==false?"#2563EB":"#E5E7EB"}`,color:selConn.curved!==false?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14}} title="Courbe">⌒</button>
+                  <button onClick={()=>{saveH(nodes,conns,"histConnStyle","—");upC(selC,{curved:false,midX:null,midY:null});}} style={{flex:1,height:30,background:selConn.curved===false?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.curved===false?"#2563EB":"#E5E7EB"}`,color:selConn.curved===false?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14,fontWeight:700}} title="Droite">—</button>
                 </div>
                 <label style={lbS}>Trait</label>
                 <div style={{display:"flex",gap:6,marginBottom:12}}>
-                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{dashed:false});}} style={{flex:1,height:30,background:!selConn.dashed?"#1E3A5F":"#0F172A",border:`1px solid ${!selConn.dashed?"#2563EB":"#E5E7EB"}`,color:!selConn.dashed?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14,fontWeight:700}}>—</button>
-                  <button onClick={()=>{saveH(nodes,conns);upC(selC,{dashed:true});}} style={{flex:1,height:30,background:selConn.dashed?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.dashed?"#2563EB":"#E5E7EB"}`,color:selConn.dashed?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:12,letterSpacing:2}}>╌</button>
+                  <button onClick={()=>{saveH(nodes,conns,"histConnStyle","—");upC(selC,{dashed:false});}} style={{flex:1,height:30,background:!selConn.dashed?"#1E3A5F":"#0F172A",border:`1px solid ${!selConn.dashed?"#2563EB":"#E5E7EB"}`,color:!selConn.dashed?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:14,fontWeight:700}}>—</button>
+                  <button onClick={()=>{saveH(nodes,conns,"histConnStyle","╌");upC(selC,{dashed:true});}} style={{flex:1,height:30,background:selConn.dashed?"#1E3A5F":"#0F172A",border:`1px solid ${selConn.dashed?"#2563EB":"#E5E7EB"}`,color:selConn.dashed?"#fff":"#64748B",borderRadius:5,cursor:"pointer",fontSize:12,letterSpacing:2}}>╌</button>
                 </div>
-                {selConn.midX!=null&&<button onClick={()=>{saveH(nodes,conns);upC(selC,{midX:null,midY:null});}} style={{width:"100%",background:"#F8FAFC",border:"1px solid #334155",color:"#6B7280",padding:"5px",borderRadius:5,cursor:"pointer",fontSize:11,marginBottom:10}}>{t.resetCurve}</button>}
+                {selConn.midX!=null&&<button onClick={()=>{saveH(nodes,conns,"histConnStyle","↺");upC(selC,{midX:null,midY:null});}} style={{width:"100%",background:"#F8FAFC",border:"1px solid #334155",color:"#6B7280",padding:"5px",borderRadius:5,cursor:"pointer",fontSize:11,marginBottom:10}}>{t.resetCurve}</button>}
                 <label style={lbS}>Couleur</label>
                 <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-                  <ColorPicker value={selConn.color||"#94A3B8"} onChange={e=>{saveH(nodes,conns);upC(selC,{color:e.target.value});}}/>
+                  <ColorPicker value={selConn.color||"#94A3B8"} onChange={e=>{saveH(nodes,conns,"histConnColor","●");upC(selC,{color:e.target.value});}}/>
                   <span style={{color:"#6B7280",fontSize:11}}>{selConn.color||"#94A3B8"}</span>
                 </div>
                 <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:14}}>
-                  {ARROW_COLORS.map(color=><button key={color} onClick={()=>{saveH(nodes,conns);upC(selC,{color});}} style={{width:28,height:28,borderRadius:"50%",background:color,border:(selConn.color||"#94A3B8")===color?"3px solid #F1F5F9":"3px solid transparent",cursor:"pointer",padding:0,boxSizing:"border-box"}}/>)}
+                  {ARROW_COLORS.map(color=><button key={color} onClick={()=>{saveH(nodes,conns,"histConnColor","●");upC(selC,{color});}} style={{width:28,height:28,borderRadius:"50%",background:color,border:(selConn.color||"#94A3B8")===color?"3px solid #F1F5F9":"3px solid transparent",cursor:"pointer",padding:0,boxSizing:"border-box"}}/>)}
                 </div>
-                <button onClick={()=>askDelete("Supprimer cette connexion ?",()=>{saveH(nodes,conns);setConns(p=>p.filter(c=>c.id!==selC));setSelC(null);})}
+                <button onClick={()=>askDelete("Supprimer cette connexion ?",()=>{saveH(nodes,conns,"histDisconnect","✂");setConns(p=>p.filter(c=>c.id!==selC));setSelC(null);})}
                   onMouseEnter={e=>e.currentTarget.style.background="#b52209"} onMouseLeave={e=>e.currentTarget.style.background="#d82c0d"}
                   style={{width:"100%",background:"#d82c0d",border:"none",color:"#fff",padding:"9px",borderRadius:7,cursor:"pointer",fontSize:12,fontWeight:600}}>🗑 Supprimer la connexion</button>
               </div>
@@ -2436,49 +2534,93 @@ Génère le customer journey mapping complet en JSON.`}]
         )}
       </div>
 
-      {/* ── BEE-style Undo / Redo — bottom-left, appears only when there's history ── */}
-      {(canUndo||canRedo)&&(
-        <div style={{
-          position:"fixed",
-          bottom:"calc(16px + env(safe-area-inset-bottom, 0px))",
-          left: sidebarW+12,
-          display:"flex",alignItems:"center",
-          background:"#FFFFFF",border:"1px solid #475569",
-          borderRadius:12,
-          boxShadow:"0 4px 24px rgba(0,0,0,.7)",
-          zIndex:9999,userSelect:"none",overflow:"hidden",
-          animation:"fadeSlideUp .18s ease",
-        }}>
-          <style>{`@keyframes fadeSlideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}`}</style>
-          <button
-            onClick={()=>undoRef.current?.()}
-            disabled={!canUndo}
-            title="Undo (Ctrl+Z)"
-            style={{width:36,height:36,background:"none",border:"none",color:canUndo?"#CBD5E1":"#475569",cursor:canUndo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
-            onPointerEnter={e=>{if(canUndo)e.currentTarget.style.background="#E5E7EB"}}
-            onPointerLeave={e=>{e.currentTarget.style.background="none"}}
-          >
-            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M2 7.5h7.5a4 4 0 1 1 0 8H6"/>
-              <polyline points="2 4 2 7.5 5.5 7.5"/>
-            </svg>
-          </button>
-          <div style={{width:1,height:18,background:"#F3F4F6",flexShrink:0}}/>
-          <button
-            onClick={()=>redoRef.current?.()}
-            disabled={!canRedo}
-            title="Redo (Ctrl+Y)"
-            style={{width:36,height:36,background:"none",border:"none",color:canRedo?"#CBD5E1":"#475569",cursor:canRedo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
-            onPointerEnter={e=>{if(canRedo)e.currentTarget.style.background="#E5E7EB"}}
-            onPointerLeave={e=>{e.currentTarget.style.background="none"}}
-          >
-            <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 7.5H7.5a4 4 0 1 0 0 8H11"/>
-              <polyline points="15 4 15 7.5 11.5 7.5"/>
-            </svg>
-          </button>
+      {/* ── Bee-style Undo / Redo + clickable History timeline — bottom-left ── */}
+      {(canUndo||canRedo||showHistory)&&(()=>{
+        // Resolve a stored entry's label into display text (handles {item}).
+        const labelFor=(entry:any)=>{
+          if(!entry)return "";
+          let raw=((t as any)[entry.label]||entry.label||"") as string;
+          // Add-node actions carry an item type; resolve its display name.
+          if(entry.item){
+            const itemLabel=(customLabels as any)[entry.item]||(t as any)[gd(entry.item)?.labelKey]||gd(entry.item)?.label||entry.item;
+            raw=raw.replace("{item}",itemLabel);
+          }
+          raw=raw.replace("{item}","").trim();
+          // Append element-specific detail: a node name, or a count for multi.
+          if(entry.detail){return `${raw} : ${entry.detail}`;}
+          if(entry.count){return `${raw} · ${entry.count} ${lang==='fr'?'éléments':'items'}`;}
+          return raw;
+        };
+        const timeFor=(ts:number)=>{if(!ts)return "";try{return new Date(ts).toLocaleTimeString(lang==='fr'?'fr-CA':'en-US',{hour:'2-digit',minute:'2-digit'});}catch{return "";}};
+        // Build timeline rows newest-first. delta = signed steps from live state.
+        //   future[0] is the next redo (delta +1); future[k] = delta +(k+1).
+        //   past tip is the last undo-able (delta -1); older = more negative.
+        const rows:any[]=[];
+        for(let k=future.length-1;k>=0;k--){rows.push({kind:'future',entry:future[k],delta:k+1});}
+        rows.push({kind:'now',delta:0});
+        for(let i=past.length-1;i>=0;i--){rows.push({kind:'past',entry:past[i],delta:-(past.length-i)});}
+        return(
+        <div style={{position:"fixed",bottom:"calc(16px + env(safe-area-inset-bottom, 0px))",left:sidebarW+12,zIndex:9999,userSelect:"none",animation:"fadeSlideUp .18s ease"}}>
+          <style>{`@keyframes fadeSlideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes histPop{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}`}</style>
+
+          {/* Timeline popover */}
+          {showHistory&&(
+            <div data-testid="hist-timeline" style={{position:"absolute",bottom:46,left:0,width:264,maxHeight:340,background:"#FFFFFF",border:"1px solid #E2E8F0",borderRadius:12,boxShadow:"0 12px 32px rgba(15,23,42,.16)",overflow:"hidden",display:"flex",flexDirection:"column",animation:"histPop .14s ease"}}>
+              <div style={{padding:"11px 14px 9px",borderBottom:"1px solid #F1F5F9",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontSize:12.5,fontWeight:700,color:"#0F172A",letterSpacing:.2}}>{t.histTitle}</span>
+                <button onClick={()=>setShowHistory(false)} style={{background:"none",border:"none",color:"#94A3B8",cursor:"pointer",fontSize:15,lineHeight:1,padding:2}}>✕</button>
+              </div>
+              <div style={{overflowY:"auto",padding:"6px 0"}}>
+                {rows.map((r,ri)=>{
+                  const isNow=r.kind==='now';
+                  const isFuture=r.kind==='future';
+                  const lbl=isNow?t.histNow:labelFor(r.entry);
+                  const ic=isNow?"●":(r.entry?.icon||"✎");
+                  return(
+                    <button key={ri}
+                      data-testid={isNow?"hist-row-now":"hist-row"}
+                      data-delta={r.delta}
+                      data-kind={r.kind}
+                      onClick={()=>{if(!isNow){jumpRef.current?.(r.delta);setShowHistory(false);}}}
+                      disabled={isNow}
+                      style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"7px 14px",background:isNow?"#EFF6FF":"none",border:"none",cursor:isNow?"default":"pointer",textAlign:"left",opacity:isFuture?.55:1,transition:"background .1s"}}
+                      onMouseEnter={e=>{if(!isNow)e.currentTarget.style.background="#F8FAFC";}}
+                      onMouseLeave={e=>{if(!isNow)e.currentTarget.style.background="none";}}>
+                      <span style={{width:24,height:24,flexShrink:0,borderRadius:6,background:isNow?"#2563EB":"#F1F5F9",color:isNow?"#fff":"#475569",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700}}>{ic}</span>
+                      <span style={{flex:1,minWidth:0}}>
+                        <span style={{display:"block",fontSize:12.5,fontWeight:isNow?700:500,color:isNow?"#1D4ED8":"#1E293B",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{lbl}</span>
+                        {!isNow&&r.entry?.ts&&<span style={{display:"block",fontSize:10.5,color:"#94A3B8",marginTop:1}}>{timeFor(r.entry.ts)}</span>}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Pill: undo | redo | clock */}
+          <div style={{display:"flex",alignItems:"center",background:"#FFFFFF",border:"1px solid #E2E8F0",borderRadius:12,boxShadow:"0 4px 16px rgba(15,23,42,.12)",overflow:"hidden"}}>
+            <button data-testid="hist-undo" onClick={()=>undoRef.current?.()} disabled={!canUndo} title={`${t.histUndo} (Ctrl+Z)`}
+              style={{width:38,height:38,background:"none",border:"none",color:canUndo?"#334155":"#CBD5E1",cursor:canUndo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
+              onPointerEnter={e=>{if(canUndo)e.currentTarget.style.background="#F1F5F9";}} onPointerLeave={e=>{e.currentTarget.style.background="none";}}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 6 4 11 9 16"/><path d="M4 11h7a7 7 0 0 1 7 7v1"/></svg>
+            </button>
+            <div style={{width:1,height:18,background:"#E2E8F0",flexShrink:0}}/>
+            <button data-testid="hist-redo" onClick={()=>redoRef.current?.()} disabled={!canRedo} title={`${t.histRedo} (Ctrl+Y)`}
+              style={{width:38,height:38,background:"none",border:"none",color:canRedo?"#334155":"#CBD5E1",cursor:canRedo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
+              onPointerEnter={e=>{if(canRedo)e.currentTarget.style.background="#F1F5F9";}} onPointerLeave={e=>{e.currentTarget.style.background="none";}}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 6 20 11 15 16"/><path d="M20 11h-7a7 7 0 0 0-7 7v1"/></svg>
+            </button>
+            <div style={{width:1,height:18,background:"#E2E8F0",flexShrink:0}}/>
+            <button data-testid="hist-clock" onClick={()=>setShowHistory(v=>!v)} title={t.histTitle}
+              style={{width:38,height:38,background:showHistory?"#EFF6FF":"none",border:"none",color:showHistory?"#2563EB":"#334155",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
+              onPointerEnter={e=>{if(!showHistory)e.currentTarget.style.background="#F1F5F9";}} onPointerLeave={e=>{if(!showHistory)e.currentTarget.style.background="none";}}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>
+            </button>
+          </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* ── Zoom controls — position:fixed so always visible, unaffected by overflow:hidden ── */}
       {(()=>{

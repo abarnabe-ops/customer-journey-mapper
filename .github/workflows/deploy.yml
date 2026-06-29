@@ -1,19 +1,26 @@
-name: Deploy to GitHub Pages
+name: Deploy
+
+# Two environments, one source repo:
+#   - push to `staging` -> build with staging config -> e2e gate -> deploy to the
+#     SEPARATE staging repo (customer-journey-mapper-staging) via SSH deploy key
+#     -> smoke-test the staging URL.
+#   - push to `main` -> build with production config -> e2e gate -> deploy to this
+#     repo's gh-pages -> smoke-test the production URL.
+# Promotion path: merge `staging` -> `main`.
 
 on:
   push:
     branches:
-      - main        # production deploys from main
-      - v2-react    # preview deploys from v2-react (to gh-pages-v2 branch)
+      - main
+      - staging
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,47 +34,128 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Decide environment-specific config based on the branch.
+      - name: Resolve environment
+        id: env
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+            echo "name=staging" >> "$GITHUB_OUTPUT"
+            echo "base=/customer-journey-mapper-staging/" >> "$GITHUB_OUTPUT"
+            echo "url=https://abarnabe-ops.github.io/customer-journey-mapper-staging/" >> "$GITHUB_OUTPUT"
+            echo "supabase_url=${{ secrets.STAGING_SUPABASE_URL }}" >> "$GITHUB_OUTPUT"
+            echo "supabase_key=${{ secrets.STAGING_SUPABASE_ANON_KEY }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=production" >> "$GITHUB_OUTPUT"
+            echo "base=/customer-journey-mapper/" >> "$GITHUB_OUTPUT"
+            echo "url=https://abarnabe-ops.github.io/customer-journey-mapper/" >> "$GITHUB_OUTPUT"
+            echo "supabase_url=${{ secrets.VITE_SUPABASE_URL }}" >> "$GITHUB_OUTPUT"
+            echo "supabase_key=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Building for: $(grep name= "$GITHUB_OUTPUT" | head -1)"
+
       - name: Build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_BASE: ${{ steps.env.outputs.base }}
+          VITE_APP_ENV: ${{ steps.env.outputs.name }}
+          VITE_SUPABASE_URL: ${{ steps.env.outputs.supabase_url }}
+          VITE_SUPABASE_ANON_KEY: ${{ steps.env.outputs.supabase_key }}
         run: npm run build
 
-      # -- Pre-deploy verification ------------------------------------------------
-      # Sanity-check the built dist/ BEFORE publishing. Catches a broken build
-      # output (e.g. an index.html that still points at /src/main.tsx, a missing
-      # bundle, or a missing favicon) so we never publish a dead site.
+      # -- Pre-deploy verification: sanity-check dist/ before publishing. --------
       - name: Verify build output
+        env:
+          EXPECTED_BASE: ${{ steps.env.outputs.base }}
         run: |
           set -e
-          echo "Checking dist/ output before deploy..."
-
+          echo "Checking dist/ output for ${{ steps.env.outputs.name }}..."
           test -f dist/index.html || { echo "::error::dist/index.html is missing"; exit 1; }
-
           if grep -q "main.tsx" dist/index.html; then
-            echo "::error::dist/index.html references main.tsx - build did not transform the entry"
-            exit 1
+            echo "::error::dist/index.html references main.tsx - build did not transform the entry"; exit 1
           fi
-
           if ! grep -qE 'assets/index-[A-Za-z0-9_-]+\.js' dist/index.html; then
-            echo "::error::dist/index.html does not reference a hashed JS bundle"
-            exit 1
+            echo "::error::dist/index.html does not reference a hashed JS bundle"; exit 1
           fi
-
+          # The bundle path must use the correct per-environment base.
+          if ! grep -q "src=\"${EXPECTED_BASE}assets/index-" dist/index.html; then
+            echo "::error::bundle path does not use expected base ${EXPECTED_BASE}"; exit 1
+          fi
           BUNDLE=$(grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1)
           test -f "dist/$BUNDLE" || { echo "::error::referenced bundle dist/$BUNDLE not found"; exit 1; }
           SIZE=$(wc -c < "dist/$BUNDLE")
           echo "Bundle: $BUNDLE ($SIZE bytes)"
           test "$SIZE" -gt 50000 || { echo "::error::bundle suspiciously small ($SIZE bytes)"; exit 1; }
-
-          test -f dist/favicon.svg || { echo "::error::dist/favicon.svg is missing"; exit 1; }
           test -f dist/favicon.ico || { echo "::error::dist/favicon.ico is missing"; exit 1; }
           test -f dist/apple-touch-icon.png || { echo "::error::dist/apple-touch-icon.png is missing"; exit 1; }
-
           echo "Build output looks good."
 
-      # Deploy main branch -> production GitHub Pages (gh-pages branch)
-      - name: Deploy to GitHub Pages (production)
+      # -- E2E browser tests: the quality gate. Fails -> deploy steps skipped. ---
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests (blocks deploy on failure)
+        env:
+          VITE_BASE: ${{ steps.env.outputs.base }}
+        run: npm run test:e2e
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ steps.env.outputs.name }}
+          path: playwright-report/
+          retention-days: 7
+
+      # On test failure, publish a SHORT plain-text summary of which tests failed
+      # and their error messages to the `ci-diagnostics` branch, so the reason is
+      # retrievable via the git API (artifact/log blobs live on a host some
+      # environments cannot reach).
+      - name: Publish failure diagnostics
+        if: failure()
+        run: |
+          set +e
+          mkdir -p /tmp/diag
+          SUMMARY=/tmp/diag/ci-failure-${{ steps.env.outputs.name }}.txt
+          {
+            echo "Run: ${{ github.run_id }}  Branch: ${{ github.ref_name }}  $(date -u)"
+            echo "Commit: ${{ github.sha }}"
+            echo "==================================================================="
+            if [ -f e2e-results.json ]; then
+              node -e '
+                const r=require("./e2e-results.json");
+                const out=[];
+                function walk(suite,prefix){
+                  (suite.suites||[]).forEach(s=>walk(s,prefix+" > "+(s.title||"")));
+                  (suite.specs||[]).forEach(spec=>{
+                    (spec.tests||[]).forEach(t=>{
+                      const res=t.results[t.results.length-1];
+                      if(res && res.status!=="passed" && res.status!=="skipped"){
+                        out.push("FAILED: "+prefix+" > "+spec.title);
+                        (res.errors||[]).forEach(e=>out.push("  "+String(e.message||"").split("\n").slice(0,15).join("\n  ")));
+                        if(!res.errors||!res.errors.length) out.push("  status="+res.status);
+                        out.push("");
+                      }
+                    });
+                  });
+                }
+                (r.suites||[]).forEach(s=>walk(s,s.title||""));
+                console.log(out.join("\n") || "No failed specs parsed (suite-level error?)");
+              ' 2>&1
+            else
+              echo "e2e-results.json not produced — failure happened before the test run."
+            fi
+          } > "$SUMMARY" 2>&1
+
+          git config user.name "CI"
+          git config user.email "ci@leadfox.co"
+          git checkout --orphan ci-diagnostics
+          git reset --hard >/dev/null 2>&1
+          cp "$SUMMARY" ./ci-failure.txt
+          git add -f ci-failure.txt
+          git commit -m "ci: ${{ steps.env.outputs.name }} e2e failure (run ${{ github.run_id }})" >/dev/null 2>&1
+          git push -f origin ci-diagnostics >/dev/null 2>&1 && echo "diagnostics pushed" || echo "push failed"
+
+      # -- Deploy: production -> this repo's gh-pages ----------------------------
+      - name: Deploy to production
         if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -76,68 +164,49 @@ jobs:
           publish_branch: gh-pages
           force_orphan: false
 
-      # Deploy v2-react branch -> preview (gh-pages-v2 branch)
-      - name: Deploy preview (v2-react branch)
-        if: github.ref == 'refs/heads/v2-react'
+      # -- Deploy: staging -> SEPARATE staging repo via SSH deploy key ----------
+      - name: Deploy to staging repo
+        if: github.ref == 'refs/heads/staging'
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          external_repository: abarnabe-ops/customer-journey-mapper-staging
           publish_dir: ./dist
-          publish_branch: gh-pages-v2
+          publish_branch: gh-pages
           force_orphan: false
 
-      # -- Post-deploy smoke test (production only) -------------------------------
-      # Actually fetch the LIVE site after GitHub Pages rebuilds and assert it
-      # works. This is the check that catches "deploy succeeded but the site is
-      # broken" - e.g. Pages serving the wrong branch, a 404 on the page, or the
-      # served HTML pointing at a file that does not exist.
+      # -- Post-deploy smoke test: fetch the LIVE url and assert it works. -------
       - name: Smoke test live site
-        if: github.ref == 'refs/heads/main'
+        env:
+          URL: ${{ steps.env.outputs.url }}
         run: |
           set -e
-          URL="https://abarnabe-ops.github.io/customer-journey-mapper/"
-          echo "Waiting for GitHub Pages to serve the new build..."
-
+          echo "Smoke-testing ${{ steps.env.outputs.name }} at $URL"
           EXPECTED_BUNDLE=$(grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1)
           echo "Expecting live site to serve: $EXPECTED_BUNDLE"
-
           OK=0
           for i in $(seq 1 20); do
             HTML=$(curl -fsSL "${URL}?cb=$(date +%s)" || true)
             CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}?cb=$(date +%s)" || echo "000")
-
             if [ "$CODE" = "200" ] && echo "$HTML" | grep -q "$EXPECTED_BUNDLE"; then
-              echo "Live HTML is up to date (attempt $i): serves $EXPECTED_BUNDLE"
-
+              echo "Live HTML up to date (attempt $i): serves $EXPECTED_BUNDLE"
               if echo "$HTML" | grep -q "main.tsx"; then
-                echo "::error::Live site references main.tsx - wrong index.html is being served"
-                exit 1
+                echo "::error::Live site references main.tsx - wrong index.html served"; exit 1
               fi
-
               JS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}${EXPECTED_BUNDLE}" || echo "000")
-              test "$JS_CODE" = "200" || { echo "::error::bundle $EXPECTED_BUNDLE returned HTTP $JS_CODE"; exit 1; }
+              test "$JS_CODE" = "200" || { echo "::error::bundle returned HTTP $JS_CODE"; exit 1; }
               echo "Bundle loads (HTTP $JS_CODE)"
-
-              FAV_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}favicon.svg" || echo "000")
-              test "$FAV_CODE" = "200" || { echo "::error::favicon.svg returned HTTP $FAV_CODE"; exit 1; }
-              echo "Favicon (svg) loads (HTTP $FAV_CODE)"
-
               ICO_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}favicon.ico" || echo "000")
               test "$ICO_CODE" = "200" || { echo "::error::favicon.ico returned HTTP $ICO_CODE"; exit 1; }
-              echo "Favicon (ico) loads (HTTP $ICO_CODE)"
-
-              OK=1
-              break
+              echo "Favicon loads (HTTP $ICO_CODE)"
+              OK=1; break
             fi
-
-            echo "Attempt $i: live site not ready yet (HTTP $CODE), retrying in 15s..."
+            echo "Attempt $i: not ready (HTTP $CODE), retrying in 15s..."
             sleep 15
           done
-
           if [ "$OK" != "1" ]; then
-            echo "::error::Live site did not serve the new build ($EXPECTED_BUNDLE) after ~5 minutes."
-            echo "::error::Check that GitHub Pages is configured to serve from the gh-pages branch."
+            echo "::error::Live site did not serve the new build ($EXPECTED_BUNDLE) after ~5 min."
+            echo "::error::If staging: ensure the staging repo's Pages serves the gh-pages branch."
             exit 1
           fi
-
-          echo "Smoke test passed - live site is healthy."
+          echo "Smoke test passed - ${{ steps.env.outputs.name }} is healthy."
