@@ -61,6 +61,8 @@ jobs:
           test "$SIZE" -gt 50000 || { echo "::error::bundle suspiciously small ($SIZE bytes)"; exit 1; }
 
           test -f dist/favicon.svg || { echo "::error::dist/favicon.svg is missing"; exit 1; }
+          test -f dist/favicon.ico || { echo "::error::dist/favicon.ico is missing"; exit 1; }
+          test -f dist/apple-touch-icon.png || { echo "::error::dist/apple-touch-icon.png is missing"; exit 1; }
 
           echo "Build output looks good."
 
@@ -118,7 +120,11 @@ jobs:
 
               FAV_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}favicon.svg" || echo "000")
               test "$FAV_CODE" = "200" || { echo "::error::favicon.svg returned HTTP $FAV_CODE"; exit 1; }
-              echo "Favicon loads (HTTP $FAV_CODE)"
+              echo "Favicon (svg) loads (HTTP $FAV_CODE)"
+
+              ICO_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${URL}favicon.ico" || echo "000")
+              test "$ICO_CODE" = "200" || { echo "::error::favicon.ico returned HTTP $ICO_CODE"; exit 1; }
+              echo "Favicon (ico) loads (HTTP $ICO_CODE)"
 
               OK=1
               break

@@ -24,7 +24,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: '1.3.3',
     date: '2026-06-29',
     changes: [
-      { type:'feat',  scope:'ui',      fr:'Ajout d\'un favicon (icône carte bleue de l\'app) — corrige le 404 favicon.ico dans la console', en:'Added a favicon (the app\'s blue map icon) — fixes the favicon.ico 404 in the console' },
+      { type:'feat',  scope:'ui',      fr:'Ajout d\'un jeu complet de favicons (icône carte bleue) : favicon.ico multi-tailles (16/32/48), SVG, PNG 16/32, et apple-touch-icon — corrige le favicon qui ne s\'affichait pas (un seul SVG ne suffit pas pour Chrome Android / Safari ; les navigateurs demandent /favicon.ico)', en:'Added a full favicon set (blue map icon): multi-size favicon.ico (16/32/48), SVG, 16/32 PNGs, and apple-touch-icon — fixes the favicon not displaying (a lone SVG is not enough for Android Chrome / Safari; browsers request /favicon.ico)' },
       { type:'fix',   scope:'build',   fr:'Ajout d\'en-têtes Cache-Control (no-cache) sur le HTML pour que le navigateur ne garde jamais un index.html périmé pointant vers d\'anciens fichiers — empêche les erreurs 404 après un déploiement', en:'Added Cache-Control (no-cache) meta tags on the HTML so the browser never holds a stale index.html pointing at old files — prevents 404 errors after a deploy' },
     ],
   },
