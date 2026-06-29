@@ -524,7 +524,7 @@ function edgePt(node,angle){
   const s=si>0?hh:-hh;return{x:cx+s*(co/si),y:cy+s};
 }
 
-function BrowserNode({node,sel,cs,cm,w,h}){
+function BrowserNode({node,sel,cs,cm,w,h,t}){
   const ps=getPageStyle(node);
   const shadow=cs?"0 0 0 3px #F59E0B,0 0 16px rgba(245,158,11,.5)":sel?"0 0 0 3px #3B82F6,0 0 14px rgba(59,130,246,.4)":"0 2px 10px rgba(0,0,0,.18)";
   const bdr=cs?"2px solid #F59E0B":sel?"2px solid #3B82F6":"1.5px solid #CBD5E1";
@@ -546,8 +546,8 @@ function BrowserNode({node,sel,cs,cm,w,h}){
   );
 }
 
-function NShape({d,node,sel,cs,cm,w,h}){
-  if(d.sh==="browser") return <BrowserNode node={node} sel={sel} cs={cs} cm={cm} w={w} h={h}/>;
+function NShape({d,node,sel,cs,cm,w,h,t}){
+  if(d.sh==="browser") return <BrowserNode node={node} sel={sel} cs={cs} cm={cm} w={w} h={h} t={t}/>;
   const shadow=cs?"0 0 0 3px #F59E0B,0 0 16px rgba(245,158,11,.5)":sel?"0 0 0 3px #3B82F6,0 0 14px rgba(59,130,246,.4)":"0 2px 10px rgba(0,0,0,.18)";
   const bdr=cs?"2px solid #F59E0B":sel?"2px solid #3B82F6":null;
   if(d.sh==="diamond"){
@@ -2129,7 +2129,7 @@ Génère le customer journey mapping complet en JSON.`}]
                   </div>
                   {/* Node — offset inside frame, below label */}
                   <div style={{position:"absolute",left:PAD,top:PAD+LABEL_H,width:w,height:h}}>
-                    <NShape d={d} node={node} sel={false} cs={isCS} cm={connMode||connectAllMode} w={w} h={h}/>
+                    <NShape d={d} node={node} sel={false} cs={isCS} cm={connMode||connectAllMode} w={w} h={h} t={t}/>
                   </div>
                   {/* Selection frame — positioned below the label */}
                   {showFrame&&<>

@@ -21,6 +21,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.3.1',
+    date: '2026-06-28',
+    changes: [
+      { type:'fix',   scope:'canvas',  fr:'Correction d\'un crash (page blanche) lors de l\'ajout ou du rendu d\'une page sur le canvas — le composant BrowserNode utilisait la variable de traduction `t` hors de sa portée', en:'Fixed crash (blank page) when adding or rendering a page node on the canvas — BrowserNode used the translation variable `t` out of scope' },
+      { type:'fix',   scope:'canvas',  fr:'`t` est maintenant passé en prop à NShape → BrowserNode au lieu d\'être référencé globalement', en:'`t` is now passed as a prop to NShape → BrowserNode instead of being referenced globally' },
+    ],
+  },
+  {
     version: '1.3.0',
     date: '2026-06-28',
     changes: [
