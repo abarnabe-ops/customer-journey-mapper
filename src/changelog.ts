@@ -21,6 +21,17 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.3.2',
+    date: '2026-06-28',
+    changes: [
+      { type:'fix',   scope:'i18n',    fr:'Correction de la compilation : tout le bloc « Misc UI » (14 clés : pdfExporting, flashError, noConnections, etc.) manquait dans l\'objet français `fr`, ce qui faisait échouer `tsc` et bloquait le déploiement de production', en:'Fixed the build: the entire "Misc UI" block (14 keys: pdfExporting, flashError, noConnections, etc.) was missing from the French `fr` object, which made `tsc` fail and blocked production deploys' },
+      { type:'fix',   scope:'i18n',    fr:'Type de `en` élargi (`{ [K in keyof typeof fr]: string | string[] }`) au lieu de `typeof fr` — les valeurs anglaises ne sont plus contraintes au type littéral du texte français, tout en gardant la vérification que toutes les clés existent', en:'Widened `en` type (`{ [K in keyof typeof fr]: string | string[] }`) instead of `typeof fr` — English values are no longer constrained to the French string\'s literal type, while still checking every key exists' },
+      { type:'fix',   scope:'i18n',    fr:'Type `Translations` élargi pour accepter l\'une ou l\'autre langue à l\'exécution', en:'Widened `Translations` type so it accepts either locale at runtime' },
+      { type:'fix',   scope:'build',   fr:'`JSX.Element` remplacé par `React.ReactElement` dans PAGE_STYLES (espace de noms JSX introuvable avec React 19)', en:'Replaced `JSX.Element` with `React.ReactElement` in PAGE_STYLES (JSX namespace not found under React 19)' },
+      { type:'fix',   scope:'build',   fr:'`index.html` racine reconverti en point d\'entrée source Vite (pointait vers un artefact de build figé) et suppression du dossier `assets/` obsolète versionné par erreur', en:'Restored root `index.html` as a Vite source entry (it pointed at a stale build artifact) and removed the obsolete `assets/` folder committed by mistake' },
+    ],
+  },
+  {
     version: '1.3.1',
     date: '2026-06-28',
     changes: [

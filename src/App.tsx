@@ -131,7 +131,7 @@ const LOGOS={
 // labelKey references a key in Translations for the human-readable page name.
 // ─────────────────────────────────────────────────────────────────────────────
 const _BROWSER_BAR = (<><rect x="0" y="0" width="86" height="14" fill="#E8E8E8" rx="4"/><circle cx="8" cy="7" r="2.5" fill="#FF5F57"/><circle cx="15" cy="7" r="2.5" fill="#FFBD2E"/><circle cx="22" cy="7" r="2.5" fill="#28C840"/><rect x="29" y="4" width="49" height="6" rx="3" fill="#D0D0D0"/></>);
-const PAGE_STYLES: {id:string; labelKey:keyof Translations; hc:string; thumb:(t:Translations)=>JSX.Element}[] = [
+const PAGE_STYLES: {id:string; labelKey:keyof Translations; hc:string; thumb:(t:Translations)=>React.ReactElement}[] = [
   {
     id:"abonnement", labelKey:"pageAbonnement", hc:"#054547",
     thumb:(t)=>(<svg viewBox="0 0 86 108" width="86" height="108" xmlns="http://www.w3.org/2000/svg">

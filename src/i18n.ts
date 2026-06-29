@@ -166,9 +166,24 @@ const fr = {
   nodeDownloadPdf:      'Télécharger PDF',
   // text
   nodeTextbox:          'Zone de texte',
+  // ── Misc UI ───────────────────────────────────────────────────────────────
+  nodeSelected:         'Nœud sélectionné',
+  resetCurve:           '↺ Réinitialiser la courbe',
+  zoomReset:            'Réinitialiser le zoom (Ctrl+0)',
+  flashSaved:           'Enregistré',
+  pdfExporting:         'Génération du PDF…',
+  pdfSuccess:           'PDF téléchargé ✓',
+  pdfError:             "Échec de l'export PDF",
+  flashError:           'Erreur',
+  briefNoResponse:      'Aucune réponse de Claude.',
+  versionPlaceholder:   'Version',
+  aucuneVersion:        'Aucune version enregistrée',
+  noConnections:        'Aucune connexion',
+  deleteNodeConfirm:    'et ses connexions',
+  noeudsConnexions:     'nœuds et leurs connexions',
 } as const
 
-const en: typeof fr = {
+const en: { [K in keyof typeof fr]: typeof fr[K] extends readonly any[] ? string[] : string } = {
   // ── Auth ──────────────────────────────────────────────────────────────────
   loading:              'Loading...',
   tagline:              'Visualize and automate your customer journeys with AI',
@@ -337,4 +352,6 @@ const en: typeof fr = {
 }
 
 export const translations = { fr, en } as const
-export type Translations = typeof fr
+// Translations is the widened shape (string / string[] values) so a value typed
+// as Translations can hold EITHER locale at runtime. Keys still come from `fr`.
+export type Translations = { [K in keyof typeof fr]: typeof fr[K] extends readonly any[] ? string[] : string }
