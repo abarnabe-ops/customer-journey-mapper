@@ -1270,11 +1270,13 @@ Génère le customer journey mapping complet en JSON.`}]
     const rect=cvRef.current.getBoundingClientRect();const d=gd(type);const{w,h}=gs(d,null);
     const x=(e.clientX-rect.left-pan.x)/zoom-w/2,y=(e.clientY-rect.top-pan.y)/zoom-h/2;
     saveH(nodes,conns);
-    const nd=gd(type);
+    const isPageStyle=type.startsWith("page_");
+    const pageStyleId=isPageStyle?type.replace("page_",""):"abonnement";
+    const pageStyleDef=PAGE_STYLES.find(s=>s.id===pageStyleId)||PAGE_STYLES[0];
     const nn=type==="textbox"
-      ?{id:uid(),type,x,y,width:200,height:80,text:"",font:"'Inter',system-ui,sans-serif",size:14,color:"#1E293B",bold:false,italic:false,underline:false,align:"left",link:"",bgColor:""}
-      :type==="page"
-      ?{id:uid(),type,x,y,label:"Nouvelle Page",notes:"",pageStyle:"abonnement"}
+      ?{id:uid(),type:"textbox",x,y,width:200,height:80,text:"",font:"'Inter',system-ui,sans-serif",size:14,color:"#1E293B",bold:false,italic:false,underline:false,align:"left",link:"",bgColor:""}
+      :(type==="page"||isPageStyle)
+      ?{id:uid(),type:"page",x,y,label:isPageStyle?t[pageStyleDef.labelKey]:t.nodeAddPage,notes:"",pageStyle:pageStyleId}
       :{id:uid(),type,x,y,label:getDL(type,customLabels),notes:""};
     setNodes(p=>[...p,nn]);dtRef.current=null;
   };
@@ -1441,11 +1443,14 @@ Génère le customer journey mapping complet en JSON.`}]
     const x=(clientX-rect.left-panR.current.x)/zoomR.current-w/2;
     const y=(clientY-rect.top-panR.current.y)/zoomR.current-h/2;
     saveH(nodesR.current,connsR.current);
+    const isPageStyle=type.startsWith("page_");
+    const pageStyleId=isPageStyle?type.replace("page_",""):"abonnement";
+    const pageStyleDef=PAGE_STYLES.find(s=>s.id===pageStyleId)||PAGE_STYLES[0];
     const nn=type==="textbox"
       ?{id:uid(),type:"textbox",x,y,width:200,height:80,text:"",font:"'Inter',system-ui,sans-serif",size:14,color:"#1E293B",bold:false,italic:false,underline:false,align:"left",link:"",bgColor:""}
-      :type==="page"
-      ?{id:uid(),type:"page",x,y,label:t.nodeAddPage,notes:"",pageStyle:"abonnement"}
-      :{id:uid(),type,x,y,label:(customLabels as any)[type]||gd(type)?.label||type,notes:""};
+      :(type==="page"||isPageStyle)
+      ?{id:uid(),type:"page",x,y,label:isPageStyle?(t as any)[pageStyleDef.labelKey]:t.nodeAddPage,notes:"",pageStyle:pageStyleId}
+      :{id:uid(),type,x,y,label:(customLabels as any)[type]||(t as any)[gd(type)?.labelKey]||gd(type)?.label||type,notes:""};
     setNodes((p:any[])=>[...p,nn]);
   };
 
@@ -1930,15 +1935,58 @@ Génère le customer journey mapping complet en JSON.`}]
             <div style={{flex:1,overflowY:"auto"}}>
               {SIDEBAR_SECTIONS.map(section=>{
                 const collapsed=collapsedCats[section.key];
+
+                // ── Special case: PAGES section shows all 12 page styles (like MapIt) ──
+                if(section.key==="pages"){
+                  return(
+                    <div key={section.key} style={{borderBottom:"1px solid #E5E7EB"}}>
+                      <div
+                        onClick={()=>toggleCat(section.key)}
+                        style={{padding:"9px 10px 6px",fontSize:10,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:.9,display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",userSelect:"none",background:"#F9FAFB"}}
+                        onPointerEnter={e=>(e.currentTarget as HTMLElement).style.background="#F3F4F6"}
+                        onPointerLeave={e=>(e.currentTarget as HTMLElement).style.background="#F9FAFB"}>
+                        <span>{(t as any)[section.sectionKey]||section.label}</span>
+                        <span style={{fontSize:9,color:"#9CA3AF",transition:"transform .2s",display:"inline-block",transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}>▼</span>
+                      </div>
+                      {!collapsed&&(
+                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,padding:"8px"}}>
+                          {PAGE_STYLES.map(ps=>{
+                            const ptype="page_"+ps.id;
+                            const plabel=(t as any)[ps.labelKey];
+                            return(
+                              <div key={ps.id}
+                                draggable
+                                onDragStart={e=>onSBDS(e,ptype)}
+                                onClick={()=>addNodeCentered(ptype)}
+                                onTouchStart={e=>{
+                                  const t0=e.touches[0];
+                                  sideDrag_.current={type:ptype,label:plabel,startX:t0.clientX,startY:t0.clientY,clientX:t0.clientX,clientY:t0.clientY,started:false,ghost:null};
+                                }}
+                                style={{cursor:"grab",borderRadius:8,border:"1px solid #E5E7EB",background:"#fff",padding:"6px 4px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:4,transition:"border-color .12s,box-shadow .12s"}}
+                                onPointerEnter={e=>{(e.currentTarget as HTMLElement).style.borderColor="#2563EB";(e.currentTarget as HTMLElement).style.boxShadow="0 2px 8px rgba(37,99,235,.12)";}}
+                                onPointerLeave={e=>{(e.currentTarget as HTMLElement).style.borderColor="#E5E7EB";(e.currentTarget as HTMLElement).style.boxShadow="none";}}>
+                                <div style={{width:"100%",aspectRatio:"86/108",borderRadius:4,overflow:"hidden",flexShrink:0,pointerEvents:"none",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                                  {ps.thumb(t)}
+                                </div>
+                                <span style={{fontSize:9,color:"#374151",textAlign:"center",lineHeight:1.25,fontWeight:500}}>{plabel}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
                 const allItems=section.cats.flatMap(c=>ND.filter(d=>d.cat===c.k));
                 if(!allItems.length)return null;
                 return(
-                  <div key={section.key} style={{borderBottom:"1px solid #2D3F55"}}>
+                  <div key={section.key} style={{borderBottom:"1px solid #E5E7EB"}}>
                     <div
                       onClick={()=>toggleCat(section.key)}
                       style={{padding:"9px 10px 6px",fontSize:10,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:.9,display:"flex",alignItems:"center",justifyContent:"space-between",cursor:"pointer",userSelect:"none",background:"#F9FAFB"}}
-                      onPointerEnter={e=>(e.currentTarget as HTMLElement).style.background="#1E293B"}
-                      onPointerLeave={e=>(e.currentTarget as HTMLElement).style.background="#172133"}>
+                      onPointerEnter={e=>(e.currentTarget as HTMLElement).style.background="#F3F4F6"}
+                      onPointerLeave={e=>(e.currentTarget as HTMLElement).style.background="#F9FAFB"}>
                       <span>{(t as any)[section.sectionKey]||section.label}</span>
                       <span style={{fontSize:9,color:"#9CA3AF",transition:"transform .2s",display:"inline-block",transform:collapsed?"rotate(-90deg)":"rotate(0deg)"}}>▼</span>
                     </div>

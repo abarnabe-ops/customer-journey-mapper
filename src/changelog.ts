@@ -21,6 +21,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.3.0',
+    date: '2026-06-28',
+    changes: [
+      { type:'feat',  scope:'sidebar', fr:'Les 12 styles de pages s\'affichent maintenant dans le menu de gauche (grille de miniatures), comme dans MapIt', en:'All 12 page styles now show in the left sidebar (thumbnail grid), like in MapIt' },
+      { type:'feat',  scope:'pages',   fr:'Chaque style de page est glissable et cliquable depuis la barre latérale (tap = ajout au centre, glisser = dépose sur le canvas)', en:'Each page style is draggable and clickable from the sidebar (tap = add to center, drag = drop on canvas)' },
+      { type:'fix',   scope:'pages',   fr:'Glisser-déposer desktop (onCvDrop) et tactile (dropOnCv) gèrent maintenant les types page_* avec le bon style et libellé', en:'Desktop (onCvDrop) and touch (dropOnCv) drag-drop now handle page_* types with correct style and label' },
+    ],
+  },
+  {
     version: '1.2.0',
     date: '2026-06-28',
     changes: [
