@@ -93,6 +93,8 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests (blocks deploy on failure)
+        env:
+          VITE_BASE: ${{ steps.env.outputs.base }}
         run: npm run test:e2e
 
       - name: Upload Playwright report on failure

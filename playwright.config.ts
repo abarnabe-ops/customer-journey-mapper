@@ -1,9 +1,12 @@
 import { defineConfig, devices } from '@playwright/test'
 
 // E2E config. Tests run against the locally-built app served by `vite preview`.
-// CI starts the preview server automatically (see webServer below).
+// The base path MUST match what the app was built with (VITE_BASE), otherwise
+// vite preview serves assets under a different path and they 404. Defaults to
+// the production base for local runs.
 const PORT = 4173
-const BASE = `http://localhost:${PORT}/customer-journey-mapper/`
+const VITE_BASE = process.env.VITE_BASE || '/customer-journey-mapper/'
+const BASE = `http://localhost:${PORT}${VITE_BASE}`
 
 export default defineConfig({
   testDir: './e2e',
