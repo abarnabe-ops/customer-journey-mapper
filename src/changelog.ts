@@ -21,6 +21,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.4.0',
+    date: '2026-06-28',
+    changes: [
+      { type:'feat',  scope:'history', fr:'Nouveau widget d\'historique style Bee en bas à gauche : flèches Annuler / Rétablir + icône horloge qui déplie une frise des 15 dernières modifications', en:'New Bee-style history widget bottom-left: Undo / Redo arrows + a clock icon that expands a timeline of the 15 most recent changes' },
+      { type:'feat',  scope:'history', fr:'Chaque entrée de la frise est cliquable pour sauter directement à cet état (la plus récente en haut, avec icône, libellé d\'action et heure)', en:'Every timeline entry is clickable to jump straight to that state (newest on top, with an icon, action label and time)' },
+      { type:'feat',  scope:'history', fr:'Comportement type Bee : faire une nouvelle modification après un saut en arrière abandonne la branche « refaire »', en:'Bee-style behavior: making a new edit after jumping back discards the redo branch' },
+      { type:'feat',  scope:'history', fr:'Chaque action enregistrée est désormais étiquetée (Ajout, Suppression, Déplacement, Connexion, Alignement, Distribution, Calques, Disposition auto, Style de page, Couleur/Style de lien, Redimensionnement, Texte modifié, Duplication, Collage, Mapping généré, Version restaurée)', en:'Each recorded action is now labelled (Add, Delete, Move, Connect, Align, Distribute, Layer, Auto-layout, Page style, Link color/style, Resize, Text edited, Duplicate, Paste, Map generated, Version restored)' },
+      { type:'feat',  scope:'i18n',    fr:'Nouvelles clés de traduction FR/EN pour le widget d\'historique et tous les libellés d\'action', en:'New FR/EN translation keys for the history widget and all action labels' },
+      { type:'refactor', scope:'history', fr:'Les instantanés d\'historique stockent maintenant {nodes, conns, label, icon, ts} ; `saveH` accepte un libellé/icône et l\'historique est plafonné à 15 entrées (au lieu de 50)', en:'History snapshots now store {nodes, conns, label, icon, ts}; `saveH` takes a label/icon and history is capped at 15 entries (was 50)' },
+    ],
+  },
+  {
     version: '1.3.2',
     date: '2026-06-28',
     changes: [
