@@ -697,14 +697,14 @@ export default function App(){
   undoRef.current=()=>{
     if(!past.length)return;
     const prev=past[past.length-1];
-    setFuture(f=>[{nodes:structuredClone(nodes),conns:structuredClone(conns),label:prev.label,icon:prev.icon,item:prev.item,ts:prev.ts},...f.slice(0,HIST_MAX-1)]);
+    setFuture(f=>[{nodes:structuredClone(nodes),conns:structuredClone(conns),label:prev.label,icon:prev.icon,item:prev.item,detail:prev.detail,count:prev.count,ts:prev.ts},...f.slice(0,HIST_MAX-1)]);
     setNodes(structuredClone(prev.nodes));setConns(structuredClone(prev.conns));
     setPast(p=>p.slice(0,-1));setSelN([]);setSelC(null);
   };
   redoRef.current=()=>{
     if(!future.length)return;
     const next=future[0];
-    setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(nodes),conns:structuredClone(conns),label:next.label,icon:next.icon,item:next.item,ts:next.ts}]);
+    setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(nodes),conns:structuredClone(conns),label:next.label,icon:next.icon,item:next.item,detail:next.detail,count:next.count,ts:next.ts}]);
     setNodes(structuredClone(next.nodes));setConns(structuredClone(next.conns));
     setFuture(f=>f.slice(1));setSelN([]);setSelC(null);
   };
@@ -718,14 +718,14 @@ export default function App(){
     if(delta<0){
       for(let i=0;i<-delta && p.length;i++){
         const prev=p[p.length-1];
-        f=[{nodes:curN,conns:curC,label:prev.label,icon:prev.icon,item:prev.item,ts:prev.ts},...f].slice(0,HIST_MAX);
+        f=[{nodes:curN,conns:curC,label:prev.label,icon:prev.icon,item:prev.item,detail:prev.detail,count:prev.count,ts:prev.ts},...f].slice(0,HIST_MAX);
         curN=structuredClone(prev.nodes);curC=structuredClone(prev.conns);
         p=p.slice(0,-1);
       }
     }else{
       for(let i=0;i<delta && f.length;i++){
         const next=f[0];
-        p=[...p,{nodes:curN,conns:curC,label:next.label,icon:next.icon,item:next.item,ts:next.ts}].slice(-HIST_MAX);
+        p=[...p,{nodes:curN,conns:curC,label:next.label,icon:next.icon,item:next.item,detail:next.detail,count:next.count,ts:next.ts}].slice(-HIST_MAX);
         curN=structuredClone(next.nodes);curC=structuredClone(next.conns);
         f=f.slice(1);
       }
@@ -993,11 +993,23 @@ Génère le customer journey mapping complet en JSON.`}]
     setGenerating(false);
   };
 
+  // Build a human detail for a set of affected node ids: the single node's name,
+  // or a count for multi-select. Used to make history entries specific
+  // (e.g. "Déplacement de Publicité Facebook" vs "Déplacement de 3 éléments").
+  const detailFor=(ids:string[]):{detail?:string;count?:number}=>{
+    const valid=(ids||[]).filter(Boolean);
+    if(valid.length===1){
+      const n=gn(valid[0]);
+      const name=n?(n.label||(t as any)[gd(n.type)?.labelKey]||gd(n.type)?.label||""):"";
+      return name?{detail:name}:{};
+    }
+    if(valid.length>1)return{count:valid.length};
+    return {};
+  };
   // Record an edit: push a DEEP CLONE of the pre-edit state onto past (tagged
-  // with the action about to happen), and clear the redo branch. Cloning here
-  // means later in-place mutations of live state can never corrupt history.
-  const saveH=(ns:any,cs:any,label?:string,icon?:string,item?:string)=>{
-    setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(ns),conns:structuredClone(cs),label:label||"histEdit",icon:icon||"✎",item:item||null,ts:Date.now()}]);
+  // with the action about to happen + optional element detail), clear redo.
+  const saveH=(ns:any,cs:any,label?:string,icon?:string,item?:string,extra?:{detail?:string;count?:number})=>{
+    setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(ns),conns:structuredClone(cs),label:label||"histEdit",icon:icon||"✎",item:item||null,detail:extra?.detail||null,count:extra?.count||null,ts:Date.now()}]);
     setFuture([]);
   };
 
@@ -1047,14 +1059,14 @@ Génère le customer journey mapping complet en JSON.`}]
   const upC=(id,p)=>setConns(cs=>cs.map(c=>c.id===id?{...c,...p}:c));
   const toggleCat=k=>setCollapsedCats(p=>({...p,[k]:!p[k]}));
 
-  const bringToFront=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬆");setNodes(p=>[...p.filter(n=>!selN.includes(n.id)),...p.filter(n=>selN.includes(n.id))]);};
-  const bringForward=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬆");setNodes(p=>{const a=[...p];[...selN].reverse().forEach(id=>{const i=a.findIndex(n=>n.id===id);if(i<a.length-1&&!selN.includes(a[i+1].id)){[a[i],a[i+1]]=[a[i+1],a[i]];}});return a;});};
-  const sendToBack=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬇");setNodes(p=>[...p.filter(n=>selN.includes(n.id)),...p.filter(n=>!selN.includes(n.id))]);};
-  const sendBackward=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬇");setNodes(p=>{const a=[...p];selN.forEach(id=>{const i=a.findIndex(n=>n.id===id);if(i>0&&!selN.includes(a[i-1].id)){[a[i],a[i-1]]=[a[i-1],a[i]];}});return a;});};
+  const bringToFront=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬆",undefined,detailFor(selN));setNodes(p=>[...p.filter(n=>!selN.includes(n.id)),...p.filter(n=>selN.includes(n.id))]);};
+  const bringForward=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬆",undefined,detailFor(selN));setNodes(p=>{const a=[...p];[...selN].reverse().forEach(id=>{const i=a.findIndex(n=>n.id===id);if(i<a.length-1&&!selN.includes(a[i+1].id)){[a[i],a[i+1]]=[a[i+1],a[i]];}});return a;});};
+  const sendToBack=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬇",undefined,detailFor(selN));setNodes(p=>[...p.filter(n=>selN.includes(n.id)),...p.filter(n=>!selN.includes(n.id))]);};
+  const sendBackward=()=>{if(!selN.length)return;saveH(nodes,conns,"histLayer","⬇",undefined,detailFor(selN));setNodes(p=>{const a=[...p];selN.forEach(id=>{const i=a.findIndex(n=>n.id===id);if(i>0&&!selN.includes(a[i-1].id)){[a[i],a[i-1]]=[a[i-1],a[i]];}});return a;});};
   const copySelected=()=>{if(!selN.length)return;setClipboard(selN.map(id=>gn(id)).filter(Boolean));};
-  const pasteClipboard=()=>{if(!clipboard.length)return;saveH(nodes,conns,"histPaste","⎘");const nn=clipboard.map(n=>({...n,id:uid(),x:n.x+30,y:n.y+30}));setNodes(p=>[...p,...nn]);setSelN(nn.map(n=>n.id));};
-  const duplicateSelected=()=>{if(!selN.length)return;saveH(nodes,conns,"histDuplicate","⧉");const nn=selN.map(id=>{const n=gn(id);return n?{...n,id:uid(),x:n.x+20,y:n.y+20}:null;}).filter(Boolean);setNodes(p=>[...p,...nn]);setSelN(nn.map(n=>n.id));};
-  const deleteSel=()=>{saveH(nodes,conns,"histDelete","🗑");setNodes(p=>p.filter(n=>!selN.includes(n.id)));setConns(p=>p.filter(c=>!selN.includes(c.from)&&!selN.includes(c.to)));setSelN([]);};
+  const pasteClipboard=()=>{if(!clipboard.length)return;saveH(nodes,conns,"histPaste","⎘",undefined,clipboard.length>1?{count:clipboard.length}:{detail:(clipboard[0]?.label||"")});const nn=clipboard.map(n=>({...n,id:uid(),x:n.x+30,y:n.y+30}));setNodes(p=>[...p,...nn]);setSelN(nn.map(n=>n.id));};
+  const duplicateSelected=()=>{if(!selN.length)return;saveH(nodes,conns,"histDuplicate","⧉",undefined,detailFor(selN));const nn=selN.map(id=>{const n=gn(id);return n?{...n,id:uid(),x:n.x+20,y:n.y+20}:null;}).filter(Boolean);setNodes(p=>[...p,...nn]);setSelN(nn.map(n=>n.id));};
+  const deleteSel=()=>{saveH(nodes,conns,"histDelete","🗑",undefined,detailFor(selN));setNodes(p=>p.filter(n=>!selN.includes(n.id)));setConns(p=>p.filter(c=>!selN.includes(c.from)&&!selN.includes(c.to)));setSelN([]);};
 
   const getSD=()=>selN.map(id=>{const n=gn(id);const d=gd(n?.type);const s=gs(d,n);return n?{id,n,w:s.w,h:s.h,cx:n.x+s.w/2,cy:n.y+s.h/2}:null;}).filter(Boolean);
   const alignV=()=>{const data=getSD();if(!data.length)return;const avg=data.reduce((s,d)=>s+d.cx,0)/data.length;saveH(nodes,conns,"histAlign","▤");setNodes(p=>p.map(n=>{const d=data.find(x=>x.id===n.id);return d?{...n,x:avg-d.w/2}:n;}));};
@@ -1096,7 +1108,7 @@ Génère le customer journey mapping complet en JSON.`}]
       }
       return;
     }
-    if(connMode){if(!connFrom){setConnFrom(id);return;}if(connFrom!==id&&!conns.some(c=>c.from===connFrom&&c.to===id)){saveH(nodes,conns,"histConnect","↬");setConns(p=>[...p,{id:cuid(),from:connFrom,to:id,dashed:connDash,color:newConnColor,curved:connCurved}]);}setConnFrom(null);return;}
+    if(connMode){if(!connFrom){setConnFrom(id);return;}if(connFrom!==id&&!conns.some(c=>c.from===connFrom&&c.to===id)){const _fn=gn(connFrom),_tn=gn(id);saveH(nodes,conns,"histConnect","↬",undefined,{detail:`${_fn?.label||""} → ${_tn?.label||""}`});setConns(p=>[...p,{id:cuid(),from:connFrom,to:id,dashed:connDash,color:newConnColor,curved:connCurved}]);}setConnFrom(null);return;}
     if(e.ctrlKey||e.metaKey){setSelN(prev=>prev.includes(id)?prev.filter(s=>s!==id):[...prev,id]);}
     else{if(editingTextId&&editingTextId!==id)setEditingTextId(null);setSelN([id]);}
   };
@@ -1153,8 +1165,8 @@ Génère le customer journey mapping complet en JSON.`}]
     const mu=()=>{
       if(dragMidConn){setDragMidConn(null);return;}
       if(sidebarDrag.current){sidebarDrag.current=false;document.body.style.cursor="";document.body.style.userSelect="";}
-      if(tbResize.current){const{pNodes,pConns}=tbResize.current;setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(pNodes),conns:structuredClone(pConns),label:"histResize",icon:"⤡",item:null,ts:Date.now()}]);setFuture([]);tbResize.current=null;}
-      if(drag_.current&&didDrag.current){const{pNodes,pConns}=drag_.current;setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(pNodes),conns:structuredClone(pConns),label:"histMove",icon:"✥",item:null,ts:Date.now()}]);setFuture([]);}
+      if(tbResize.current){const{pNodes,pConns}=tbResize.current;const _d=detailFor(selN);setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(pNodes),conns:structuredClone(pConns),label:"histResize",icon:"⤡",item:null,detail:_d.detail||null,count:_d.count||null,ts:Date.now()}]);setFuture([]);tbResize.current=null;}
+      if(drag_.current&&didDrag.current){const{pNodes,pConns}=drag_.current;const _d=detailFor(selN);setPast(p=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(pNodes),conns:structuredClone(pConns),label:"histMove",icon:"✥",item:null,detail:_d.detail||null,count:_d.count||null,ts:Date.now()}]);setFuture([]);}
       pan_.current=null;drag_.current=null;
     };
     window.addEventListener("mousemove",mm);window.addEventListener("mouseup",mu);
@@ -1262,7 +1274,8 @@ Génère le customer journey mapping complet en JSON.`}]
           setSelN([tc.id]);setSelC(null);
         } else {
           // Drag finished → save to undo history
-          setPast((p:any[])=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(tc.pNodes),conns:structuredClone(tc.pConns),label:"histMove",icon:"✥",item:null,ts:Date.now()}]);
+          {const _d=detailFor([tc.id]);
+          setPast((p:any[])=>[...p.slice(-(HIST_MAX-1)),{nodes:structuredClone(tc.pNodes),conns:structuredClone(tc.pConns),label:"histMove",icon:"✥",item:null,detail:_d.detail||null,count:_d.count||null,ts:Date.now()}]);}
           setFuture([]);
         }
       } else if(tc.type==='pinch'&&e.touches.length===1){
@@ -1311,7 +1324,7 @@ Génère le customer journey mapping complet en JSON.`}]
       if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key==="["){e.preventDefault();sendToBack();return;}
       if(inTxt)return;
       if(e.key==="Delete"||e.key==="Backspace"){
-        if(selN.length>0){saveH(nodes,conns,"histDelete","🗑");setNodes(p=>p.filter(n=>!selN.includes(n.id)));setConns(p=>p.filter(c=>!selN.includes(c.from)&&!selN.includes(c.to)));setSelN([]);}
+        if(selN.length>0){saveH(nodes,conns,"histDelete","🗑",undefined,detailFor(selN));setNodes(p=>p.filter(n=>!selN.includes(n.id)));setConns(p=>p.filter(c=>!selN.includes(c.from)&&!selN.includes(c.to)));setSelN([]);}
         else if(selC){saveH(nodes,conns,"histDisconnect","✂");setConns(p=>p.filter(c=>c.id!==selC));setSelC(null);}
       }
       if(e.key==="Escape"){setConnMode(false);setConnFrom(null);setConnectAllMode(false);setSelN([]);setSelC(null);setShowVersions(false);setEditingType(null);setDeleteConfirm(null);setEditingTextId(null);}
@@ -1447,7 +1460,7 @@ Génère le customer journey mapping complet en JSON.`}]
             const isSel=currentStyle===ps.id;
             return(
               <div key={ps.id}
-                onClick={()=>{saveH(nodes,conns,"histPageStyle","▢");upN(node.id,{pageStyle:ps.id,label:t[ps.labelKey]});}}
+                onClick={()=>{saveH(nodes,conns,"histPageStyle","▢",undefined,detailFor([node.id]));upN(node.id,{pageStyle:ps.id,label:t[ps.labelKey]});}}
                 style={{cursor:"pointer",borderRadius:6,border:`2px solid ${isSel?"#2563EB":"#E5E7EB"}`,background:isSel?"rgba(59,130,246,.08)":"#0F172A",padding:"5px 4px 4px",display:"flex",flexDirection:"column",alignItems:"center",gap:3,transition:"border-color .15s",boxShadow:isSel?"0 0 0 1px #1D4ED8":""}}
                 onMouseEnter={e=>{if(!isSel)e.currentTarget.style.borderColor="#475569";}}
                 onMouseLeave={e=>{if(!isSel)e.currentTarget.style.borderColor="#E5E7EB";}}>
@@ -2526,12 +2539,17 @@ Génère le customer journey mapping complet en JSON.`}]
         // Resolve a stored entry's label into display text (handles {item}).
         const labelFor=(entry:any)=>{
           if(!entry)return "";
-          const raw=((t as any)[entry.label]||entry.label||"") as string;
+          let raw=((t as any)[entry.label]||entry.label||"") as string;
+          // Add-node actions carry an item type; resolve its display name.
           if(entry.item){
             const itemLabel=(customLabels as any)[entry.item]||(t as any)[gd(entry.item)?.labelKey]||gd(entry.item)?.label||entry.item;
-            return raw.replace("{item}",itemLabel);
+            raw=raw.replace("{item}",itemLabel);
           }
-          return raw.replace("{item}","").trim();
+          raw=raw.replace("{item}","").trim();
+          // Append element-specific detail: a node name, or a count for multi.
+          if(entry.detail){return `${raw} : ${entry.detail}`;}
+          if(entry.count){return `${raw} · ${entry.count} ${lang==='fr'?'éléments':'items'}`;}
+          return raw;
         };
         const timeFor=(ts:number)=>{if(!ts)return "";try{return new Date(ts).toLocaleTimeString(lang==='fr'?'fr-CA':'en-US',{hour:'2-digit',minute:'2-digit'});}catch{return "";}};
         // Build timeline rows newest-first. delta = signed steps from live state.
@@ -2585,13 +2603,13 @@ Génère le customer journey mapping complet en JSON.`}]
             <button data-testid="hist-undo" onClick={()=>undoRef.current?.()} disabled={!canUndo} title={`${t.histUndo} (Ctrl+Z)`}
               style={{width:38,height:38,background:"none",border:"none",color:canUndo?"#334155":"#CBD5E1",cursor:canUndo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
               onPointerEnter={e=>{if(canUndo)e.currentTarget.style.background="#F1F5F9";}} onPointerLeave={e=>{e.currentTarget.style.background="none";}}>
-              <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M2 7.5h7.5a4 4 0 1 1 0 8H6"/><polyline points="2 4 2 7.5 5.5 7.5"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 6 4 11 9 16"/><path d="M4 11h7a7 7 0 0 1 7 7v1"/></svg>
             </button>
             <div style={{width:1,height:18,background:"#E2E8F0",flexShrink:0}}/>
             <button data-testid="hist-redo" onClick={()=>redoRef.current?.()} disabled={!canRedo} title={`${t.histRedo} (Ctrl+Y)`}
               style={{width:38,height:38,background:"none",border:"none",color:canRedo?"#334155":"#CBD5E1",cursor:canRedo?"pointer":"not-allowed",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}
               onPointerEnter={e=>{if(canRedo)e.currentTarget.style.background="#F1F5F9";}} onPointerLeave={e=>{e.currentTarget.style.background="none";}}>
-              <svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M15 7.5H7.5a4 4 0 1 0 0 8H11"/><polyline points="15 4 15 7.5 11.5 7.5"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 6 20 11 15 16"/><path d="M20 11h-7a7 7 0 0 0-7 7v1"/></svg>
             </button>
             <div style={{width:1,height:18,background:"#E2E8F0",flexShrink:0}}/>
             <button data-testid="hist-clock" onClick={()=>setShowHistory(v=>!v)} title={t.histTitle}

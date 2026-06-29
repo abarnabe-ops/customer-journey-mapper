@@ -42,6 +42,17 @@ test.describe('App health', () => {
     await expect(page.getByTestId('hist-redo')).toBeVisible()
     await expect(page.getByTestId('hist-clock')).toBeVisible()
   })
+
+  test('timeline entries include element detail (Option C)', async ({ page }) => {
+    await gotoApp(page)
+    // Add a specific node type so we can assert its name appears in the label.
+    await addNode(page, 'facebook')
+    await page.getByTestId('hist-clock').click()
+    await expect(page.getByTestId('hist-timeline')).toBeVisible()
+    // The add row should name the element (e.g. "Ajout de Publicité Facebook").
+    const rowText = await page.locator('[data-testid="hist-row"]').first().innerText()
+    expect(rowText.toLowerCase()).toContain('facebook')
+  })
 })
 
 test.describe('Undo / Redo', () => {
