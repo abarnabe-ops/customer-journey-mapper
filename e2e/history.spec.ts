@@ -18,9 +18,25 @@ function trackConsoleErrors(page: Page): string[] {
 }
 
 async function gotoApp(page: Page) {
+  const consoleMsgs: string[] = []
+  page.on('console', m => consoleMsgs.push(`[${m.type()}] ${m.text()}`))
+  page.on('pageerror', e => consoleMsgs.push(`[pageerror] ${String(e)}`))
   await page.goto(APP)
   // The canvas only renders once auth resolves; wait for it.
-  await expect(page.getByTestId('canvas')).toBeVisible({ timeout: 15_000 })
+  try {
+    await expect(page.getByTestId('canvas')).toBeVisible({ timeout: 15_000 })
+  } catch (e) {
+    // Diagnostics: dump what actually rendered so CI failure output is useful.
+    const url = page.url()
+    const webdriver = await page.evaluate(() => (navigator as any).webdriver)
+    const bodyText = (await page.locator('body').innerText().catch(() => '')).slice(0, 600)
+    const hasLogin = await page.getByText(/sign in with google/i).count().catch(() => 0)
+    const rootHtml = (await page.locator('#root').innerHTML().catch(() => '')).slice(0, 400)
+    throw new Error(
+      `Canvas not found.\n  url=${url}\n  navigator.webdriver=${webdriver}\n  hasGoogleLoginButton=${hasLogin}\n` +
+      `  bodyText="${bodyText}"\n  rootHtml="${rootHtml}"\n  console:\n  ${consoleMsgs.slice(0, 20).join('\n  ')}`
+    )
+  }
 }
 
 // Add a node via the Map It modal (stable, independent of sidebar collapse).
