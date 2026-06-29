@@ -1,11 +1,13 @@
 name: Deploy
 
 # Two environments, one source repo:
-#   - push to `staging` -> build with staging config -> e2e gate -> deploy to the
+#   - push to `main`    -> build (production config) -> e2e gate -> deploy to THIS
+#     repo's GitHub Pages via the official actions/deploy-pages (Pages source =
+#     "GitHub Actions"). This avoids the "deploy from a branch" auto-detection
+#     that kept resetting the Pages source to main and 404'ing production.
+#   - push to `staging` -> build (staging config) -> e2e gate -> deploy to the
 #     SEPARATE staging repo (customer-journey-mapper-staging) via SSH deploy key
-#     -> smoke-test the staging URL.
-#   - push to `main` -> build with production config -> e2e gate -> deploy to this
-#     repo's gh-pages -> smoke-test the production URL.
+#     (cross-repo, so it must use the branch method) -> smoke-test staging URL.
 # Promotion path: merge `staging` -> `main`.
 
 on:
@@ -15,12 +17,26 @@ on:
       - staging
   workflow_dispatch:
 
+# Permissions needed by actions/deploy-pages (pages: write, id-token: write).
+# contents: write is needed for the staging cross-repo push + diagnostics branch.
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deploy per ref.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build-test-deploy:
+  build-test:
     runs-on: ubuntu-latest
+    outputs:
+      env_name: ${{ steps.env.outputs.name }}
+      base: ${{ steps.env.outputs.base }}
+      url: ${{ steps.env.outputs.url }}
+      bundle: ${{ steps.bundle.outputs.name }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,7 +50,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Decide environment-specific config based on the branch.
       - name: Resolve environment
         id: env
         run: |
@@ -51,7 +66,6 @@ jobs:
             echo "supabase_url=${{ secrets.VITE_SUPABASE_URL }}" >> "$GITHUB_OUTPUT"
             echo "supabase_key=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> "$GITHUB_OUTPUT"
           fi
-          echo "Building for: $(grep name= "$GITHUB_OUTPUT" | head -1)"
 
       - name: Build
         env:
@@ -61,7 +75,6 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ steps.env.outputs.supabase_key }}
         run: npm run build
 
-      # -- Pre-deploy verification: sanity-check dist/ before publishing. --------
       - name: Verify build output
         env:
           EXPECTED_BASE: ${{ steps.env.outputs.base }}
@@ -75,7 +88,6 @@ jobs:
           if ! grep -qE 'assets/index-[A-Za-z0-9_-]+\.js' dist/index.html; then
             echo "::error::dist/index.html does not reference a hashed JS bundle"; exit 1
           fi
-          # The bundle path must use the correct per-environment base.
           if ! grep -q "src=\"${EXPECTED_BASE}assets/index-" dist/index.html; then
             echo "::error::bundle path does not use expected base ${EXPECTED_BASE}"; exit 1
           fi
@@ -88,7 +100,10 @@ jobs:
           test -f dist/apple-touch-icon.png || { echo "::error::dist/apple-touch-icon.png is missing"; exit 1; }
           echo "Build output looks good."
 
-      # -- E2E browser tests: the quality gate. Fails -> deploy steps skipped. ---
+      - name: Capture bundle hash
+        id: bundle
+        run: echo "name=$(grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1)" >> "$GITHUB_OUTPUT"
+
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
@@ -97,18 +112,6 @@ jobs:
           VITE_BASE: ${{ steps.env.outputs.base }}
         run: npm run test:e2e
 
-      - name: Upload Playwright report on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-${{ steps.env.outputs.name }}
-          path: playwright-report/
-          retention-days: 7
-
-      # On test failure, publish a SHORT plain-text summary of which tests failed
-      # and their error messages to the `ci-diagnostics` branch, so the reason is
-      # retrievable via the git API (artifact/log blobs live on a host some
-      # environments cannot reach).
       - name: Publish failure diagnostics
         if: failure()
         run: |
@@ -144,7 +147,6 @@ jobs:
               echo "e2e-results.json not produced — failure happened before the test run."
             fi
           } > "$SUMMARY" 2>&1
-
           git config user.name "CI"
           git config user.email "ci@leadfox.co"
           git checkout --orphan ci-diagnostics
@@ -154,17 +156,14 @@ jobs:
           git commit -m "ci: ${{ steps.env.outputs.name }} e2e failure (run ${{ github.run_id }})" >/dev/null 2>&1
           git push -f origin ci-diagnostics >/dev/null 2>&1 && echo "diagnostics pushed" || echo "push failed"
 
-      # -- Deploy: production -> this repo's gh-pages ----------------------------
-      - name: Deploy to production
+      # Upload the build for the production Pages deploy job (main only).
+      - name: Upload Pages artifact
         if: github.ref == 'refs/heads/main'
-        uses: peaceiris/actions-gh-pages@v4
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          publish_branch: gh-pages
-          force_orphan: false
+          path: ./dist
 
-      # -- Deploy: staging -> SEPARATE staging repo via SSH deploy key ----------
+      # Staging deploys cross-repo via deploy key (branch method required).
       - name: Deploy to staging repo
         if: github.ref == 'refs/heads/staging'
         uses: peaceiris/actions-gh-pages@v4
@@ -175,14 +174,35 @@ jobs:
           publish_branch: gh-pages
           force_orphan: false
 
-      # -- Post-deploy smoke test: fetch the LIVE url and assert it works. -------
+  # Production deploy via the official GitHub Pages Actions flow (main only).
+  # This is what removes the branch-source auto-revert problem.
+  deploy-production:
+    if: github.ref == 'refs/heads/main'
+    needs: build-test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Smoke-test the live site after deploy. Runs when the build/test job passed.
+  # On main it waits for deploy-production; on staging that job is skipped (the
+  # staging deploy happened inside build-test), so we tolerate the skip.
+  smoke-test:
+    if: ${{ always() && needs.build-test.result == 'success' && (needs.deploy-production.result == 'success' || needs.deploy-production.result == 'skipped') }}
+    needs: [build-test, deploy-production]
+    runs-on: ubuntu-latest
+    steps:
       - name: Smoke test live site
         env:
-          URL: ${{ steps.env.outputs.url }}
+          URL: ${{ needs.build-test.outputs.url }}
+          EXPECTED_BUNDLE: ${{ needs.build-test.outputs.bundle }}
         run: |
           set -e
-          echo "Smoke-testing ${{ steps.env.outputs.name }} at $URL"
-          EXPECTED_BUNDLE=$(grep -oE 'assets/index-[A-Za-z0-9_-]+\.js' dist/index.html | head -1)
+          echo "Smoke-testing ${{ needs.build-test.outputs.env_name }} at $URL"
           echo "Expecting live site to serve: $EXPECTED_BUNDLE"
           OK=0
           for i in $(seq 1 20); do
@@ -206,7 +226,6 @@ jobs:
           done
           if [ "$OK" != "1" ]; then
             echo "::error::Live site did not serve the new build ($EXPECTED_BUNDLE) after ~5 min."
-            echo "::error::If staging: ensure the staging repo's Pages serves the gh-pages branch."
             exit 1
           fi
-          echo "Smoke test passed - ${{ steps.env.outputs.name }} is healthy."
+          echo "Smoke test passed - ${{ needs.build-test.outputs.env_name }} is healthy."
