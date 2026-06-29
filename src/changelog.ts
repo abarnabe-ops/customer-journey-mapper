@@ -21,6 +21,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.3.3',
+    date: '2026-06-29',
+    changes: [
+      { type:'feat',  scope:'ui',      fr:'Ajout d\'un favicon (icône carte bleue de l\'app) — corrige le 404 favicon.ico dans la console', en:'Added a favicon (the app\'s blue map icon) — fixes the favicon.ico 404 in the console' },
+    ],
+  },
+  {
     version: '1.3.2',
     date: '2026-06-28',
     changes: [
