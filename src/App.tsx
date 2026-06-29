@@ -1490,6 +1490,30 @@ Génère le customer journey mapping complet en JSON.`}]
   addCenteredRef.current=addNodeCentered;
   setShowMapItRef.current=setShowMapIt;
   setSidebarOpenRef.current=setSidebarOpen;
+
+  // ── E2E test hooks ──────────────────────────────────────────────────────────
+  // Exposed ONLY in the automated-browser test bypass (navigator.webdriver +
+  // ?e2e=1). Lets Playwright drive the real app logic (add node, read counts,
+  // undo/redo) without fighting canvas overlay hit-testing. Unreachable for real
+  // users. Kept in sync on every render so it always calls the latest closures.
+  useEffect(()=>{
+    try{
+      const e2e = typeof navigator!=='undefined' && (navigator as any).webdriver===true
+        && new URLSearchParams(window.location.search).get('e2e')==='1';
+      if(!e2e){return;}
+      (window as any).__e2e = {
+        addNode:(type?:string)=>addCenteredRef.current?.(type||"abonnement"),
+        undo:()=>undoRef.current?.(),
+        redo:()=>redoRef.current?.(),
+        jump:(delta:number)=>jumpRef.current?.(delta),
+        nodeCount:()=>nodes.length,
+        canUndo:()=>past.length>0,
+        canRedo:()=>future.length>0,
+        pastLen:()=>past.length,
+        futureLen:()=>future.length,
+      };
+    }catch{/* ignore */}
+  });
   dropOnCvRef.current=(type:string,clientX:number,clientY:number)=>{
     const cvEl=cvRef.current;if(!cvEl)return;
     const rect=cvEl.getBoundingClientRect();
