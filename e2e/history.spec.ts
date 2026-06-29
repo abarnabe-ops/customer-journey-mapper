@@ -4,7 +4,10 @@ import { test, expect, Page } from '@playwright/test'
 // navigator.webdriver===true, this triggers the test-only auth bypass so we
 // land on the canvas without a real Google login. The bypass is unreachable
 // for real users (they have webdriver===false).
-const APP = '/?e2e=1'
+// Relative (no leading slash) so it resolves against Playwright's baseURL,
+// which already includes the /customer-journey-mapper/ base path. A leading
+// slash would discard the base and load the wrong URL.
+const APP = '?e2e=1'
 
 // Collect console errors so every test can assert the app didn't throw.
 function trackConsoleErrors(page: Page): string[] {

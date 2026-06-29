@@ -11,7 +11,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,     // fail CI if a test.only was left in
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
+  reporter: process.env.CI ? [['list'], ['json', { outputFile: 'e2e-results.json' }], ['html', { open: 'never' }]] : 'list',
   timeout: 30_000,
   use: {
     baseURL: BASE,
@@ -19,7 +19,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
   ],
   // Build first, then serve the production build, then run tests against it.
   webServer: {

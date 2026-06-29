@@ -103,6 +103,55 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+      # On test failure, publish a SHORT plain-text summary of which tests failed
+      # and their error messages to the `ci-diagnostics` branch, so the reason is
+      # retrievable via the git API (artifact/log blobs live on a host some
+      # environments cannot reach).
+      - name: Publish failure diagnostics
+        if: failure()
+        run: |
+          set +e
+          mkdir -p /tmp/diag
+          SUMMARY=/tmp/diag/ci-failure-${{ steps.env.outputs.name }}.txt
+          {
+            echo "Run: ${{ github.run_id }}  Branch: ${{ github.ref_name }}  $(date -u)"
+            echo "Commit: ${{ github.sha }}"
+            echo "==================================================================="
+            if [ -f e2e-results.json ]; then
+              node -e '
+                const r=require("./e2e-results.json");
+                const out=[];
+                function walk(suite,prefix){
+                  (suite.suites||[]).forEach(s=>walk(s,prefix+" > "+(s.title||"")));
+                  (suite.specs||[]).forEach(spec=>{
+                    (spec.tests||[]).forEach(t=>{
+                      const res=t.results[t.results.length-1];
+                      if(res && res.status!=="passed" && res.status!=="skipped"){
+                        out.push("FAILED: "+prefix+" > "+spec.title);
+                        (res.errors||[]).forEach(e=>out.push("  "+String(e.message||"").split("\n").slice(0,15).join("\n  ")));
+                        if(!res.errors||!res.errors.length) out.push("  status="+res.status);
+                        out.push("");
+                      }
+                    });
+                  });
+                }
+                (r.suites||[]).forEach(s=>walk(s,s.title||""));
+                console.log(out.join("\n") || "No failed specs parsed (suite-level error?)");
+              ' 2>&1
+            else
+              echo "e2e-results.json not produced — failure happened before the test run."
+            fi
+          } > "$SUMMARY" 2>&1
+
+          git config user.name "CI"
+          git config user.email "ci@leadfox.co"
+          git checkout --orphan ci-diagnostics
+          git reset --hard >/dev/null 2>&1
+          cp "$SUMMARY" ./ci-failure.txt
+          git add -f ci-failure.txt
+          git commit -m "ci: ${{ steps.env.outputs.name }} e2e failure (run ${{ github.run_id }})" >/dev/null 2>&1
+          git push -f origin ci-diagnostics >/dev/null 2>&1 && echo "diagnostics pushed" || echo "push failed"
+
       # -- Deploy: production -> this repo's gh-pages ----------------------------
       - name: Deploy to production
         if: github.ref == 'refs/heads/main'
