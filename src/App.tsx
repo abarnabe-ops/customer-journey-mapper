@@ -1394,7 +1394,7 @@ Génère le customer journey mapping complet en JSON.`}]
     const mkGhost=(label:string,cx:number,cy:number)=>{
       const el=document.createElement('div');
       el.textContent='+ '+label;
-      el.style.cssText='position:fixed;pointer-events:none;z-index:99999;background:#1E293B;border:2px solid #3B82F6;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;color:#F1F5F9;font-family:Inter,system-ui,sans-serif;opacity:.95;white-space:nowrap;transform:translate(-50%,-140%);box-shadow:0 8px 32px rgba(0,0,0,.8);transition:border-color .1s';
+      el.style.cssText='position:fixed;pointer-events:none;z-index:99999;background:#FFFFFF;border:2px solid #2563EB;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;color:#111827;font-family:Inter,system-ui,sans-serif;opacity:.96;white-space:nowrap;transform:translate(-50%,-140%);box-shadow:0 4px 20px rgba(37,99,235,.25);transition:border-color .1s';
       el.style.left=cx+'px';el.style.top=cy+'px';
       document.body.appendChild(el);return el;
     };
@@ -1425,7 +1425,8 @@ Génère le customer journey mapping complet en JSON.`}]
       if(cvEl){
         const r=cvEl.getBoundingClientRect();
         const over=t0.clientX>=r.left&&t0.clientX<=r.right&&t0.clientY>=r.top&&t0.clientY<=r.bottom;
-        sd.ghost.style.borderColor=over?'#22C55E':'#2563EB';
+        sd.ghost.style.borderColor=over?'#16A34A':'#2563EB';
+        if(over)sd.ghost.style.color='#15803D'; else sd.ghost.style.color='#111827';
       }
     };
 
