@@ -1,0 +1,20 @@
+Run: 28390444231  Branch: staging  Mon Jun 29 17:25:57 UTC 2026
+Commit: fcd6c0c4d5dafdd7a74f1fb6dfe4c9f0c562c683
+===================================================================
+FAILED: history.spec.ts > History timeline > opens, lists entries, and is clickable to jump
+  Error: after jump-to-baseline stacks={"past":0,"future":3,"canRedo":true}
+  
+  [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+  
+  Expected: [32m3[39m
+  Received: [31m0[39m
+  
+    113 |     await page.getByTestId('hist-clock').click()
+    114 |     const futureRows = page.locator('[data-testid="hist-row"][data-kind="future"]')
+  > 115 |     expect(await futureRows.count(), `after jump-to-baseline stacks=${JSON.stringify(stacks)}`).toBe(3)
+        |                                                                                                 ^
+    116 |
+    117 |     // Click the top future row (furthest redo) → back to all 3 nodes.
+    118 |     await futureRows.first().click()
+      at /home/runner/work/customer-journey-mapper/customer-journey-mapper/e2e/history.spec.ts:115:97
+
