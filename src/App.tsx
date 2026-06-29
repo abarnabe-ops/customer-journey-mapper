@@ -676,6 +676,8 @@ export default function App(){
   const sideDrag_=useRef<any>(null);
   const dropOnCvRef=useRef<any>(null);  // updated each render — no stale closure
   const addCenteredRef=useRef<any>(null);
+  const setShowMapItRef=useRef<any>(null);   // must be here — before early auth returns
+  const setSidebarOpenRef=useRef<any>(null); // same — hooks must be unconditional
 
   undoRef.current=()=>{if(!past.length)return;const prev=past[past.length-1];setFuture(f=>[{nodes,conns},...f.slice(0,49)]);setNodes(prev.nodes);setConns(prev.conns);setPast(p=>p.slice(0,-1));setSelN([]);setSelC(null);};
   redoRef.current=()=>{if(!future.length)return;const next=future[0];setPast(p=>[...p.slice(-49),{nodes,conns}]);setNodes(next.nodes);setConns(next.conns);setFuture(f=>f.slice(1));setSelN([]);setSelC(null);};
@@ -1427,9 +1429,7 @@ Génère le customer journey mapping complet en JSON.`}]
 
   // Keep fresh-closure refs current so touch listeners always call latest logic
   addCenteredRef.current=addNodeCentered;
-  const setShowMapItRef=useRef<any>(null);
   setShowMapItRef.current=setShowMapIt;
-  const setSidebarOpenRef=useRef<any>(null);
   setSidebarOpenRef.current=setSidebarOpen;
   dropOnCvRef.current=(type:string,clientX:number,clientY:number)=>{
     const cvEl=cvRef.current;if(!cvEl)return;
