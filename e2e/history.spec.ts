@@ -99,20 +99,15 @@ test.describe('History timeline', () => {
     expect(await pastRows.count()).toBe(3)
 
     // Click the OLDEST past row (last, since newest-first) → jump to baseline.
+    // (Clicking a row also closes the timeline.)
     await pastRows.last().click()
     await expect(page.locator('[data-nodeid]')).toHaveCount(0)
 
-    // Diagnostic: capture the actual stack state after the jump.
-    const stacks = await page.evaluate(() => ({
-      past: (window as any).__e2e.pastLen(),
-      future: (window as any).__e2e.futureLen(),
-      canRedo: (window as any).__e2e.canRedo(),
-    }))
-
     // Reopen; now there should be 3 future (redo) rows.
     await page.getByTestId('hist-clock').click()
+    await expect(page.getByTestId('hist-timeline')).toBeVisible()
     const futureRows = page.locator('[data-testid="hist-row"][data-kind="future"]')
-    expect(await futureRows.count(), `after jump-to-baseline stacks=${JSON.stringify(stacks)}`).toBe(3)
+    await expect(futureRows).toHaveCount(3)
 
     // Click the top future row (furthest redo) → back to all 3 nodes.
     await futureRows.first().click()

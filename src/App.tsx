@@ -2563,7 +2563,7 @@ Génère le customer journey mapping complet en JSON.`}]
                       data-testid={isNow?"hist-row-now":"hist-row"}
                       data-delta={r.delta}
                       data-kind={r.kind}
-                      onClick={()=>{if(!isNow)jumpRef.current?.(r.delta);}}
+                      onClick={()=>{if(!isNow){jumpRef.current?.(r.delta);setShowHistory(false);}}}
                       disabled={isNow}
                       style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"7px 14px",background:isNow?"#EFF6FF":"none",border:"none",cursor:isNow?"default":"pointer",textAlign:"left",opacity:isFuture?.55:1,transition:"background .1s"}}
                       onMouseEnter={e=>{if(!isNow)e.currentTarget.style.background="#F8FAFC";}}
