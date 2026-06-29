@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 import { AvatarPill } from "./components/AvatarPill";
 import { ChangelogModal } from "./components/ChangelogModal";
+import { CHANGELOG } from "./changelog";
 import { storageGet, storageSet, storageDelete } from "./lib/supabase";
 import { useLanguage } from "./contexts/LanguageContext";
 import type { Translations } from "./i18n";
@@ -1660,8 +1661,9 @@ Génère le customer journey mapping complet en JSON.`}]
           <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
           {t.signInGoogle}
         </button>
-        {/* Footer — changelog link */}
-        <div style={{marginTop:24,paddingTop:20,borderTop:'1px solid #F1F5F9',display:'flex',justifyContent:'center'}}>
+        {/* Footer — version + changelog link */}
+        <div style={{marginTop:24,paddingTop:20,borderTop:'1px solid #F1F5F9',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <span style={{fontSize:11,color:'#D1D5DB',fontWeight:500}}>v{CHANGELOG[0].version}</span>
           <button onClick={()=>setShowChangelog(true)}
             style={{background:'none',border:'none',cursor:'pointer',color:'#9CA3AF',fontSize:12,display:'flex',alignItems:'center',gap:5,padding:'4px 10px',borderRadius:6}}
             onPointerEnter={e=>{(e.currentTarget as HTMLElement).style.color='#2563EB';(e.currentTarget as HTMLElement).style.background='#EFF6FF';}}
@@ -1669,7 +1671,7 @@ Génère le customer journey mapping complet en JSON.`}]
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <circle cx="6.5" cy="6.5" r="5"/><line x1="6.5" y1="4.5" x2="6.5" y2="7"/><circle cx="6.5" cy="9" r=".6" fill="currentColor" stroke="none"/>
             </svg>
-            {lang==='fr'?'Mises à jour · v1.2.0':"What's new · v1.2.0"}
+            {lang==='fr'?'Mises à jour':"What's new"}
           </button>
         </div>
       </div>
