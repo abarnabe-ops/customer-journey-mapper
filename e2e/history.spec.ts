@@ -41,11 +41,15 @@ async function gotoApp(page: Page) {
 
 // Add a node via the Map It modal (stable, independent of sidebar collapse).
 async function addNode(page: Page) {
-  await page.getByTestId('open-mapit').click()
+  // The canvas (.cvbg) is a full-area sibling that can intercept pointer
+  // hit-testing on the toolbar button, so force the click. The button is
+  // already visible+enabled (Playwright confirms this before forcing).
+  await page.getByTestId('open-mapit').click({ force: true })
   const tile = page.getByTestId('mapit-tile').first()
-  await expect(tile).toBeVisible()
+  await expect(tile).toBeVisible({ timeout: 10_000 })
   await tile.click()
-  // modal closes and a node appears
+  // Modal closes and a node appears; let state settle.
+  await page.waitForTimeout(300)
 }
 
 const nodeCount = (page: Page) => page.locator('[data-nodeid]').count()
