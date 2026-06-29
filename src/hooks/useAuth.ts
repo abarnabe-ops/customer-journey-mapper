@@ -52,11 +52,13 @@ export function useAuth(): UseAuthReturn {
   }, [])
 
   const signInWithGoogle = async () => {
+    // Redirect back to wherever the app is actually served (production or
+    // staging), using Vite's BASE_URL so it works in both environments instead
+    // of a hardcoded production path.
+    const redirectTo = window.location.origin + import.meta.env.BASE_URL
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: 'https://abarnabe-ops.github.io/customer-journey-mapper/'
-      }
+      options: { redirectTo }
     })
     if (error) console.error('Sign in error:', error)
   }
