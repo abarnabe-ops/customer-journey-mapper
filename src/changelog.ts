@@ -25,6 +25,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: '2026-06-29',
     changes: [
       { type:'feat',  scope:'ui',      fr:'Ajout d\'un favicon (icône carte bleue de l\'app) — corrige le 404 favicon.ico dans la console', en:'Added a favicon (the app\'s blue map icon) — fixes the favicon.ico 404 in the console' },
+      { type:'fix',   scope:'build',   fr:'Ajout d\'en-têtes Cache-Control (no-cache) sur le HTML pour que le navigateur ne garde jamais un index.html périmé pointant vers d\'anciens fichiers — empêche les erreurs 404 après un déploiement', en:'Added Cache-Control (no-cache) meta tags on the HTML so the browser never holds a stale index.html pointing at old files — prevents 404 errors after a deploy' },
     ],
   },
   {
